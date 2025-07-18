@@ -1,10 +1,9 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { Component } from "@/type/component";
 import { PropsWithChildren } from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -15,10 +14,10 @@ export const metadata: Metadata = {
 const RootLayout: Component<PropsWithChildren> = ({ children }) => {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a0a0a] text-white relative`}>
+      <body className={`${geistMono.className} antialiased bg-background text-foreground`}>
         <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.svg')] opacity-10 mix-blend-screen h-screen" />
         
-        <main className="relative z-10 p-8">
+        <main className="relative z-10">
           {children}
         </main>
       </body>
