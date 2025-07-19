@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { formatDecimal, formatNumber } from "@/lib/numbers";
 import { getUnlockThreshold } from "@/lib/upgrades";
 import { PowerTag } from "./power-tag";
+import { cn } from "@/lib/utils";
 
 interface UpgradeCardProps {
   upgrade: Upgrade;
@@ -95,16 +96,21 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
 
           <p className="text-xs text-neutral-600 mb-2">{upgrade.description}</p>
 
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-green-600 font-medium bg-green-500/20 px-1.5 py-0.5">
+          <div className="flex items-center justify-between select-none">
+            <div className={cn(
+              "text-xs font-medium px-1.5 py-0.5", {
+                "text-green-600 bg-green-500/20": currentLevel > 0,
+                "text-neutral-500 bg-neutral-200": currentLevel === 0
+              }
+            )}>
               <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1" }}>
                 {upgrade.rpsGain == 0 && upgrade.clickMultiplier > 0 ? (
                   <>
-                    +{formatDecimal(upgrade.clickMultiplier * currentLevel)}x Click
+                    +{formatDecimal(upgrade.clickMultiplier * (currentLevel == 0 ? 1 : currentLevel))}x Clicks
                   </>
                 ) : (
                   <>
-                    +{formatDecimal(upgrade.rpsGain * currentLevel)} R/S
+                    +{formatDecimal(upgrade.rpsGain * (currentLevel == 0 ? 1 : currentLevel))} RPS
                   </>
                 )}
               </PowerTag>
