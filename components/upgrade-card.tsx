@@ -22,12 +22,12 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
   const canAfford = gameState.currentPower >= cost;
   
   const unlockThreshold = getUnlockThreshold(index);
-  const isUnlocked = gameState.totalClicks >= unlockThreshold;
+  const isUnlocked = gameState.totalPower >= unlockThreshold;
   
   const getVisualEffect = () => {
     if (isUnlocked) return { opacity: 1, blur: 0 };
     
-    const distanceFromUnlocked = index - upgradesInfo.filter((_, i) => gameState.totalClicks >= getUnlockThreshold(i)).length;
+    const distanceFromUnlocked = index - upgradesInfo.filter((_, i) => gameState.totalPower >= getUnlockThreshold(i)).length;
     const maxDistance = 4;
     
     if (distanceFromUnlocked > maxDistance) return { opacity: 0, blur: 10 };
@@ -40,6 +40,10 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
       blur: distanceFromUnlocked * blurStep
     };
   };
+
+  if (getVisualEffect().blur > 6) {
+    return <></>;
+  }
 
   const handleBuy = () => {
     if (canAfford && isUnlocked) {

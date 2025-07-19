@@ -1,7 +1,6 @@
 import { Upgrade } from "@/type/game";
 
 const UPGRADES_DATA: Upgrade[] = [
-  // Tier 1 - Beginners (0-100 clicks)
   {
     id: 1,
     name: "AI Intern",
@@ -32,8 +31,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-
-  // Tier 2 - Developers (100-500 clicks)
   {
     id: 4,
     name: "Junior Dev",
@@ -74,8 +71,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-
-  // Tier 3 - DevOps (500-2000 clicks)
   {
     id: 8,
     name: "Junior DevOps",
@@ -116,8 +111,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-
-  // Tier 4 - Cloud (2000-5000 clicks)
   {
     id: 12,
     name: "Lambda Function",
@@ -158,8 +151,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-
-  // Tier 5 - AI/ML (5000-10000 clicks)
   {
     id: 16,
     name: "ML Model",
@@ -200,8 +191,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-
-  // Click Multipliers - Tier 1 (0-500 clicks)
   {
     id: 20,
     name: "L1 Cache",
@@ -242,8 +231,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 3,
     category: "click",
   },
-
-  // Click Multipliers - Tier 2 (500-2000 clicks)
   {
     id: 24,
     name: "Connection Pool",
@@ -284,8 +271,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 20,
     category: "click",
   },
-
-  // Click Multipliers - Tier 3 (2000-5000 clicks)
   {
     id: 28,
     name: "PostgREST Turbo",
@@ -316,8 +301,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 80,
     category: "click",
   },
-
-  // Click Multipliers - Tier 4 (5000+ clicks)
   {
     id: 31,
     name: "RLS Bypass",
@@ -348,8 +331,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 350,
     category: "click",
   },
-
-  // Infrastructure - Tier 1 (1000-3000 clicks)
   {
     id: 34,
     name: "VPS",
@@ -390,8 +371,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "infra",
   },
-
-  // Infrastructure - Tier 2 (3000-8000 clicks)
   {
     id: 38,
     name: "Multi-Cloud",
@@ -422,8 +401,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "infra",
   },
-
-  // Database - Tier 1 (1500-4000 clicks)
   {
     id: 41,
     name: "SQLite",
@@ -464,8 +441,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "database",
   },
-
-  // Database - Tier 2 (4000-10000 clicks)
   {
     id: 45,
     name: "Elasticsearch",
@@ -506,8 +481,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "database",
   },
-
-  // Security - Tier 1 (2000-6000 clicks)
   {
     id: 49,
     name: "SSL Certificate",
@@ -548,8 +521,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "security",
   },
-
-  // Security - Tier 2 (6000+ clicks)
   {
     id: 53,
     name: "Zero Trust",
@@ -580,8 +551,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "security",
   },
-
-  // Monitoring - Tier 1 (1000-5000 clicks)
   {
     id: 56,
     name: "Logs",
@@ -622,8 +591,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "monitoring",
   },
-
-  // Monitoring - Tier 2 (5000+ clicks)
   {
     id: 60,
     name: "Distributed Tracing",
@@ -654,8 +621,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "monitoring",
   },
-
-  // Frontend - Tier 1 (500-3000 clicks)
   {
     id: 63,
     name: "HTML/CSS",
@@ -696,8 +661,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "frontend",
   },
-
-  // Frontend - Tier 2 (3000-8000 clicks)
   {
     id: 67,
     name: "TypeScript",
@@ -738,8 +701,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "frontend",
   },
-
-  // Backend - Tier 1 (800-4000 clicks)
   {
     id: 71,
     name: "Node.js",
@@ -780,8 +741,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "backend",
   },
-
-  // Backend - Tier 2 (4000-10000 clicks)
   {
     id: 75,
     name: "Rust Actix",
@@ -812,8 +771,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "backend",
   },
-
-  // Mobile - Tier 1 (1500-6000 clicks)
   {
     id: 78,
     name: "React Native",
@@ -854,8 +811,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "mobile",
   },
-
-  // Mobile - Tier 2 (6000+ clicks)
   {
     id: 82,
     name: "AR/VR",
@@ -876,8 +831,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "mobile",
   },
-
-  // Testing - Tier 1 (1000-5000 clicks)
   {
     id: 84,
     name: "Unit Tests",
@@ -918,8 +871,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "testing",
   },
-
-  // Testing - Tier 2 (5000+ clicks)
   {
     id: 88,
     name: "Chaos Engineering",
@@ -940,8 +891,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "testing",
   },
-
-  // Analytics - Tier 1 (2000-7000 clicks)
   {
     id: 90,
     name: "Google Analytics",
@@ -982,8 +931,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "analytics",
   },
-
-  // Analytics - Tier 2 (7000+ clicks)
   {
     id: 94,
     name: "Real-time Analytics",
@@ -1004,8 +951,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "analytics",
   },
-
-  // Blockchain - Tier 1 (5000+ clicks)
   {
     id: 96,
     name: "Smart Contracts",
@@ -1036,8 +981,6 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "blockchain",
   },
-
-  // Future Tech - Tier 1 (10000+ clicks)
   {
     id: 99,
     name: "Metaverse",
@@ -1069,8 +1012,25 @@ export const getUnlockThreshold = (upgradeIndex: number) => {
   return thresholds[upgradeIndex] || thresholds[thresholds.length - 1] * Math.pow(2, upgradeIndex - thresholds.length + 1);
 };
 
+export const getUnlockRequiredPower = (upgradeIndex: number): number => {
+  const thresholds = [0, 10, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000];
+  return thresholds[upgradeIndex] || thresholds[thresholds.length - 1] * Math.pow(2, upgradeIndex - thresholds.length + 1);
+}
+
 export const getUpgradeCost = (upgrade: Upgrade, currentLevel: number = 0): number => {
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel));
+}
+
+export const getRequiredTotalForNext = (currentTotalPower: number): number | null => {
+  const allUpgrades = getAllUpgrades();
+  
+  const nextUpgradeIndex = allUpgrades.findIndex((_, index) => {
+    const threshold = getUnlockRequiredPower(index);
+    return currentTotalPower < threshold;
+  });
+  
+  if (nextUpgradeIndex === -1) return null;
+  return getUnlockRequiredPower(nextUpgradeIndex);
 }
 
 export const getAllUpgrades = (): Upgrade[] => {

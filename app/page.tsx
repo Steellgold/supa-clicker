@@ -8,28 +8,30 @@ import { useAuth } from "@/lib/auth/auth-context"
 import { AuthModal } from "@/components/auth/auth-modal"
 import type { Component } from "@/type/component"
 import { useGame } from "@/lib/providers/game-provider"
-import { getAllUpgrades } from "@/lib/upgrades"
+import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades"
 import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers"
 import { UpgradeCard } from "@/components/upgrade-card"
 import { PowerTag } from "@/components/power-tag"
 import { Clicker } from "@/components/clicker"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 const Home: Component<object> = () => {
   const leftPanelRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
-  const { gameState, handleClick } = useGame();
+  const { gameState, handleClick } = useGame()
 
   return (
     <>
       <Header />
 
-      <div className="flex h-[calc(100vh-70px)]">
-        <div ref={leftPanelRef} className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors">
+      <div className="flex" style={{ height: "calc(100vh - 70px)" }}>
+        <div
+          ref={leftPanelRef}
+          className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors"
+        >
           <div className="text-center space-y-1">
-            <div className={cn(
-              "bg-green-300/25 p-4",
-            )}>
+            <div className={cn("bg-green-300/25 p-4")}>
               <div className="text-2xl font-bold">
                 <PowerTag power={formatWithSpaces(gameState.currentPower)} />
               </div>
@@ -51,10 +53,10 @@ const Home: Component<object> = () => {
               </div>
 
               <div className="text-md">
-                Total Clicks:{" "}<span className="font-bold">{formatNumber(gameState.totalClicks)}</span>
+                Total Clicks: <span className="font-bold">{formatNumber(gameState.totalClicks)}</span>
               </div>
             </div>
-         
+
             <Clicker onClick={handleClick} />
           </div>
         </div>
@@ -66,26 +68,46 @@ const Home: Component<object> = () => {
               Upgrades
             </Button>
             <Button size="lg" variant="tabRetro">
-              <span className="select-none">⭐</span>{" "}Specials
+              <span className="select-none">⭐</span> Specials
             </Button>
           </div>
-          
-          <div className="flex-1 space-y-2 p-3">
+
+          <div className="p-3 space-y-2" style={{ height: "calc(100vh - 70px - 60px)" }}>
             {!user && (
               <div className="p-3 bg-blue-50 border-4 border-blue-200 rounded-none text-center">
-                <div className="text-sm text-blue-700 mb-2">
-                  💡 Sign in to save your progress in the cloud
-                </div>
-                
+                <div className="text-sm text-blue-700 mb-2">💡 Sign in to save your progress in the cloud</div>
+
                 <AuthModal>
-                  <Button size="sm" variant="outline">Enable Cloud Save</Button>
+                  <Button size="sm" variant="outline">
+                    Enable Cloud Save
+                  </Button>
                 </AuthModal>
               </div>
             )}
 
-            <div className="flex flex-col gap-2">
-              {getAllUpgrades().map((upgrade, index) => <UpgradeCard upgrade={upgrade} index={index} key={upgrade.id} />)}
+            <div className="flex-1 p-2 space-y-4 bg-neutral-50 dark:bg-neutral-900 overflow-hidden">
+              <span className="text-sm text-neutral-500 ml-2">
+                <PowerTag imageProps={{ width: 14, height: 14 }}>
+                  Next unlock at{" "}
+                  <span className="font-bold">
+                    {(() => {
+                      const requiredPower = getRequiredTotalForNext(gameState.totalPower);
+                      return requiredPower ? formatNumber(requiredPower) : "Max reached";
+                    })()}
+                  </span>
+                </PowerTag>
+              </span>
             </div>
+
+            <ScrollArea style={{
+              height: user ? "calc(100% - 50px)" : "100%",
+            }}>
+              <div className="flex flex-col gap-2">
+                {getAllUpgrades().map((upgrade, index) => (
+                  <UpgradeCard upgrade={upgrade} index={index} key={upgrade.id} />
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </div>
       </div>
