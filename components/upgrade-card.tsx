@@ -125,7 +125,7 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   : "bg-neutral-200 text-neutral-500 hover:bg-red-200 hover:text-red-500 cursor-not-allowed"
               }`}
             >
-              {canAfford ? `Buy (${formatNumber(cost)})` : "Insufficient Power"}
+              {canAfford ? `Buy (${formatNumber(cost)})` : formatNumber(cost)}
             </button>
           </div>
         </div>
