@@ -5,11 +5,8 @@ import { ReactElement } from "react";
 import { Button } from "./ui/button";
 import { AuthButton } from "./auth/auth-button";
 import { AchievementsDialog } from "./achievements-dialog";
-import { useGame } from "@/lib/providers/game-provider";
 
 export const Header = (): ReactElement => {
-  const { resetGame } = useGame();
-
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
       <div className="flex items-center justify-between">
@@ -23,10 +20,6 @@ export const Header = (): ReactElement => {
               <Trophy />
             </Button>
           </AchievementsDialog>
-
-          <Button variant="retro" size="sm" onClick={resetGame}>
-            Reset game (No confirmation)
-          </Button>
 
           <AuthButton />
         </div>
