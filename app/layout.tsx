@@ -2,6 +2,8 @@ import { Geist_Mono } from "next/font/google";
 import { Component } from "@/type/component";
 import { PropsWithChildren } from "react";
 import type { Metadata } from "next";
+import { AuthProvider } from "@/lib/auth/auth-context";
+import { GameProvider } from "@/lib/providers/game-provider";
 import "./globals.css";
 
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -17,9 +19,13 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
       <body className={`${geistMono.className} antialiased bg-background text-foreground`}>
         <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.svg')] opacity-10 mix-blend-screen h-screen" />
         
-        <main className="relative z-10">
-          {children}
-        </main>
+        <AuthProvider>
+          <GameProvider>
+            <main className="relative z-10">
+              {children}
+            </main>
+          </GameProvider>
+        </AuthProvider>
       </body>
     </html>
   );
