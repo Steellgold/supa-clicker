@@ -24,12 +24,26 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
   const loadUserProfile = useCallback(async (userId: string) => {
     try {
+      const { data: existingProfile, error: selectError } = await supabase
+        .from("user_profiles")
+        .select("username")
+        .eq("user_id", userId)
+        .single()
+
+      if (selectError && selectError.code !== "PGRST116") {
+        console.error("Error loading user profile:", selectError)
+        setUserProfile({})
+        return
+      }
+
+      if (existingProfile) {
+        setUserProfile(existingProfile.username ? { username: existingProfile.username } : {})
+        return
+      }
+
       const { error: upsertError } = await supabase
         .from("user_profiles")
-        .upsert({
-          user_id: userId,
-          username: null
-        }, {
+        .upsert({ user_id: userId, username: null}, {
           onConflict: "user_id",
           ignoreDuplicates: false
         })
@@ -39,30 +53,8 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
         setUserProfile({})
         return
       }
-    } catch (error) {
-      console.error("Error in upsert:", error)
+
       setUserProfile({})
-      return
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("username")
-        .eq("user_id", userId)
-        .single()
-
-      if (error) {
-        console.error("Error loading user profile:", error)
-        setUserProfile({})
-        return
-      }
-
-      setUserProfile(
-        data && data.username !== null
-          ? { username: data.username }
-          : {}
-      )
     } catch (error) {
       console.error("Error loading user profile:", error)
       setUserProfile({})
@@ -165,7 +157,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
         }
       }
 
-      setUserProfile({ ...userProfile, username })
+      await loadUserProfile(user.id)
       return {}
     } catch (error) {
       console.error("Error updating username:", error)

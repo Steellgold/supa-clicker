@@ -21,10 +21,16 @@ export const AuthModal: Component<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     if (user && !userProfile?.username) {
       setStep("username")
-    } else if (user && userProfile?.username) {
-      setIsOpen(false)
+    } else if (user && userProfile?.username && !isOpen) {
+      setStep("username")
     }
-  }, [user, userProfile])
+  }, [user, userProfile, isOpen])
+
+  useEffect(() => {
+    if (userProfile?.username) {
+      setUsername(userProfile.username)
+    }
+  }, [userProfile])
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -77,13 +83,15 @@ export const AuthModal: Component<PropsWithChildren> = ({ children }) => {
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {step === "email" ? "Save Your Progress" : "Choose Your Username"}
+            {step === "email" ? "Save Your Progress" : userProfile?.username ? "Change Your Username" : "Choose Your Username"}
           </DialogTitle>
 
           <DialogDescription>
             {step === "email"
               ? "Enter your email to receive a magic link and save your progress."
-              : "Choose a username to personalize your profile."}
+              : userProfile?.username 
+                ? "Update your username to change how you appear to others."
+                : "Choose a username to personalize your profile."}
           </DialogDescription>
         </DialogHeader>
 
@@ -148,6 +156,8 @@ export const AuthModal: Component<PropsWithChildren> = ({ children }) => {
             <Button type="submit" className="w-full" disabled={loading || username.length < 3}>
               {loading ? (
                 <Loader2 className="animate-spin w-4 h-4" />
+              ) : userProfile?.username ? (
+                "Update Username"
               ) : (
                 "Say my name is..."
               )}
