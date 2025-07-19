@@ -16,7 +16,7 @@ const DEFAULT_GAME_STATE: GameState = {
 export const useClickerGame = (options: GameOptions = {}) => {
   const {
     saveToSupabase = false,
-    supabaseClient = null,
+    supabaseClient = undefined,
     userId = null,
     autoSaveInterval = 5000,
     upgrades = [],
@@ -152,18 +152,57 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (!saveToSupabase || !supabaseClient || !userId) return false;
 
     try {
-      const { error } = await supabaseClient
+      console.log('🔄 Saving to Supabase...', { userId, dataKeys: Object.keys(data) });
+      
+      const { data: existing, error: checkError } = await supabaseClient
         .from('clicker_saves')
-        .upsert({
-          user_id: userId,
-          game_data: {
-            ...data,
-            lastSave: Date.now()
-          },
-          updated_at: new Date().toISOString()
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (checkError) {
+        console.error('Error checking existing save:', checkError);
+        throw checkError;
+      }
+
+      const gameDataToSave = {
+        ...data,
+        lastSave: Date.now()
+      };
+
+      let result;
+      
+      if (existing) {
+        // console.log('📝 Updating existing save...');
+        result = await supabaseClient
+          .from('clicker_saves')
+          .update({
+            game_data: gameDataToSave,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+      } else {
+        // console.log('➕ Creating new save...');
+        result = await supabaseClient
+          .from('clicker_saves')
+          .insert({
+            user_id: userId,
+            game_data: gameDataToSave,
+            updated_at: new Date().toISOString()
+          });
+      }
+
+      if (result.error) {
+        console.error("Supabase save error details:", {
+          code: result.error.code,
+          message: result.error.message,
+          details: result.error.details,
+          hint: result.error.hint
+        });
+        throw result.error;
+      }
+
+      // console.log('✅ Game saved to Supabase successfully');
       return true;
     } catch (error) {
       console.error("Error saving to Supabase:", error);

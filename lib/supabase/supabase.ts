@@ -39,80 +39,179 @@ export type Database = {
   }
   public: {
     Tables: {
-      game_data: {
+      clicker_saves: {
         Row: {
-          created_at: string | null
           id: string
-          level: number | null
-          score: number | null
-          updated_at: string | null
-          upgrades: Json | null
           user_id: string
+          game_data: Json
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
           id?: string
-          level?: number | null
-          score?: number | null
-          updated_at?: string | null
-          upgrades?: Json | null
           user_id: string
+          game_data: Json
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
           id?: string
-          level?: number | null
-          score?: number | null
-          updated_at?: string | null
-          upgrades?: Json | null
           user_id?: string
+          game_data?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicker_saves_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      clicker_leaderboard: {
+        Row: {
+          id: string
+          user_id: string
+          username: string | null
+          total_clicks: number
+          total_power: number
+          highest_rps: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          username?: string | null
+          total_clicks?: number
+          total_power?: number
+          highest_rps?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          username?: string | null
+          total_clicks?: number
+          total_power?: number
+          highest_rps?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clicker_leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      clicker_upgrades: {
+        Row: {
+          id: number
+          name: string
+          description: string
+          base_cost: number
+          cost_growth: number
+          rps_gain: number
+          click_multiplier: number
+          category: string
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id: number
+          name: string
+          description: string
+          base_cost: number
+          cost_growth: number
+          rps_gain: number
+          click_multiplier?: number
+          category: string
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          description?: string
+          base_cost?: number
+          cost_growth?: number
+          rps_gain?: number
+          click_multiplier?: number
+          category?: string
+          is_active?: boolean
+          created_at?: string
         }
         Relationships: []
       }
       user_profiles: {
         Row: {
-          created_at: string | null
           id: string
-          updated_at: string | null
           user_id: string
           username: string | null
+          display_name: string | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
           id?: string
-          updated_at?: string | null
           user_id: string
           username?: string | null
+          display_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
           id?: string
-          updated_at?: string | null
           user_id?: string
           username?: string | null
+          display_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      buy_upgrade: {
+      get_leaderboard: {
         Args: {
-          user_id_param: string
-          upgrade_id_param: number
-          quantity_param?: number
+          limit_count?: number
         }
-        Returns: Json
+        Returns: {
+          rank: number
+          user_id: string
+          username: string | null
+          total_power: number
+          total_clicks: number
+          highest_rps: number
+        }[]
       }
-      handle_click: {
-        Args: { user_id_param: string }
-        Returns: Json
-      }
-      handle_click_batch: {
-        Args: { user_id_param: string; click_count: number }
-        Returns: Json
+      get_user_rank: {
+        Args: {
+          target_user_id: string
+        }
+        Returns: number
       }
     }
     Enums: {

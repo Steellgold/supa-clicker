@@ -4,6 +4,7 @@ import React, { createContext, useContext, PropsWithChildren } from 'react';
 import { useClickerGame } from '@/lib/hooks/use-game-data';
 import { getAllUpgrades } from '@/lib/upgrades';
 import { useAuth } from '@/lib/auth/auth-context';
+import { createClient } from '@/lib/supabase/client';
 import { Component } from '@/type/component';
 
 type GameContextType = ReturnType<typeof useClickerGame>;
@@ -12,10 +13,12 @@ const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   const { user } = useAuth();
+  const supabaseClient = createClient();
   
   const gameData = useClickerGame({
     upgrades: getAllUpgrades(),
     saveToSupabase: !!user,
+    supabaseClient: user ? supabaseClient : undefined,
     userId: user?.id || null,
     autoSaveInterval: 5000,
     storageKey: 'clicker_game_save'
