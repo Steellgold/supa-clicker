@@ -29,4 +29,32 @@ export type GameState = {
   upgrades: Record<number, number>;
   lastSave: number;
   offlineEarnings: number;
+  // Achievement-related fields
+  unlockedAchievements: number[];
+  lastSaveTime: number;
+  prestigeLevel: number;
+  resourcesPerSecond: number;
+  currentResources: number;
+}
+
+export type UserUpgrade = {
+  upgradeId: number;
+  quantity: number;
+}
+
+export type GameStats = {
+  totalClicks: number;
+  currentResources: number;
+  resourcesPerSecond: number;
+  lastSaveTime: number;
+  prestigeLevel: number;
+}
+
+export type Achievement = {
+  id: number;
+  name: string;
+  description: string;
+  requirement: (stats: GameStats, upgrades?: UserUpgrade[]) => boolean;
+  unlocked: boolean;
+  icon: string;
 }

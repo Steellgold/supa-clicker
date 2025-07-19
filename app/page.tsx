@@ -1,26 +1,28 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
-import { useRef } from "react"
-import { useAuth } from "@/lib/auth/auth-context"
-import { AuthModal } from "@/components/auth/auth-modal"
-import type { Component } from "@/type/component"
-import { useGame } from "@/lib/providers/game-provider"
-import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades"
 import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers"
-import { UpgradeCard } from "@/components/upgrade-card"
-import { PowerTag } from "@/components/power-tag"
-import { Clicker } from "@/components/clicker"
-import { cn } from "@/lib/utils"
+import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { AuthModal } from "@/components/auth/auth-modal"
+import { UpgradeCard } from "@/components/upgrade-card"
+import { useGame } from "@/lib/providers/game-provider"
+import { motion, AnimatePresence } from "framer-motion"
+import { useAuth } from "@/lib/auth/auth-context"
+import type { Component } from "@/type/component"
+import { PowerTag } from "@/components/power-tag"
+import { Button } from "@/components/ui/button"
+import { Clicker } from "@/components/clicker"
+import { Header } from "@/components/header"
+import { Menu } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useRef } from "react"
 
 const Home: Component<object> = () => {
-  const leftPanelRef = useRef<HTMLDivElement>(null)
+  const { gameState, handleClick, newAchievements } = useGame()
   const { user } = useAuth()
-  const { gameState, handleClick } = useGame()
 
+  const leftPanelRef = useRef<HTMLDivElement>(null)
+  
   return (
     <>
       <Header />
@@ -59,6 +61,30 @@ const Home: Component<object> = () => {
 
             <Clicker onClick={handleClick} />
           </div>
+
+          {/* Achievements notifications in left panel */}
+          <AnimatePresence>
+            {newAchievements.map((achievement) => (
+              <motion.div
+                key={achievement.id}
+                initial={{ y: -50, opacity: 0, scale: 0.8 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -50, opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="absolute top-5 -left-[105px] transform -translate-x-1/2 z-50 bg-green-100 dark:bg-green-900 border-2 border-green-500 rounded-lg p-4 shadow-lg max-w-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{achievement.icon}</span>
+                  <div>
+                    <div className="font-mono font-bold text-sm text-green-800 dark:text-green-200">
+                      Achievement Unlocked!
+                    </div>
+                    <div className="font-mono text-xs text-green-700 dark:text-green-300">{achievement.name}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         <div className="flex-[0.45] border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors">

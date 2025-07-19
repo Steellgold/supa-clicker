@@ -10,7 +10,12 @@ const DEFAULT_GAME_STATE: GameState = {
   rps: 0,
   upgrades: {},
   lastSave: Date.now(),
-  offlineEarnings: 0
+  offlineEarnings: 0,
+  unlockedAchievements: [],
+  lastSaveTime: Date.now(),
+  prestigeLevel: 0,
+  resourcesPerSecond: 0,
+  currentResources: 0
 };
 
 export const useClickerGame = (options: GameOptions = {}) => {
@@ -58,7 +63,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
       return {
         ...prev,
         rps: totalRps,
-        clickPower: totalClickMultiplier
+        clickPower: totalClickMultiplier,
+        resourcesPerSecond: totalRps,
+        lastSaveTime: Date.now()
       };
     });
   }, [gameState.upgrades, calculateTotalStats]);
@@ -84,7 +91,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
       ...prev,
       totalClicks: prev.totalClicks + 1,
       currentPower: prev.currentPower + gainedPower,
-      totalPower: prev.totalPower + gainedPower
+      totalPower: prev.totalPower + gainedPower,
+      currentResources: prev.currentPower + gainedPower,
+      lastSaveTime: Date.now()
     }));
 
     return { gained: gainedPower, isGolden, isPlatinum };
@@ -101,10 +110,12 @@ export const useClickerGame = (options: GameOptions = {}) => {
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
+        currentResources: prev.currentPower - cost,
         upgrades: {
           ...prev.upgrades,
           [upgradeId]: currentLevel + 1
-        }
+        },
+        lastSaveTime: Date.now()
       }));
       return true;
     }
@@ -139,7 +150,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
           ...data,
           offlineEarnings,
           currentPower: data.currentPower + offlineEarnings,
-          totalPower: data.totalPower + offlineEarnings
+          totalPower: data.totalPower + offlineEarnings,
+          currentResources: data.currentPower + offlineEarnings,
+          lastSaveTime: Date.now()
         };
       }
     } catch (error) {
@@ -234,7 +247,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
           ...gameData,
           offlineEarnings,
           currentPower: gameData.currentPower + offlineEarnings,
-          totalPower: gameData.totalPower + offlineEarnings
+          totalPower: gameData.totalPower + offlineEarnings,
+          currentResources: gameData.currentPower + offlineEarnings,
+          lastSaveTime: Date.now()
         };
       }
     } catch (error) {
@@ -274,11 +289,16 @@ export const useClickerGame = (options: GameOptions = {}) => {
   useEffect(() => {
     if (gameState.rps > 0) {
       rpsIntervalRef.current = setInterval(() => {
-        setGameState(prev => ({
-          ...prev,
-          currentPower: prev.currentPower + prev.rps,
-          totalPower: prev.totalPower + prev.rps
-        }));
+        setGameState(prev => {
+          const newCurrentPower = prev.currentPower + prev.rps;
+          return {
+            ...prev,
+            currentPower: newCurrentPower,
+            totalPower: prev.totalPower + prev.rps,
+            currentResources: newCurrentPower,
+            lastSaveTime: Date.now()
+          };
+        });
       }, 1000);
     } else {
       if (rpsIntervalRef.current) {
