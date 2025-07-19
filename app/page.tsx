@@ -1,6 +1,8 @@
 "use client"
 
 import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers";
+import { UpgradesTab } from "@/components/tab/upgrades-tab";
+import { SpecialsTab } from "@/components/tab/specials-tab";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useGame } from "@/lib/providers/game-provider";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,8 +15,6 @@ import { Header } from "@/components/header";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { UpgradesTab } from "@/components/tab/upgrades-tab";
-import { SpecialsTab } from "@/components/tab/specials-tab";
 
 type TabType = "UPGRADES" | "SPECIALS";
 
@@ -29,19 +29,19 @@ const Home: Component<object> = () => {
     <>
       <Header />
 
-      <div className="flex flex-col md:flex-row" style={{ height: "calc(100vh - 70px)" }}>
+      <div className="flex flex-col md:flex-row min-h-screen" style={{ height: "calc(100vh - 70px)" }}>
         <div
           ref={leftPanelRef}
-          className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors min-h-[50vh] md:min-h-auto"
+          className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors min-h-[60vh] md:min-h-auto pb-safe-area"
         >
-          <div className="text-center space-y-1 p-4 md:p-0">
-            <div className={cn("bg-green-300/25 p-3 md:p-4")}>
+          <div className="text-center space-y-2 p-4 md:p-0 w-full max-w-sm mx-auto">
+            <div className={cn("bg-green-300/25 p-3 md:p-4 rounded-lg")}>
               <div className="text-xl md:text-2xl font-bold">
                 <PowerTag power={formatWithSpaces(gameState.currentPower)} />
               </div>
             </div>
 
-            <div className="border border-neutral-300 rounded-lg p-3 md:p-4 bg-white dark:bg-neutral-800 mb-4 md:mb-6">
+            <div className="border border-neutral-300 dark:border-neutral-600 rounded-lg p-3 md:p-4 bg-white dark:bg-neutral-800 mb-4 md:mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
                 <div className="text-lg md:text-xl font-bold">
                   <PowerTag power={formatDecimal(gameState.rps)} imageProps={{ width: 10, height: 10 }} />
@@ -56,12 +56,14 @@ const Home: Component<object> = () => {
                 </div>
               </div>
 
-              <div className="text-sm md:text-md">
+              <div className="text-sm md:text-md mt-2">
                 Total Clicks: <span className="font-bold">{formatNumber(gameState.totalClicks)}</span>
               </div>
             </div>
 
-            <Clicker onClick={handleClick} />
+            <div className="pb-4 md:pb-0">
+              <Clicker onClick={handleClick} />
+            </div>
           </div>
 
           {/* Achievements notifications in left panel */}
@@ -89,14 +91,14 @@ const Home: Component<object> = () => {
           </AnimatePresence>
         </div>
 
-        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors">
-          <div className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-700 flex transition-colors">
+        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors md:sticky md:top-0">
+          <div className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-700 flex transition-colors sticky top-0 z-10 md:static">
             <Button
               onClick={() => setTab("UPGRADES")}
               variant={"tabRetro"}
               size="lg"
               className={cn(
-                "flex-1 p-2 md:p-3 font-mono font-bold text-xs md:text-sm border-r border-neutral-800 dark:border-neutral-200 transition-colors",
+                "flex-1 p-3 md:p-3 font-mono font-bold text-xs md:text-sm border-r border-neutral-800 dark:border-neutral-200 transition-colors",
                 tab === "UPGRADES"
                   ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                   : "hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300"
@@ -110,20 +112,20 @@ const Home: Component<object> = () => {
               size="lg"
               onClick={() => setTab("SPECIALS")}
               className={cn(
-                "flex-1 p-2 md:p-3 font-mono font-bold text-xs md:text-sm transition-colors",
+                "flex-1 p-3 md:p-3 font-mono font-bold text-xs md:text-sm transition-colors",
                 tab === "SPECIALS"
                   ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                   : "hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300"
               )}
             >
-              ⭐ SPECIALS {user && "(Coming Soon)"}
+              ⭐ SPECIALS
             </Button>
           </div>
 
-          <div className="p-2 md:p-3 space-y-2" style={{ height: "calc(100vh - 70px - 60px)" }}>
+          <div className="p-3 md:p-3 space-y-2 overflow-y-auto flex-1" style={{ maxHeight: "calc(100vh - 70px - 60px)" }}>
             {!user && (
-              <div className="p-2 md:p-3 bg-blue-50 border-4 border-blue-200 rounded-none text-center">
-                <div className="text-xs md:text-sm text-blue-700 mb-2">💡 Sign in to save your progress in the cloud</div>
+              <div className="p-3 md:p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg text-center">
+                <div className="text-xs md:text-sm text-blue-700 dark:text-blue-300 mb-2">💡 Sign in to save your progress in the cloud</div>
 
                 <AuthModal>
                   <Button size="sm" variant="outline">
