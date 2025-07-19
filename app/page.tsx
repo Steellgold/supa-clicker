@@ -2,31 +2,22 @@
 
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
-import { RetroClickerButton } from "@/components/ui/retro-clicker-button"
 import { Menu } from "lucide-react"
 import { useRef } from "react"
 import { useAuth } from "@/lib/auth/auth-context"
 import { AuthModal } from "@/components/auth/auth-modal"
-import { useGameData } from "@/lib/hooks/use-game-data"
 import type { Component } from "@/type/component"
+import { useGame } from "@/lib/providers/game-provider"
+import { getAllUpgrades } from "@/lib/upgrades"
+import { formatDecimal, formatNumber } from "@/lib/numbers"
+import { UpgradeCard } from "@/components/upgrade-card"
+import { PowerTag } from "@/components/power-tag"
+import { Clicker } from "@/components/clicker"
 
 const Home: Component<object> = () => {
   const leftPanelRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
-  const { gameData, incrementScore, loading: gameLoading } = useGameData()
-
-  const handleClick = () => {
-    // incrementScore(1)
-    const rand = Math.random()
-    const isPlatinum = rand < 0.05
-    const isGolden = !isPlatinum && rand < 0.2
-    incrementScore(isPlatinum ? 20 : isGolden ? 5 : 1)
-    return {
-      gained: isPlatinum ? 20 : isGolden ? 5 : 1,
-      isGolden,
-      isPlatinum
-    }
-  }
+  const { gameState, handleClick } = useGame();
 
   return (
     <>
@@ -36,16 +27,15 @@ const Home: Component<object> = () => {
         <div ref={leftPanelRef} className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center p-8 transition-colors">
           <div className="text-center space-y-6">
             <div className="space-y-4">
-              {gameData && (
-                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Score: {gameData.score}
-                </div>
-              )}
+              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Score: {formatNumber(gameState.totalClicks)}
+              </div>
 
-              <RetroClickerButton
-                onClick={handleClick}
-                disabled={gameLoading}
-              />
+              <div className="text-lg text-gray-700 dark:text-gray-300">
+                R/S:{" "}<PowerTag>{formatDecimal(gameState.rps)}</PowerTag>
+              </div>
+
+              <Clicker onClick={handleClick} />
             </div>
           </div>
         </div>
@@ -74,9 +64,9 @@ const Home: Component<object> = () => {
               </div>
             )}
 
-            {/*
-              TODO: Add upgrades, specials, and other game features here
-            */}
+            <div className="flex flex-col gap-2">
+              {getAllUpgrades().map((upgrade, index) => <UpgradeCard upgrade={upgrade} index={index} key={upgrade.id} />)}
+            </div>
           </div>
         </div>
       </div>
