@@ -94,7 +94,15 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
           <div className="flex items-center justify-between">
             <div className="text-xs text-green-600 font-medium bg-green-500/20 px-1.5 py-0.5">
               <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1" }}>
-                +{formatDecimal(upgrade.rpsGain * currentLevel)} R/S
+                {upgrade.rpsGain == 0 && upgrade.clickMultiplier > 0 ? (
+                  <>
+                    +{formatDecimal(upgrade.clickMultiplier * currentLevel)}x Click
+                  </>
+                ) : (
+                  <>
+                    +{formatDecimal(upgrade.rpsGain * currentLevel)} R/S
+                  </>
+                )}
               </PowerTag>
             </div>
 

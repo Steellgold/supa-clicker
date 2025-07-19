@@ -10,6 +10,7 @@ export const formatNumber = (num: number) => {
   return Math.floor(num).toString();
 };
 
-export const formatDecimal = (num: number, digits: number = 1): string => {
+export const formatDecimal = (num: number, digits: number = 1): string | number => {
+  if (num % 1 === 0) return num;
   return Number(num.toFixed(digits)).toString();
 };
