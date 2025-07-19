@@ -1,180 +1,315 @@
-"use client"
+import { GameState, GameOptions } from '@/type/game';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { getUpgradeCost } from '../upgrades';
 
-import { useState, useEffect, useCallback, useRef } from "react"
-import { useAuth } from "@/lib/auth/auth-context"
-import { createClient } from "@/lib/supabase/client"
-
-type GameData = {
-  score: number
-  level: number
-  upgrades: Record<string, number>
-  lastSaved: string
-}
-
-const defaultGameData: GameData = {
-  score: 0,
-  level: 1,
+const DEFAULT_GAME_STATE: GameState = {
+  totalClicks: 0,
+  totalPower: 0,
+  currentPower: 0,
+  clickPower: 1,
+  rps: 0,
   upgrades: {},
-  lastSaved: new Date().toISOString()
-}
+  lastSave: Date.now(),
+  offlineEarnings: 0
+};
 
-export function useGameData() {
-  const { user } = useAuth()
-  const [gameData, setGameData] = useState<GameData>(defaultGameData)
-  const [loading, setLoading] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"IDLE" | "SAVING" | "SAVED" | "ERROR">("IDLE")
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const supabase = createClient()
+export const useClickerGame = (options: GameOptions = {}) => {
+  const {
+    saveToSupabase = false,
+    supabaseClient = null,
+    userId = null,
+    autoSaveInterval = 5000,
+    upgrades = [],
+    storageKey = 'clicker_game_save'
+  } = options;
 
-  const loadGameData = useCallback(async () => {
-    if (!user) return
+  const [gameState, setGameState] = useState(DEFAULT_GAME_STATE);
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastSaveTime, setLastSaveTime] = useState(Date.now());
+  
+  const rpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const gameStateRef = useRef(gameState);
+  
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
-    const { data: { user: currentUser } } = await supabase.auth.getUser()
-    if (!currentUser || currentUser.id !== user.id) {
-      console.log("User not authenticated, skipping game data load")
-      return
-    }
+  const calculateTotalStats = useCallback((upgradesState: Record<number, number>) => {
+    let totalRps = 0;
+    let totalClickMultiplier = 1;
 
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from("game_data")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
-
-      if (error) {
-        if (error.code === "PGRST116") {
-          console.log("Creating new game data for user:", user.id)
-          const { error: upsertError } = await supabase
-            .from("game_data")
-            .upsert({
-              user_id: user.id,
-              score: 0,
-              level: 1,
-              upgrades: {}
-            }, {
-              onConflict: "user_id"
-            })
-          
-          if (upsertError) {
-            console.error("Error creating game data:", upsertError)
-          } else {
-            console.log("Game data created successfully")
-            setGameData(defaultGameData)
-          }
-          setLoading(false)
-          return
-        }
-        console.error("Error loading game data:", error)
-        setLoading(false)
-        return
+    upgrades.forEach(upgrade => {
+      const level = upgradesState[upgrade.id] || 0;
+      if (level > 0) {
+        totalRps += upgrade.rpsGain * level;
+        totalClickMultiplier += upgrade.clickMultiplier * level;
       }
+    });
 
-      if (data) {
-        setGameData({
-          score: data.score || 0,
-          level: data.level || 1,
-          upgrades: typeof data.upgrades === "object" && data.upgrades !== null && !Array.isArray(data.upgrades)
-            ? Object.fromEntries(
-                Object.entries(data.upgrades).filter(([, v]) => typeof v === "number")
-              ) as Record<string, number>
-            : {},
-          lastSaved: data.updated_at || new Date().toISOString()
-        })
-      }
-    } catch (error) {
-      console.error("Error loading game data:", error)
-    } finally {
-      setLoading(false)
-    }
-  }, [user, supabase])
+    return { totalRps, totalClickMultiplier };
+  }, [upgrades]);
 
   useEffect(() => {
-    if (user) {
-      loadGameData()
-    } else {
-      setGameData(defaultGameData)
+    const { totalRps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades);
+    setGameState(prev => {
+      if (prev.rps === totalRps && prev.clickPower === totalClickMultiplier) return prev;
+
+      return {
+        ...prev,
+        rps: totalRps,
+        clickPower: totalClickMultiplier
+      };
+    });
+  }, [gameState.upgrades, calculateTotalStats]);
+
+  const handleClick = useCallback(() => {
+    const rand = Math.random();
+    const isPlatinum = rand < 0.05;
+    const isGolden = !isPlatinum && rand < 0.15;
+
+    const goldenBonus = 49;
+    const platinumBonus = 499;
+
+    const baseGain = gameStateRef.current.clickPower;
+
+    let gainedPower = baseGain;
+    if (isPlatinum) {
+      gainedPower += platinumBonus;
+    } else if (isGolden) {
+      gainedPower += goldenBonus;
     }
-  }, [user, loadGameData])
 
-  const saveGameDataToDb = useCallback(async (dataToSave: GameData) => {
-    if (!user) return
+    setGameState(prev => ({
+      ...prev,
+      totalClicks: prev.totalClicks + 1,
+      currentPower: prev.currentPower + gainedPower,
+      totalPower: prev.totalPower + gainedPower
+    }));
 
-    setSaveStatus("SAVING")
+    return { gained: gainedPower, isGolden, isPlatinum };
+  }, []);
+
+  const buyUpgrade = useCallback((upgradeId: number) => {
+    const upgrade = upgrades.find(u => u.id === upgradeId);
+    if (!upgrade) return false;
+
+    const currentLevel = gameState.upgrades[upgradeId] || 0;
+    const cost = getUpgradeCost(upgrade, currentLevel);
+
+    if (gameState.currentPower >= cost) {
+      setGameState(prev => ({
+        ...prev,
+        currentPower: prev.currentPower - cost,
+        upgrades: {
+          ...prev.upgrades,
+          [upgradeId]: currentLevel + 1
+        }
+      }));
+      return true;
+    }
+
+    return false;
+  }, [gameState.currentPower, gameState.upgrades, upgrades]);
+
+  const saveToLocal = useCallback((data: GameState) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        ...data,
+        lastSave: Date.now()
+      }));
+
+      return true;
+    } catch (error) {
+      console.error("Error saving to local storage:", error);
+      return false;
+    }
+  }, [storageKey]);
+
+  const loadFromLocal = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const data = JSON.parse(saved);
+        const offlineTime = Date.now() - data.lastSave;
+        const offlineEarnings = Math.floor((data.rps * offlineTime) / 1000);
+        
+        return {
+          ...DEFAULT_GAME_STATE,
+          ...data,
+          offlineEarnings,
+          currentPower: data.currentPower + offlineEarnings,
+          totalPower: data.totalPower + offlineEarnings
+        };
+      }
+    } catch (error) {
+      console.error("Error loading local game data:", error);
+    }
+    return DEFAULT_GAME_STATE;
+  }, [storageKey]);
+
+  const saveToSupabaseDB = useCallback(async (data: GameState) => {
+    if (!saveToSupabase || !supabaseClient || !userId) return false;
 
     try {
-      const { error } = await supabase
-        .from("game_data")
+      const { error } = await supabaseClient
+        .from('clicker_saves')
         .upsert({
-          user_id: user.id,
-          score: dataToSave.score,
-          level: dataToSave.level,
-          upgrades: dataToSave.upgrades,
-          updated_at: dataToSave.lastSaved
-        }, {
-          onConflict: "user_id"
-        })
+          user_id: userId,
+          game_data: {
+            ...data,
+            lastSave: Date.now()
+          },
+          updated_at: new Date().toISOString()
+        });
 
-      if (error) {
-        console.error("Error saving game data:", error)
-        setSaveStatus("ERROR")
-        return
-      }
-
-      setSaveStatus("SAVED")
-      setTimeout(() => setSaveStatus("IDLE"), 2000)
+      if (error) throw error;
+      return true;
     } catch (error) {
-      console.error("Error saving game data:", error)
-      setSaveStatus("ERROR")
+      console.error("Error saving to Supabase:", error);
+      return false;
     }
-  }, [user, supabase])
+  }, [saveToSupabase, supabaseClient, userId]);
 
-  const saveGameData = useCallback((newData: Partial<GameData>) => {
-    const updatedData = {
-      ...gameData,
-      ...newData,
-      lastSaved: new Date().toISOString()
+  const loadFromSupabaseDB = useCallback(async () => {
+    if (!saveToSupabase || !supabaseClient || !userId) {
+      return loadFromLocal();
     }
 
-    setGameData(updatedData)
+    try {
+      const { data, error } = await supabaseClient
+        .from('clicker_saves')
+        .select('game_data')
+        .eq('user_id', userId)
+        .single();
 
-    if (!user) return
+      if (error && error.code !== 'PGRST116') throw error;
 
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
+      if (data && data.game_data) {
+        const gameData = data.game_data;
+        const offlineTime = Date.now() - gameData.lastSave;
+        const offlineEarnings = Math.floor((gameData.rps * offlineTime) / 1000);
+        
+        return {
+          ...DEFAULT_GAME_STATE,
+          ...gameData,
+          offlineEarnings,
+          currentPower: gameData.currentPower + offlineEarnings,
+          totalPower: gameData.totalPower + offlineEarnings
+        };
+      }
+    } catch (error) {
+      console.error("Error loading from Supabase:", error);
     }
 
-    saveTimeoutRef.current = setTimeout(() => {
-      saveGameDataToDb(updatedData)
-    }, 1000)
-  }, [user, gameData, saveGameDataToDb])
+    return loadFromLocal();
+  }, [saveToSupabase, supabaseClient, userId, loadFromLocal]);
 
-  const incrementScore = (amount: number = 1) => {
-    const newScore = gameData.score + amount
-    saveGameData({ score: newScore })
-  }
-
-  const levelUp = () => {
-    const newLevel = gameData.level + 1
-    saveGameData({ level: newLevel })
-  }
-
-  const updateUpgrade = (upgradeId: string, level: number) => {
-    const newUpgrades = {
-      ...gameData.upgrades,
-      [upgradeId]: level
+  const saveGame = useCallback(async () => {
+    const currentGameState = gameStateRef.current;
+    const success = saveToSupabase 
+      ? await saveToSupabaseDB(currentGameState)
+      : saveToLocal(currentGameState);
+    
+    if (success) {
+      setLastSaveTime(Date.now());
     }
-    saveGameData({ upgrades: newUpgrades })
-  }
+    return success;
+  }, [saveToSupabase, saveToSupabaseDB, saveToLocal]);
+
+  const resetGame = useCallback(() => {
+    setGameState(DEFAULT_GAME_STATE);
+    localStorage.removeItem(storageKey);
+  }, [storageKey]);
+
+  useEffect(() => {
+    const loadGame = async () => {
+      setIsLoading(true);
+      const loadedState = await loadFromSupabaseDB();
+      setGameState(loadedState);
+      setIsLoading(false);
+    };
+    loadGame();
+  }, [loadFromSupabaseDB]);
+
+  useEffect(() => {
+    if (gameState.rps > 0) {
+      rpsIntervalRef.current = setInterval(() => {
+        setGameState(prev => ({
+          ...prev,
+          currentPower: prev.currentPower + prev.rps,
+          totalPower: prev.totalPower + prev.rps
+        }));
+      }, 1000);
+    } else {
+      if (rpsIntervalRef.current) {
+        clearInterval(rpsIntervalRef.current);
+        rpsIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (rpsIntervalRef.current) {
+        clearInterval(rpsIntervalRef.current);
+      }
+    };
+  }, [gameState.rps]);
+
+  useEffect(() => {
+    if (autoSaveInterval > 0 && !isLoading) {
+      autoSaveIntervalRef.current = setInterval(() => {
+        saveGame();
+      }, autoSaveInterval);
+    }
+
+    return () => {
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+    };
+  }, [autoSaveInterval, isLoading, saveGame]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const currentGameState = gameStateRef.current;
+      if (saveToSupabase && supabaseClient && userId) {
+        saveToSupabaseDB(currentGameState);
+      } else {
+        saveToLocal(currentGameState);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [saveToSupabase, supabaseClient, userId, saveToSupabaseDB, saveToLocal]);
+
+  const upgradesInfo = upgrades.map(upgrade => {
+    const currentLevel = gameState.upgrades[upgrade.id] || 0;
+    const cost = getUpgradeCost(upgrade, currentLevel);
+    const canAfford = gameState.currentPower >= cost;
+    
+    return {
+      ...upgrade,
+      currentLevel,
+      cost,
+      canAfford,
+      totalRps: upgrade.rpsGain * currentLevel,
+      totalClickBonus: upgrade.clickMultiplier * currentLevel
+    };
+  });
 
   return {
-    gameData,
-    loading,
-    saveStatus,
-    incrementScore,
-    levelUp,
-    updateUpgrade,
-    saveGameData
-  }
-}
+    gameState,
+    isLoading,
+    lastSaveTime,
+    
+    handleClick,
+    buyUpgrade,
+    saveGame,
+    resetGame,
+    
+    upgradesInfo,
+    
+    getUpgradeCost
+  };
+};
