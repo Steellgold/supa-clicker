@@ -1012,11 +1012,6 @@ export const getUnlockThreshold = (upgradeIndex: number) => {
   return thresholds[upgradeIndex] || thresholds[thresholds.length - 1] * Math.pow(2, upgradeIndex - thresholds.length + 1);
 };
 
-export const getUnlockRequiredPower = (upgradeIndex: number): number => {
-  const thresholds = [0, 10, 50, 100, 250, 500, 1000, 2000, 5000, 10000, 25000, 50000];
-  return thresholds[upgradeIndex] || thresholds[thresholds.length - 1] * Math.pow(2, upgradeIndex - thresholds.length + 1);
-}
-
 export const getUpgradeCost = (upgrade: Upgrade, currentLevel: number = 0): number => {
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel));
 }
@@ -1025,12 +1020,12 @@ export const getRequiredTotalForNext = (currentTotalPower: number): number | nul
   const allUpgrades = getAllUpgrades();
   
   const nextUpgradeIndex = allUpgrades.findIndex((_, index) => {
-    const threshold = getUnlockRequiredPower(index);
+    const threshold = getUnlockThreshold(index);
     return currentTotalPower < threshold;
   });
   
   if (nextUpgradeIndex === -1) return null;
-  return getUnlockRequiredPower(nextUpgradeIndex);
+  return getUnlockThreshold(nextUpgradeIndex);
 }
 
 export const getAllUpgrades = (): Upgrade[] => {
