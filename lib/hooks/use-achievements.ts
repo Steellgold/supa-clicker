@@ -14,6 +14,7 @@ export interface UseAchievementsReturn {
   checkForNewAchievements: (stats: GameStats, upgrades: UserUpgrade[]) => void;
   markAchievementAsViewed: (achievementId: number) => void;
   clearNewAchievements: () => void;
+  resetAchievements: () => void;
   
   // Stats
   totalAchievements: number;
@@ -77,6 +78,16 @@ export const useAchievements = (initialUnlockedIds: number[] = []): UseAchieveme
     });
   }, [newAchievements]);
 
+  const resetAchievements = useCallback(() => {
+    setUnlockedIds([]);
+    setNewAchievements([]);
+    setViewedIds([]);
+    
+    try {
+      localStorage.removeItem(storageKey);
+    } catch {}
+  }, [storageKey]);
+
   useEffect(() => {
     if (newAchievements.length > 0) {
       const timer = setTimeout(() => {
@@ -94,6 +105,7 @@ export const useAchievements = (initialUnlockedIds: number[] = []): UseAchieveme
     checkForNewAchievements,
     markAchievementAsViewed,
     clearNewAchievements,
+    resetAchievements,
     totalAchievements,
     unlockedCount,
     completionPercentage,
