@@ -1,7 +1,6 @@
 "use client"
 
 import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers";
-import { UpgradesTab } from "@/components/tab/upgrades-tab";
 import { SpecialsTab } from "@/components/tab/specials-tab";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useGame } from "@/lib/providers/game-provider";
@@ -15,6 +14,7 @@ import { Header } from "@/components/header";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
+import { UpgradesTab } from "@/components/tab/upgrades-tab";
 
 type TabType = "UPGRADES" | "SPECIALS";
 
@@ -29,12 +29,12 @@ const Home: Component<object> = () => {
     <>
       <Header />
 
-      <div className="flex flex-col md:flex-row min-h-screen" style={{ height: "calc(100vh - 70px)" }}>
+      <div className="flex flex-col md:flex-row h-full" style={{ height: "calc(100vh - 70px)" }}>
         <div
           ref={leftPanelRef}
-          className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors min-h-[60vh] md:min-h-auto pb-safe-area"
+          className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors min-h-[60vh] md:min-h-0"
         >
-          <div className="text-center space-y-2 p-4 md:p-0 w-full max-w-sm mx-auto">
+          <div className="text-center space-y-2 p-4 md:p-0 w-full max-w-xs">
             <div className={cn("bg-green-300/25 p-3 md:p-4 rounded-lg")}>
               <div className="text-xl md:text-2xl font-bold">
                 <PowerTag power={formatWithSpaces(gameState.currentPower)} />
@@ -44,19 +44,19 @@ const Home: Component<object> = () => {
             <div className="border border-neutral-300 dark:border-neutral-600 rounded-lg p-3 md:p-4 bg-white dark:bg-neutral-800 mb-4 md:mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
                 <div className="text-lg md:text-xl font-bold">
-                  <PowerTag power={formatDecimal(gameState.rps)} imageProps={{ width: 10, height: 10 }} />
-                  <span className="text-xs md:text-sm font-normal">/s</span>
+                  <PowerTag power={formatDecimal(gameState.rps)} imageProps={{ width: 12, height: 12 }} />
+                  <span className="text-sm font-normal">/s</span>
                 </div>
 
                 <span className="hidden sm:block text-xl -ml-1.5 -mr-1.5">・</span>
 
                 <div className="text-lg md:text-xl font-bold">
-                  <PowerTag power={formatDecimal(gameState.clickPower)} imageProps={{ width: 10, height: 10 }} />
-                  <span className="text-xs md:text-sm font-normal">/click</span>
+                  <PowerTag power={formatDecimal(gameState.clickPower)} imageProps={{ width: 12, height: 12 }} />
+                  <span className="text-sm font-normal">/click</span>
                 </div>
               </div>
 
-              <div className="text-sm md:text-md mt-2">
+              <div className="text-md mt-2">
                 Total Clicks: <span className="font-bold">{formatNumber(gameState.totalClicks)}</span>
               </div>
             </div>
@@ -91,7 +91,7 @@ const Home: Component<object> = () => {
           </AnimatePresence>
         </div>
 
-        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors md:sticky md:top-0">
+        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors">
           <div className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-700 flex transition-colors sticky top-0 z-10 md:static">
             <Button
               onClick={() => setTab("UPGRADES")}
@@ -122,7 +122,7 @@ const Home: Component<object> = () => {
             </Button>
           </div>
 
-          <div className="p-3 md:p-3 space-y-2 overflow-y-auto flex-1" style={{ maxHeight: "calc(100vh - 70px - 60px)" }}>
+          <div className="p-3 md:p-3 space-y-2">
             {!user && (
               <div className="p-3 md:p-3 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg text-center">
                 <div className="text-xs md:text-sm text-blue-700 dark:text-blue-300 mb-2">💡 Sign in to save your progress in the cloud</div>

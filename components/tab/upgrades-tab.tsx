@@ -35,7 +35,7 @@ export const UpgradesTab = (): ReactElement => {
         style={{
           height: user
             ? "calc(100vh - 70px - 60px - 24px - 20px)" // Header - Tabs - Padding - Next unlock section
-            : "calc(100vh - 70px - 60px - 24px - 120px - 80px)", // + Alert section
+            : "calc(100vh - 70px - 60px - 24px - 120px - 60px)", // + Alert section
           }}
         >
           <div className="flex flex-col gap-2">
