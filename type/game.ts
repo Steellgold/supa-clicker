@@ -27,8 +27,6 @@ export type GameState = {
   clickPower: number;
   rps: number;
   upgrades: Record<number, number>;
-  lastSave: number;
-  offlineEarnings: number;
   // Achievement-related fields
   unlockedAchievements: number[];
   lastSaveTime: number;

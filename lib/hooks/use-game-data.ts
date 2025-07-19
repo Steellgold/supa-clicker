@@ -9,8 +9,6 @@ const DEFAULT_GAME_STATE: GameState = {
   clickPower: 1,
   rps: 0,
   upgrades: {},
-  lastSave: Date.now(),
-  offlineEarnings: 0,
   unlockedAchievements: [],
   lastSaveTime: Date.now(),
   prestigeLevel: 0,
@@ -125,10 +123,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({
-        ...data,
-        lastSave: Date.now()
-      }));
+      localStorage.setItem(storageKey, JSON.stringify(data));
 
       return true;
     } catch (error) {
@@ -142,16 +137,10 @@ export const useClickerGame = (options: GameOptions = {}) => {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const data = JSON.parse(saved);
-        const offlineTime = Date.now() - data.lastSave;
-        const offlineEarnings = Math.floor((data.rps * offlineTime) / 1000);
         
         return {
           ...DEFAULT_GAME_STATE,
           ...data,
-          offlineEarnings,
-          currentPower: data.currentPower + offlineEarnings,
-          totalPower: data.totalPower + offlineEarnings,
-          currentResources: data.currentPower + offlineEarnings,
           lastSaveTime: Date.now()
         };
       }
@@ -178,10 +167,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         throw checkError;
       }
 
-      const gameDataToSave = {
-        ...data,
-        lastSave: Date.now()
-      };
+      const gameDataToSave = data;
 
       let result;
       
@@ -239,16 +225,10 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
       if (data && data.game_data) {
         const gameData = data.game_data;
-        const offlineTime = Date.now() - gameData.lastSave;
-        const offlineEarnings = Math.floor((gameData.rps * offlineTime) / 1000);
         
         return {
           ...DEFAULT_GAME_STATE,
           ...gameData,
-          offlineEarnings,
-          currentPower: gameData.currentPower + offlineEarnings,
-          totalPower: gameData.totalPower + offlineEarnings,
-          currentResources: gameData.currentPower + offlineEarnings,
           lastSaveTime: Date.now()
         };
       }
