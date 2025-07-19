@@ -37,8 +37,7 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
     shortcut: "/favicon-32x32.png"
-  },
-  themeColor: "#ffffff"
+  }
 }
 
 const RootLayout: Component<PropsWithChildren> = ({ children }) => {
