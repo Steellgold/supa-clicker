@@ -1,12 +1,13 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
+import { Database } from "./lib/supabase/supabase"
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -31,8 +32,8 @@ export async function middleware(request: NextRequest) {
   await supabase.auth.getUser()
 
   // Optional: Add logic to protect certain routes
-  // if (!user && request.nextUrl.pathname.startsWith('/protected')) {
-  //   return NextResponse.redirect(new URL('/login', request.url))
+  // if (!user && request.nextUrl.pathname.startsWith("/protected")) {
+  //   return NextResponse.redirect(new URL("/login", request.url))
   // }
 
   return supabaseResponse
@@ -46,6 +47,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 }
