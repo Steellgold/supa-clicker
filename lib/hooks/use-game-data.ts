@@ -172,7 +172,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       let result;
       
       if (existing) {
-        // console.log('📝 Updating existing save...');
+        console.log('📝 Updating existing save...');
         result = await supabaseClient
           .from('clicker_saves')
           .update({
@@ -181,7 +181,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           })
           .eq('user_id', userId);
       } else {
-        // console.log('➕ Creating new save...');
+        console.log('➕ Creating new save...');
         result = await supabaseClient
           .from('clicker_saves')
           .insert({
@@ -201,7 +201,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         throw result.error;
       }
 
-      // console.log('✅ Game saved to Supabase successfully');
+      console.log('✅ Game saved to Supabase successfully');
       return true;
     } catch (error) {
       console.error("Error saving to Supabase:", error);
@@ -251,10 +251,28 @@ export const useClickerGame = (options: GameOptions = {}) => {
     return success;
   }, [saveToSupabase, saveToSupabaseDB, saveToLocal]);
 
-  const resetGame = useCallback(() => {
+  const resetGame = useCallback(async () => {
     setGameState(DEFAULT_GAME_STATE);
     localStorage.removeItem(storageKey);
-  }, [storageKey]);
+    
+    if (saveToSupabase && supabaseClient && userId) {
+      try {
+        console.log('🗑️ Resetting Supabase data...');
+        const { error } = await supabaseClient
+          .from('clicker_saves')
+          .delete()
+          .eq('user_id', userId);
+        
+        if (error) {
+          console.error('Error resetting Supabase data:', error);
+        } else {
+          console.log('✅ Supabase data reset successfully');
+        }
+      } catch (error) {
+        console.error('Error during Supabase reset:', error);
+      }
+    }
+  }, [storageKey, saveToSupabase, supabaseClient, userId]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -337,6 +355,14 @@ export const useClickerGame = (options: GameOptions = {}) => {
     };
   });
 
+  const updateAchievements = useCallback((achievementIds: number[]) => {
+    setGameState(prev => ({
+      ...prev,
+      unlockedAchievements: achievementIds,
+      lastSaveTime: Date.now()
+    }));
+  }, []);
+
   return {
     gameState,
     isLoading,
@@ -346,6 +372,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     buyUpgrade,
     saveGame,
     resetGame,
+    updateAchievements,
     
     upgradesInfo,
     

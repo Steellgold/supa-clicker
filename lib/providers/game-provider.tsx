@@ -29,6 +29,14 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   const achievementData = useAchievements(gameData.gameState.unlockedAchievements);
 
   useEffect(() => {
+    const unlockedIds = achievementData.unlockedAchievements.map(a => a.id);
+    if (unlockedIds.length !== gameData.gameState.unlockedAchievements.length || 
+        !unlockedIds.every(id => gameData.gameState.unlockedAchievements.includes(id))) {
+      gameData.updateAchievements(unlockedIds);
+    }
+  }, [achievementData.unlockedAchievements, gameData]);
+
+  useEffect(() => {
     if (!gameData.isLoading) {
       const stats: GameStats = {
         totalClicks: gameData.gameState.totalClicks,
@@ -59,6 +67,10 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   const combinedContext = {
     ...gameData,
     ...achievementData,
+    resetGame: async () => {
+      await gameData.resetGame();
+      achievementData.resetAchievements();
+    },
   };
 
   return (
