@@ -23,9 +23,24 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   const supabase = createClient()
 
   const loadUserProfile = useCallback(async (userId: string) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.id !== userId) {
-      console.log("User not authenticated, skipping profile load")
+    try {
+      const { error: upsertError } = await supabase
+        .from("user_profiles")
+        .upsert({
+          user_id: userId,
+          username: null
+        }, {
+          onConflict: "user_id",
+          ignoreDuplicates: false
+        })
+      
+      if (upsertError) {
+        console.error("Error upserting user profile:", upsertError)
+        setUserProfile({})
+        return
+      }
+    } catch (error) {
+      console.error("Error in upsert:", error)
       setUserProfile({})
       return
     }
@@ -38,33 +53,6 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
         .single()
 
       if (error) {
-        if (error.code === "PGRST116") {
-          console.log("Creating new user profile for user:", userId)
-          const { error: insertError } = await supabase
-            .from("user_profiles")
-            .upsert({
-              user_id: userId,
-              username: null
-            }, {
-              onConflict: "user_id"
-            })
-          
-          if (insertError) {
-            console.error("Error creating user profile:", insertError)
-          } else {
-            console.log("User profile created successfully")
-          }
-          
-          setUserProfile({})
-          return
-        }
-
-        if (error.code === "42P01" || error.message?.includes("406")) {
-          console.warn("user_profiles table not found, please run migrations")
-          setUserProfile({})
-          return
-        }
-
         console.error("Error loading user profile:", error)
         setUserProfile({})
         return
@@ -120,6 +108,10 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
         emailRedirectTo: `${window.location.origin}/auth/callback`
       }
     })
+    
+    if (error) console.error("Supabase auth error:", error)
+    else console.log("Sign in with magic link initiated successfully for:", email)
+    
     return { error: error?.message }
   }
 
