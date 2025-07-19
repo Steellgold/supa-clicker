@@ -103,14 +103,16 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                 "text-neutral-500 bg-neutral-200": currentLevel === 0
               }
             )}>
-              <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1" }}>
+              <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
+                "grayscale": currentLevel === 0
+              }) }}>
                 {upgrade.rpsGain == 0 && upgrade.clickMultiplier > 0 ? (
                   <>
                     +{formatDecimal(upgrade.clickMultiplier * (currentLevel == 0 ? 1 : currentLevel))}x Clicks
                   </>
                 ) : (
                   <>
-                    +{formatDecimal(upgrade.rpsGain * (currentLevel == 0 ? 1 : currentLevel))} RPS
+                    +{formatDecimal(upgrade.rpsGain * (currentLevel == 0 ? 1 : currentLevel))}/s
                   </>
                 )}
               </PowerTag>
@@ -125,7 +127,11 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   : "bg-neutral-200 text-neutral-500 hover:bg-red-200 hover:text-red-500 cursor-not-allowed"
               }`}
             >
-              {canAfford ? `Buy (${formatNumber(cost)})` : formatNumber(cost)}
+              {canAfford ? `Buy (${formatNumber(cost)})` : (
+                <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 grayscale" }}>
+                  Need ${formatNumber(cost)}
+                </PowerTag>
+              )}
             </button>
           </div>
         </div>
