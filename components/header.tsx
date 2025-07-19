@@ -1,6 +1,7 @@
 import { Trophy } from "lucide-react";
 import { ReactElement } from "react";
 import { Button } from "./ui/button";
+import { AuthButton } from "./auth/auth-button";
 
 export const Header = (): ReactElement => {
   return (
@@ -14,6 +15,7 @@ export const Header = (): ReactElement => {
           <Button variant="retro" size="sm">
             <Trophy />
           </Button>
+          <AuthButton />
         </div>
       </div>
     </header>
