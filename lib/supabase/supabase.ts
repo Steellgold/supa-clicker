@@ -39,155 +39,98 @@ export type Database = {
   }
   public: {
     Tables: {
-      clicker_saves: {
-        Row: {
-          id: string
-          user_id: string
-          game_data: Json
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          game_data: Json
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          game_data?: Json
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clicker_saves_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       clicker_leaderboard: {
         Row: {
+          achievements_count: number
+          clicks_per_second: number
+          created_at: string
           id: string
-          user_id: string
-          username: string | null
+          prestige_level: number
           total_clicks: number
-          total_power: number
-          highest_rps: number
-          created_at: string
+          total_money: number
           updated_at: string
-        }
-        Insert: {
-          id?: string
           user_id: string
-          username?: string | null
-          total_clicks?: number
-          total_power?: number
-          highest_rps?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          username?: string | null
-          total_clicks?: number
-          total_power?: number
-          highest_rps?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clicker_leaderboard_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      clicker_upgrades: {
-        Row: {
-          id: number
-          name: string
-          description: string
-          base_cost: number
-          cost_growth: number
-          rps_gain: number
-          click_multiplier: number
-          category: string
-          is_active: boolean
-          created_at: string
+          username: string
         }
         Insert: {
-          id: number
-          name: string
-          description: string
-          base_cost: number
-          cost_growth: number
-          rps_gain: number
-          click_multiplier?: number
-          category: string
-          is_active?: boolean
+          achievements_count?: number
+          clicks_per_second?: number
           created_at?: string
+          id?: string
+          prestige_level?: number
+          total_clicks?: number
+          total_money?: number
+          updated_at?: string
+          user_id: string
+          username: string
         }
         Update: {
-          id?: number
-          name?: string
-          description?: string
-          base_cost?: number
-          cost_growth?: number
-          rps_gain?: number
-          click_multiplier?: number
-          category?: string
-          is_active?: boolean
+          achievements_count?: number
+          clicks_per_second?: number
           created_at?: string
+          id?: string
+          prestige_level?: number
+          total_clicks?: number
+          total_money?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      clicker_saves: {
+        Row: {
+          created_at: string
+          game_data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_data?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
       user_profiles: {
         Row: {
-          id: string
-          user_id: string
-          username: string | null
-          display_name: string | null
           avatar_url: string | null
           created_at: string
+          display_name: string | null
+          id: string
           updated_at: string
+          user_id: string
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
           id?: string
+          updated_at?: string
           user_id: string
           username?: string | null
-          display_name?: string | null
-          avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          username?: string | null
-          display_name?: string | null
           avatar_url?: string | null
           created_at?: string
+          display_name?: string | null
+          id?: string
           updated_at?: string
+          user_id?: string
+          username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -195,23 +138,17 @@ export type Database = {
     }
     Functions: {
       get_leaderboard: {
-        Args: {
-          limit_count?: number
-        }
+        Args: { limit_count?: number }
         Returns: {
-          rank: number
           user_id: string
-          username: string | null
-          total_power: number
+          username: string
           total_clicks: number
-          highest_rps: number
+          clicks_per_second: number
+          total_money: number
+          prestige_level: number
+          achievements_count: number
+          updated_at: string
         }[]
-      }
-      get_user_rank: {
-        Args: {
-          target_user_id: string
-        }
-        Returns: number
       }
     }
     Enums: {
