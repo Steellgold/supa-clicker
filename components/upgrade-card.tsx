@@ -129,7 +129,7 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
             >
               {canAfford ? `Buy (${formatNumber(cost)})` : (
                 <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 grayscale" }}>
-                  Need ${formatNumber(cost)}
+                  Need {formatNumber(cost)}
                 </PowerTag>
               )}
             </button>
