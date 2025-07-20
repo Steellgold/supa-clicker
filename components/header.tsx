@@ -1,13 +1,12 @@
 "use client";
 
-import { Trophy, Bug } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { ReactElement } from "react";
 import { Button } from "./ui/button";
 import { AuthButton } from "./auth/auth-button";
 import { AchievementsDialog } from "./achievements-dialog";
 import { ConfirmResetDialog } from "./confirm-reset-dialog";
 import { useGame } from "@/lib/providers/game-provider";
-import Link from "next/link";
 
 export const Header = (): ReactElement => {
   const { resetGame } = useGame();
@@ -35,13 +34,6 @@ export const Header = (): ReactElement => {
               Reset
             </Button>
           </ConfirmResetDialog>
-
-          {/* Bouton de debug (visible partout pour faciliter le debug en production) */}
-          <Link href="/auth-debug-info">
-            <Button variant="retro" size="sm" title="Debug Auth Info">
-              <Bug />
-            </Button>
-          </Link>
 
           <AuthButton />
         </div>
