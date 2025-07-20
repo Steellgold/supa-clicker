@@ -28,15 +28,30 @@ export const useAchievements = (initialUnlockedIds: number[] = []): UseAchieveme
   const [unlockedIds, setUnlockedIds] = useState<number[]>(initialUnlockedIds);
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   const [viewedIds, setViewedIds] = useState<number[]>([]);
+  const [, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
-        setViewedIds(JSON.parse(raw));
+        const parsedViewedIds = JSON.parse(raw);
+        setViewedIds(parsedViewedIds);
+
+        if (initialUnlockedIds.length > 0) {
+          const allInitialViewed = [...new Set([...parsedViewedIds, ...initialUnlockedIds])];
+          setViewedIds(allInitialViewed);
+          localStorage.setItem(storageKey, JSON.stringify(allInitialViewed));
+        }
+      } else if (initialUnlockedIds.length > 0) {
+        setViewedIds(initialUnlockedIds);
+        localStorage.setItem(storageKey, JSON.stringify(initialUnlockedIds));
       }
-    } catch {}
-  }, [storageKey]);
+
+      setInitialLoadComplete(true);
+    } catch {
+      setInitialLoadComplete(true);
+    }
+  }, [storageKey, initialUnlockedIds]);
 
   useEffect(() => {
     try {
