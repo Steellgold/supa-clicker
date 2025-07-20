@@ -39,45 +39,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      clicker_leaderboard: {
-        Row: {
-          achievements_count: number
-          clicks_per_second: number
-          created_at: string
-          id: string
-          prestige_level: number
-          total_clicks: number
-          total_money: number
-          updated_at: string
-          user_id: string
-          username: string
-        }
-        Insert: {
-          achievements_count?: number
-          clicks_per_second?: number
-          created_at?: string
-          id?: string
-          prestige_level?: number
-          total_clicks?: number
-          total_money?: number
-          updated_at?: string
-          user_id: string
-          username: string
-        }
-        Update: {
-          achievements_count?: number
-          clicks_per_second?: number
-          created_at?: string
-          id?: string
-          prestige_level?: number
-          total_clicks?: number
-          total_money?: number
-          updated_at?: string
-          user_id?: string
-          username?: string
-        }
-        Relationships: []
-      }
       clicker_saves: {
         Row: {
           created_at: string
@@ -88,7 +49,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          game_data?: Json
+          game_data: Json
           id?: string
           updated_at?: string
           user_id: string
@@ -102,9 +63,31 @@ export type Database = {
         }
         Relationships: []
       }
+      user_crypto_keys: {
+        Row: {
+          created_at: string | null
+          crypto_key: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          crypto_key: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          crypto_key?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           display_name: string | null
           id: string
@@ -114,6 +97,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -123,6 +107,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
@@ -134,20 +119,61 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_view: {
+        Row: {
+          achievements_count: number | null
+          clicks_per_second: number | null
+          display_name: string | null
+          prestige_level: number | null
+          total_clicks: number | null
+          total_power: number | null
+          updated_at: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          last_played: string | null
+          prestige_level: string | null
+          special_items: Json | null
+          total_clicks: string | null
+          total_power: string | null
+          unlocked_achievements: Json | null
+          upgrades: Json | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_leaderboard: {
-        Args: { limit_count?: number }
+        Args: { order_by?: string; limit_count?: number }
         Returns: {
           user_id: string
           username: string
+          display_name: string
           total_clicks: number
           clicks_per_second: number
-          total_money: number
+          total_power: number
           prestige_level: number
           achievements_count: number
           updated_at: string
+        }[]
+      }
+      get_user_rank: {
+        Args:
+          | { target_user_id: string; order_by?: string }
+          | { target_user_id: string; order_by?: string }
+        Returns: {
+          rank_position: number
+          user_data: Json
         }[]
       }
     }
