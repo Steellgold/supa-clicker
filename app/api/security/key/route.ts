@@ -17,7 +17,7 @@ export const GET = async (request: NextRequest) => {
     const origin = request.headers.get('origin')
     const allowedOrigins = GAME_CONFIG.SECURITY.ALLOWED_ORIGINS
     
-    if (!origin || !(allowedOrigins as readonly string[]).includes(origin)) {
+    if (origin && !(allowedOrigins as readonly string[]).includes(origin)) {
       return NextResponse.json({ error: 'Unauthorized origin' }, { status: 403 })
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const origin = request.headers.get('origin')
     const allowedOrigins = GAME_CONFIG.SECURITY.ALLOWED_ORIGINS
     
-    if (!origin || !(allowedOrigins as readonly string[]).includes(origin)) {
+    if (origin && !(allowedOrigins as readonly string[]).includes(origin)) {
       return NextResponse.json({ error: 'Unauthorized origin' }, { status: 403 })
     }
 

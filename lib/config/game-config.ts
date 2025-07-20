@@ -220,7 +220,7 @@ export const GAME_CONFIG = {
   // ===============================
   ENDPOINTS: {
     /** CSRF token endpoint (deprecated - use crypto signatures) */
-    CSRF: '/api/csrf',
+    // CSRF: '/api/csrf', // Deprecated - using crypto signatures instead
 
     /** Game save endpoint */
     GAME_SAVE: '/api/game/save',

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, GameOptions } from '@/type/game';
 import { getUpgradeCost } from '../upgrades';
 import { GAME_CONFIG } from '../config/game-config';
+import { useCryptoSecurity } from './use-crypto-security';
 
 const DEFAULT_GAME_STATE: GameState = {
   totalClicks: 0,
@@ -39,6 +40,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const [gameState, setGameState] = useState(DEFAULT_GAME_STATE);
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaveTime, setLastSaveTime] = useState(Date.now());
+  
+  const { makeSignedRequest, isReady: cryptoReady } = useCryptoSecurity();
   
   const rpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -342,21 +345,17 @@ export const useClickerGame = (options: GameOptions = {}) => {
     try {
       console.log('🔄 Saving to Supabase via API...', { userId, dataKeys: Object.keys(data) });
       
-      // Get CSRF token first
-      const csrfResponse = await fetch(GAME_CONFIG.ENDPOINTS.CSRF);
-      if (!csrfResponse.ok) {
-        throw new Error('Failed to get CSRF token');
+      if (!cryptoReady) {
+        throw new Error('Crypto security not ready');
       }
-      const { csrfToken } = await csrfResponse.json();
       
-      const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_SAVE, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
-        },
-        body: JSON.stringify({ gameData: data }),
-      });
+      const response = await makeSignedRequest(
+        GAME_CONFIG.ENDPOINTS.GAME_SAVE,
+        {
+          type: 'save',
+          payload: data
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -369,7 +368,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       console.error("Error saving to Supabase:", error);
       return false;
     }
-  }, [saveToSupabase, userId]);
+  }, [saveToSupabase, userId, cryptoReady, makeSignedRequest]);
 
   const loadFromSupabaseDB = useCallback(async () => {
     if (!saveToSupabase || !userId) {

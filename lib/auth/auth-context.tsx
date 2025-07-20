@@ -67,7 +67,6 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     let mounted = true
     
-    // Timeout de sécurité pour éviter un loader permanent
     const timeoutId = setTimeout(() => {
       if (mounted) {
         console.warn("Auth loading timeout reached, forcing loading to false")
