@@ -13,7 +13,6 @@ export type Upgrade = {
 
 export type GameOptions = {
   saveToSupabase?: boolean;
-  supabaseClient?: SupabaseClient | undefined;
   userId?: string | null;
   autoSaveInterval?: number;
   upgrades?: Upgrade[];

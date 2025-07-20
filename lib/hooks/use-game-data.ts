@@ -19,7 +19,6 @@ const DEFAULT_GAME_STATE: GameState = {
 export const useClickerGame = (options: GameOptions = {}) => {
   const {
     saveToSupabase = false,
-    supabaseClient = undefined,
     userId = null,
     autoSaveInterval = 5000,
     upgrades = [],
@@ -151,54 +150,22 @@ export const useClickerGame = (options: GameOptions = {}) => {
   }, [storageKey]);
 
   const saveToSupabaseDB = useCallback(async (data: GameState) => {
-    if (!saveToSupabase || !supabaseClient || !userId) return false;
+    if (!saveToSupabase || !userId) return false;
 
     try {
-      console.log('🔄 Saving to Supabase...', { userId, dataKeys: Object.keys(data) });
+      console.log('🔄 Saving to Supabase via API...', { userId, dataKeys: Object.keys(data) });
       
-      const { data: existing, error: checkError } = await supabaseClient
-        .from('clicker_saves')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
+      const response = await fetch('/api/game/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ gameData: data }),
+      });
 
-      if (checkError) {
-        console.error('Error checking existing save:', checkError);
-        throw checkError;
-      }
-
-      const gameDataToSave = data;
-
-      let result;
-      
-      if (existing) {
-        console.log('📝 Updating existing save...');
-        result = await supabaseClient
-          .from('clicker_saves')
-          .update({
-            game_data: gameDataToSave,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId);
-      } else {
-        console.log('➕ Creating new save...');
-        result = await supabaseClient
-          .from('clicker_saves')
-          .insert({
-            user_id: userId,
-            game_data: gameDataToSave,
-            updated_at: new Date().toISOString()
-          });
-      }
-
-      if (result.error) {
-        console.error("Supabase save error details:", {
-          code: result.error.code,
-          message: result.error.message,
-          details: result.error.details,
-          hint: result.error.hint
-        });
-        throw result.error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save game data');
       }
 
       console.log('✅ Game saved to Supabase successfully');
@@ -207,28 +174,26 @@ export const useClickerGame = (options: GameOptions = {}) => {
       console.error("Error saving to Supabase:", error);
       return false;
     }
-  }, [saveToSupabase, supabaseClient, userId]);
+  }, [saveToSupabase, userId]);
 
   const loadFromSupabaseDB = useCallback(async () => {
-    if (!saveToSupabase || !supabaseClient || !userId) {
+    if (!saveToSupabase || !userId) {
       return loadFromLocal();
     }
 
     try {
-      const { data, error } = await supabaseClient
-        .from('clicker_saves')
-        .select('game_data')
-        .eq('user_id', userId)
-        .single();
+      const response = await fetch('/api/game/load');
+      
+      if (!response.ok) {
+        throw new Error('Failed to load game data');
+      }
 
-      if (error && error.code !== 'PGRST116') throw error;
-
-      if (data && data.game_data) {
-        const gameData = data.game_data;
-        
+      const result = await response.json();
+      
+      if (result.gameData) {
         return {
           ...DEFAULT_GAME_STATE,
-          ...gameData,
+          ...result.gameData,
           lastSaveTime: Date.now()
         };
       }
@@ -237,7 +202,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     return loadFromLocal();
-  }, [saveToSupabase, supabaseClient, userId, loadFromLocal]);
+  }, [saveToSupabase, userId, loadFromLocal]);
 
   const saveGame = useCallback(async () => {
     const currentGameState = gameStateRef.current;
@@ -255,24 +220,24 @@ export const useClickerGame = (options: GameOptions = {}) => {
     setGameState(DEFAULT_GAME_STATE);
     localStorage.removeItem(storageKey);
     
-    if (saveToSupabase && supabaseClient && userId) {
+    if (saveToSupabase && userId) {
       try {
-        console.log('🗑️ Resetting Supabase data...');
-        const { error } = await supabaseClient
-          .from('clicker_saves')
-          .delete()
-          .eq('user_id', userId);
-        
-        if (error) {
-          console.error('Error resetting Supabase data:', error);
-        } else {
-          console.log('✅ Supabase data reset successfully');
+        console.log('🗑️ Resetting Supabase data via API...');
+        const response = await fetch('/api/game/reset', {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to reset game data');
         }
+        
+        console.log('✅ Supabase data reset successfully');
       } catch (error) {
         console.error('Error during Supabase reset:', error);
       }
     }
-  }, [storageKey, saveToSupabase, supabaseClient, userId]);
+  }, [storageKey, saveToSupabase, userId]);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -329,7 +294,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
   useEffect(() => {
     const handleBeforeUnload = () => {
       const currentGameState = gameStateRef.current;
-      if (saveToSupabase && supabaseClient && userId) {
+      if (saveToSupabase && userId) {
         saveToSupabaseDB(currentGameState);
       } else {
         saveToLocal(currentGameState);
@@ -338,7 +303,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [saveToSupabase, supabaseClient, userId, saveToSupabaseDB, saveToLocal]);
+  }, [saveToSupabase, userId, saveToSupabaseDB, saveToLocal]);
 
   const upgradesInfo = upgrades.map(upgrade => {
     const currentLevel = gameState.upgrades[upgrade.id] || 0;
