@@ -14,9 +14,9 @@ const RecordNumberNumberSchema = z.record(z.string(), z.number()).transform(
 );
 
 export const GameStateSchema = z.object({
-  totalClicks: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
-  totalPower: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
-  currentPower: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
+  totalClicks: z.number().min(0),
+  totalPower: z.number().min(0),
+  currentPower: z.number().min(0),
   clickPower: z.number().min(1),
   rps: z.number().min(0),
   upgrades: RecordNumberNumberSchema,
@@ -25,7 +25,7 @@ export const GameStateSchema = z.object({
   lastSaveTime: z.number().min(0),
   prestigeLevel: z.number().int().min(0).max(1000),
   resourcesPerSecond: z.number().min(0),
-  currentResources: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
+  currentResources: z.number().min(0),
   comboCount: z.number().int().min(0).max(1000),
   lastClickTime: z.number().min(0),
   timeBoostActive: z.boolean(),
