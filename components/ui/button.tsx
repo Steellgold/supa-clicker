@@ -24,7 +24,7 @@ const buttonVariants = cva(
         //
         retro:
           "border border-neutral-800 dark:border-neutral-200 rounded-none! bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors",
-        tabRetro: "flex-1 p-3 font-mono font-bold text-sm rounded-none! border-r border-gray-800 dark:border-gray-200 transition-colors aria-[selected=true]:bg-white aria-[selected=true]:dark:bg-gray-800 aria-[selected=true]:text-gray-900 aria-[selected=true]:dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 uppercase",
+        tabRetro: "flex-1 p-3 font-mono font-bold text-sm rounded-none! border-r border-neutral-800 dark:border-neutral-200 transition-colors aria-[selected=true]:bg-white aria-[selected=true]:dark:bg-neutral-800 aria-[selected=true]:text-neutral-900 aria-[selected=true]:dark:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300 uppercase",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

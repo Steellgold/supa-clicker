@@ -70,7 +70,7 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
         animate={isClicking ? { scale: [1, 1.05, 1] } : {}}
         transition={{ duration: 0.1 }}
         className={cn(
-          "size-52 rounded-full bg-gray-900 dark:bg-gray-100 border-6 border-gray-800 dark:border-gray-200 hover:border-gray-700 dark:hover:border-gray-300 transition-colors relative overflow-hidden focus:outline-none", {
+          "size-52 rounded-full bg-neutral-900 dark:bg-neutral-100 border-6 border-neutral-800 dark:border-neutral-200 hover:border-neutral-700 dark:hover:border-neutral-300 transition-colors relative overflow-hidden focus:outline-none", {
           "ring-2 ring-green-500": isActive || isClicking,
           "focus:ring-2 focus:ring-green-500": !isActive && !isClicking
           }

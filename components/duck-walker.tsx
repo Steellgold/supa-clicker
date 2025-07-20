@@ -142,7 +142,7 @@ export const DuckWalker: Component<DuckWalkerProps> = ({ maxX }) => {
             width={48}
             height={48}
           />
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-black text-xs px-1 py-0.5 rounded opacity-75">
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-yellow-400 dark:bg-yellow-500 text-black dark:text-black text-xs px-1 py-0.5 rounded opacity-75">
             +{duck.reward.toFixed(1)}
           </div>
         </div>

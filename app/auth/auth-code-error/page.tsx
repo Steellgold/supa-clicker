@@ -8,7 +8,7 @@ const AuthCodeErrorPage = (): ReactElement => {
         <h1 className="text-2xl font-bold text-red-600 mb-4">
           Authentication Error
         </h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-neutral-600 mb-6">
           An error occurred during authentication. Please try again.
         </p>
         <Link

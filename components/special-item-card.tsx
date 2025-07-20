@@ -48,29 +48,29 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const getCategoryAccent = (category: string) => {
     switch (category) {
       case "upgrade_boost": return {
-        badge: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        button: "bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600",
-        effect: "text-yellow-600 bg-yellow-500/20"
+        badge: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-300 dark:border-yellow-600",
+        button: "bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-600 dark:text-yellow-400",
+        effect: "text-yellow-600 dark:text-yellow-400 bg-yellow-500/20 dark:bg-yellow-500/30"
       };
       case "global": return {
-        badge: "bg-purple-100 text-purple-800 border-purple-300",
-        button: "bg-purple-500/20 hover:bg-purple-500/30 text-purple-600",
-        effect: "text-purple-600 bg-purple-500/20"
+        badge: "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-600",
+        button: "bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 dark:text-purple-400",
+        effect: "text-purple-600 dark:text-purple-400 bg-purple-500/20 dark:bg-purple-500/30"
       };
       case "special": return {
-        badge: "bg-blue-100 text-blue-800 border-blue-300",
-        button: "bg-blue-500/20 hover:bg-blue-500/30 text-blue-600",
-        effect: "text-blue-600 bg-blue-500/20"
+        badge: "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-600",
+        button: "bg-blue-500/20 hover:bg-blue-500/30 text-blue-600 dark:text-blue-400",
+        effect: "text-blue-600 dark:text-blue-400 bg-blue-500/20 dark:bg-blue-500/30"
       };
       case "automation": return {
-        badge: "bg-green-100 text-green-800 border-green-300",
-        button: "bg-green-500/20 hover:bg-green-500/30 text-green-600",
-        effect: "text-green-600 bg-green-500/20"
+        badge: "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-600",
+        button: "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400",
+        effect: "text-green-600 dark:text-green-400 bg-green-500/20 dark:bg-green-500/30"
       };
       default: return {
-        badge: "bg-gray-100 text-gray-800 border-gray-300",
-        button: "bg-gray-500/20 hover:bg-gray-500/30 text-gray-600",
-        effect: "text-gray-600 bg-gray-500/20"
+        badge: "bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-300 border-neutral-300 dark:border-neutral-600",
+        button: "bg-neutral-500/20 hover:bg-neutral-500/30 text-neutral-600 dark:text-neutral-400",
+        effect: "text-neutral-600 dark:text-neutral-400 bg-neutral-500/20 dark:bg-neutral-500/30"
       };
     }
   };
@@ -99,9 +99,9 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg">{getCategoryIcon(item.category)}</span>
-                <h3 className="font-semibold text-neutral-600">{item.name} 🔒</h3>
+                <h3 className="font-semibold text-neutral-600 dark:text-neutral-400">{item.name} 🔒</h3>
               </div>
-              <p className="text-xs text-neutral-500 mb-2">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
                 Requires {formatNumber(item.unlockRequirement || 0)} total power
               </p>
             </div>
@@ -119,13 +119,13 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                   </span>
                 )}
 
-                <h3 className="font-semibold text-neutral-800">{item.name}</h3>
+                <h3 className="font-semibold text-neutral-800 dark:text-neutral-200">{item.name}</h3>
               </div>
 
-              <p className="text-xs text-neutral-600 mb-2">{item.description}</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">{item.description}</p>
               
               {needsUpgrades && (
-                <p className="text-xs text-red-600 mb-2">
+                <p className="text-xs text-red-600 dark:text-red-400 mb-2">
                   Requires: {requiredUpgradeNames.slice(0, 2).join(", ")}
                   {requiredUpgradeNames.length > 2 ? "..." : ""}
                 </p>
@@ -148,7 +148,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                   </div>
                 ) : (
                   <div className={cn("text-xs font-medium px-1.5 py-0.5", {
-                    "text-neutral-500 bg-neutral-200": currentLevel === 0,
+                    "text-neutral-500 dark:text-neutral-400 bg-neutral-200 dark:bg-neutral-700": currentLevel === 0,
                     [accent.effect]: currentLevel > 0,
 
                     "hidden": item.effect === item.name
@@ -162,8 +162,8 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                     onClick={handleBuy}
                     disabled={!canPurchase}
                     className={cn("text-xs font-medium px-1.5 py-0.5 transition-colors", {
-                      "bg-green-500/20 hover:bg-green-500/30 text-green-600": canPurchase,
-                      "bg-neutral-200 text-neutral-500 hover:bg-red-200 hover:text-red-500 cursor-not-allowed": !canPurchase
+                      "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canPurchase,
+                      "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-red-200 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 cursor-not-allowed": !canPurchase
                     })}
                   >
                     {canPurchase ? (
@@ -177,7 +177,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                     )}
                   </button>
                 ) : (
-                  <span className="text-xs font-medium px-1.5 py-0.5 bg-green-500/20 text-green-600">✓ Maxed</span>
+                  <span className="text-xs font-medium px-1.5 py-0.5 bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400">✓ Maxed</span>
                 )}
               </div>
             </div>

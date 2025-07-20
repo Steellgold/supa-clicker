@@ -45,10 +45,10 @@ export const BulkBuySettings: Component<BulkBuySettingsProps> = ({
           className={cn(
             "px-2 py-1 text-xs font-medium transition-colors border",
             {
-              "bg-green-500/20 text-green-600 border-green-300": bulkBuyOption === option,
-              "bg-neutral-100 text-neutral-700 border-neutral-300 hover:bg-green-500/10 hover:text-green-600 hover:border-green-300": 
+              "bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 border-green-300 dark:border-green-600": bulkBuyOption === option,
+              "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-600 hover:bg-green-500/10 dark:hover:bg-green-500/20 hover:text-green-600 dark:hover:text-green-400 hover:border-green-300 dark:hover:border-green-600": 
                 bulkBuyOption !== option && !isOptionDisabled(option),
-              "bg-neutral-50 text-neutral-400 border-neutral-200 cursor-not-allowed": 
+              "bg-neutral-50 dark:bg-neutral-900 text-neutral-400 dark:text-neutral-500 border-neutral-200 dark:border-neutral-700 cursor-not-allowed": 
                 isOptionDisabled(option),
             }
           )}

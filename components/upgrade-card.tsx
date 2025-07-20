@@ -84,16 +84,16 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-neutral-600">
+                <h3 className="font-semibold text-neutral-600 dark:text-neutral-400">
                   {isUnlocked ? upgrade.name : index === firstLockedIndex ? upgrade.name : "???"}
                 </h3>
               </div>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 {isUnlocked ? upgrade.description : index === firstLockedIndex ? upgrade.description : "???"}
               </p>
             </div>
 
-            <span className="text-md text-neutral-500 font-bold select-none">
+            <span className="text-md text-neutral-500 dark:text-neutral-400 font-bold select-none">
               <PowerTag imageProps={{ width: 12, height: 12 }}>
                 {formatWithSpaces(unlockThreshold)}
               </PowerTag>
@@ -106,20 +106,20 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 {currentLevel > 0 && (
-                  <span className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 rounded-sm border border-green-300">
+                  <span className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs px-1.5 py-0.5 rounded-sm border border-green-300 dark:border-green-600">
                     x{currentLevel}
                   </span>
                 )}
-                <h3 className="font-semibold text-neutral-800">{upgrade.name}</h3>
+                <h3 className="font-semibold text-neutral-800 dark:text-neutral-200">{upgrade.name}</h3>
               </div>
 
-              <p className="text-xs text-neutral-600 mb-2">{upgrade.description}</p>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">{upgrade.description}</p>
 
               <div className="flex items-center justify-between select-none">
                 <div className={cn(
                   "text-xs font-medium px-1.5 py-0.5", {
-                    "text-green-600 bg-green-500/20": currentLevel > 0,
-                    "text-neutral-500 bg-neutral-200": currentLevel === 0
+                    "text-green-600 dark:text-green-400 bg-green-500/20 dark:bg-green-500/30": currentLevel > 0,
+                    "text-neutral-500 dark:text-neutral-400 bg-neutral-200 dark:bg-neutral-700": currentLevel === 0
                   }
                 )}>
                   <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
@@ -140,11 +140,10 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                 <button
                   onClick={handleBuy}
                   disabled={!canAfford}
-                  className={`text-xs font-medium px-1.5 py-0.5 transition-colors ${
-                    canAfford
-                      ? "bg-green-500/20 hover:bg-green-500/30 text-green-600"
-                      : "bg-neutral-200 text-neutral-500 hover:bg-red-200 hover:text-red-500 cursor-not-allowed"
-                  }`}
+                  className={cn("text-xs font-medium px-1.5 py-0.5 transition-colors", {
+                    "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canAfford,
+                    "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-red-200 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 cursor-not-allowed": !canAfford
+                  })}
                 >
                   {canAfford ? (
                     `Buy (${formatNumber(cost)})`
