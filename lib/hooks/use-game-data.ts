@@ -660,7 +660,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }));
 
     return true;
-  }, [gameState.prestigeLevel, gameState.totalPower, canPrestige]);
+  }, [gameState.prestigeLevel, canPrestige]);
 
   return {
     gameState,
