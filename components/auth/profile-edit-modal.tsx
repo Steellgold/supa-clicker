@@ -169,19 +169,26 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
           </DialogDescription>
         </DialogHeader>
 
-        {error && (
-          <div className="bg-red-100 border-2 border-red-400 text-red-700 p-3 rounded-none mb-4">
-            {error}
+        {user && !userProfile?.username && !authLoading ? (
+          <div className="text-center py-8">
+            <Loader2 className="animate-spin w-8 h-8 mx-auto mb-3" />
+            <p className="text-sm text-neutral-500">Loading your profile...</p>
           </div>
-        )}
+        ) : (
+          <>
+            {error && (
+              <div className="bg-red-100 border-2 border-red-400 text-red-700 p-3 rounded-none mb-4">
+                {error}
+              </div>
+            )}
 
-        {success && (
-          <div className="bg-green-100 border-2 border-green-400 text-green-700 p-3 rounded-none mb-4">
-            {success}
-          </div>
-        )}
+            {success && (
+              <div className="bg-green-100 border-2 border-green-400 text-green-700 p-3 rounded-none mb-4">
+                {success}
+              </div>
+            )}
 
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <form onSubmit={handleProfileSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Profile Icon</label>
             <div className="flex items-center gap-3">
@@ -299,7 +306,9 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
               "CREATE PROFILE"
             )}
           </Button>
-        </form>
+            </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )
