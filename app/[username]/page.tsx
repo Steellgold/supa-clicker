@@ -52,6 +52,7 @@ const UserProfilePage: Component<Props> = ({ params }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
   const supabase = createClient();
 
   const allUpgrades = getAllUpgrades();
@@ -66,8 +67,6 @@ const UserProfilePage: Component<Props> = ({ params }) => {
         const { data, error } = await supabase.rpc('get_user_profile_by_username', {
           p_username: username
         });
-
-        console.log('Profile data:', data, 'Error:', error);
 
         if (error) {
           console.error('Profile error:', error);
@@ -132,9 +131,7 @@ const UserProfilePage: Component<Props> = ({ params }) => {
       }
     };
 
-    if (username) {
-      loadUserProfile();
-    }
+    if (username) loadUserProfile();
   }, [username, supabase]);
 
   if (loading) {
@@ -144,9 +141,6 @@ const UserProfilePage: Component<Props> = ({ params }) => {
           <div className="border-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-800 p-8 text-center">
             <div className="font-mono text-lg text-neutral-700 dark:text-neutral-300">
               LOADING PROFILE FOR: {username}
-            </div>
-            <div className="font-mono text-sm text-neutral-500 mt-2">
-              Check console for debug info...
             </div>
           </div>
         </div>
@@ -162,11 +156,7 @@ const UserProfilePage: Component<Props> = ({ params }) => {
             <div className="font-mono text-lg text-red-700 dark:text-red-300 mb-4">
               {error || 'PROFILE NOT FOUND'}
             </div>
-            <Button
-              onClick={() => router.back()}
-              variant="retro"
-              className="font-mono font-bold"
-            >
+            <Button onClick={() => router.back()} variant="retro" className="font-mono font-bold">
               <ArrowLeft className="w-4 h-4 mr-2" />
               GO BACK
             </Button>
