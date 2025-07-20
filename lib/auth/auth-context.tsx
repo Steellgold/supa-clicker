@@ -13,6 +13,7 @@ type AuthContextType = {
   signOut: () => Promise<void>
   updateUsername: (username: string) => Promise<{ error?: string }>
   updateProfile: (profile: { username: string; display_name?: string | null; bio?: string | null; icon_url?: string }) => Promise<{ error?: string }>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -116,6 +117,8 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
           
           if (currentUser) {
             setLoading(true)
+            // Add a small delay to ensure the session is fully established
+            await new Promise(resolve => setTimeout(resolve, 100))
             try {
               await loadUserProfile(currentUser.id)
             } catch (profileError) {
@@ -183,6 +186,11 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     return updateProfile({ username })
   }
 
+  const refreshProfile = async () => {
+    if (!user) return
+    await loadUserProfile(user.id)
+  }
+
   const updateProfile = async (profile: { username: string; display_name?: string | null; bio?: string | null; icon_url?: string }) => {
     if (!user) {
       console.error("Not logged in")
@@ -228,6 +236,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     signOut,
     updateUsername,
     updateProfile,
+    refreshProfile,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -12,7 +12,7 @@ import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 
 export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => {
-  const { user, userProfile, updateProfile } = useAuth()
+  const { user, userProfile, updateProfile, refreshProfile, loading: authLoading } = useAuth()
   const [displayName, setDisplayName] = useState("")
   const [username, setUsername] = useState("")
   const [bio, setBio] = useState("")
@@ -53,13 +53,11 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
 
   // Force refresh profile data when modal opens if profile seems empty
   useEffect(() => {
-    if (isOpen && user && !loading && (!userProfile || !userProfile.username)) {
-      const timer = setTimeout(() => {
-        window.location.reload()
-      }, 100)
-      return () => clearTimeout(timer)
+    if (isOpen && user && !authLoading && (!userProfile || !userProfile.username)) {
+      console.log("Profile seems empty, refreshing...")
+      refreshProfile()
     }
-  }, [isOpen, user, loading, userProfile])
+  }, [isOpen, user, authLoading, userProfile, refreshProfile])
 
   useEffect(() => {
     if (displayName && !userProfile?.username) {
