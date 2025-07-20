@@ -1,5 +1,7 @@
-import { GameState, GameOptions } from '@/type/game';
+import { SPECIAL_ITEMS, getSpecialItemCost, canPurchaseSpecialItem } from '../upgrades-specials';
+import { SPECIAL_ITEM_IDS, SPECIAL_ITEM_EFFECTS } from '../constants/special-items';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { GameState, GameOptions } from '@/type/game';
 import { getUpgradeCost } from '../upgrades';
 
 const DEFAULT_GAME_STATE: GameState = {
@@ -9,11 +11,19 @@ const DEFAULT_GAME_STATE: GameState = {
   clickPower: 1,
   rps: 0,
   upgrades: {},
+  specialItems: {},
   unlockedAchievements: [],
   lastSaveTime: Date.now(),
   prestigeLevel: 0,
   resourcesPerSecond: 0,
-  currentResources: 0
+  currentResources: 0,
+  // Combo System
+  comboCount: 0,
+  lastClickTime: 0,
+  // Time Boost System
+  timeBoostActive: false,
+  timeBoostEndTime: 0,
+  timeBoostMultiplier: 1
 };
 
 export const useClickerGame = (options: GameOptions = {}) => {
@@ -31,29 +41,92 @@ export const useClickerGame = (options: GameOptions = {}) => {
   
   const rpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const autoClickerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeBoostIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const gameStateRef = useRef(gameState);
   
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
-  const calculateTotalStats = useCallback((upgradesState: Record<number, number>) => {
+  const calculateTotalStats = useCallback((upgradesState: Record<number, number>, specialItemsState: Record<number, number> = {}) => {
     let totalRps = 0;
     let totalClickMultiplier = 1;
+    let globalMultiplier = 1;
 
     upgrades.forEach(upgrade => {
       const level = upgradesState[upgrade.id] || 0;
       if (level > 0) {
-        totalRps += upgrade.rpsGain * level;
-        totalClickMultiplier += upgrade.clickMultiplier * level;
+        let upgradeRps = upgrade.rpsGain * level;
+        let upgradeClick = upgrade.clickMultiplier * level;
+
+        SPECIAL_ITEMS.forEach(specialItem => {
+          const specialLevel = specialItemsState[specialItem.id] || 0;
+          if (specialLevel > 0) {
+            switch (specialItem.effect) {
+              case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
+                if (upgrade.name.toLowerCase().includes('ai intern')) {
+                  upgradeRps *= specialItem.multiplier;
+                  upgradeClick *= specialItem.multiplier;
+                }
+                break;
+              case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
+                if (upgrade.name.toLowerCase().includes('junior dev')) {
+                  upgradeRps *= specialItem.multiplier;
+                  upgradeClick *= specialItem.multiplier;
+                }
+                break;
+              case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
+                if (upgrade.name.toLowerCase().includes('devops')) {
+                  upgradeRps *= specialItem.multiplier;
+                  upgradeClick *= specialItem.multiplier;
+                }
+                break;
+              case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
+                if (upgrade.name.toLowerCase().includes('cloud')) {
+                  upgradeRps *= specialItem.multiplier;
+                  upgradeClick *= specialItem.multiplier;
+                }
+                break;
+              case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
+                if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
+                  upgradeRps *= specialItem.multiplier;
+                  upgradeClick *= specialItem.multiplier;
+                }
+                break;
+            }
+          }
+        });
+
+        totalRps += upgradeRps;
+        totalClickMultiplier += upgradeClick;
       }
     });
 
-    return { totalRps, totalClickMultiplier };
+    SPECIAL_ITEMS.forEach(specialItem => {
+      const specialLevel = specialItemsState[specialItem.id] || 0;
+      if (specialLevel > 0) {
+        switch (specialItem.effect) {
+          case SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X:
+          case SPECIAL_ITEM_EFFECTS.GLOBAL_2X:
+          case SPECIAL_ITEM_EFFECTS.GLOBAL_3X:
+          case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
+          case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
+          case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
+            globalMultiplier *= specialItem.multiplier;
+            break;
+        }
+      }
+    });
+
+    return { 
+      totalRps: totalRps * globalMultiplier, 
+      totalClickMultiplier: totalClickMultiplier * globalMultiplier 
+    };
   }, [upgrades]);
 
   useEffect(() => {
-    const { totalRps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades);
+    const { totalRps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, gameState.specialItems);
     setGameState(prev => {
       if (prev.rps === totalRps && prev.clickPower === totalClickMultiplier) return prev;
 
@@ -65,52 +138,165 @@ export const useClickerGame = (options: GameOptions = {}) => {
         lastSaveTime: Date.now()
       };
     });
-  }, [gameState.upgrades, calculateTotalStats]);
+  }, [gameState.upgrades, gameState.specialItems, calculateTotalStats]);
 
   const handleClick = useCallback(() => {
-    const rand = Math.random();
-    const isPlatinum = rand < 0.05;
-    const isGolden = !isPlatinum && rand < 0.15;
-
-    const goldenBonus = 49;
-    const platinumBonus = 499;
-
-    const baseGain = gameStateRef.current.clickPower;
-
+    const currentState = gameStateRef.current;
+    const currentTime = Date.now();
+    const baseGain = currentState.clickPower;
     let gainedPower = baseGain;
-    if (isPlatinum) {
-      gainedPower += platinumBonus;
-    } else if (isGolden) {
-      gainedPower += goldenBonus;
+
+    const hasGoldenClick = (currentState.specialItems[SPECIAL_ITEM_IDS.GOLDEN_CLICK] || 0) > 0;
+    const hasLuckyStreak = (currentState.specialItems[SPECIAL_ITEM_IDS.LUCKY_STREAK] || 0) > 0;
+    const hasComboSystem = (currentState.specialItems[SPECIAL_ITEM_IDS.COMBO_MASTER] || 0) > 0;
+    const hasTimeBoost = (currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0) > 0;
+    const timeBoostLevel = currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0;
+    
+    let isSpecialClick = false;
+    let specialMultiplier = 1;
+    let comboMultiplier = 1;
+    let shouldActivateTimeBoost = false;
+
+    // Golden Click and Lucky Streak logic
+    if (hasGoldenClick && Math.random() < 0.01) { // 1% chance for x100
+      isSpecialClick = true;
+      specialMultiplier = 100;
+    } else if (hasLuckyStreak && Math.random() < 0.02) { // 2% chance for x50
+      isSpecialClick = true;
+      specialMultiplier = 50;
     }
 
-    setGameState(prev => ({
-      ...prev,
-      totalClicks: prev.totalClicks + 1,
-      currentPower: prev.currentPower + gainedPower,
-      totalPower: prev.totalPower + gainedPower,
-      currentResources: prev.currentPower + gainedPower,
-      lastSaveTime: Date.now()
-    }));
+    // Combo System logic
+    let newComboCount = 0;
+    if (hasComboSystem) {
+      const timeSinceLastClick = currentTime - currentState.lastClickTime;
+      if (timeSinceLastClick < 500) { // 500ms eeach
+        newComboCount = currentState.comboCount + 1;
+      } else {
+        newComboCount = 1; // Reset
+      }
+      
+      // Apply combo multiplier (1.1x per combo level, capped at 10x total)
+      if (newComboCount > 1) {
+        comboMultiplier = Math.min(1 + (newComboCount - 1) * 0.1, 10);
+      }
+    }
 
-    return { gained: gainedPower, isGolden, isPlatinum };
+    // Time Boost activation logic
+    if (hasTimeBoost && !currentState.timeBoostActive) {
+      // Base 5% chance + 1% per level
+      const timeBoostChance = 0.05 + (timeBoostLevel - 1) * 0.01;
+      if (Math.random() < timeBoostChance) {
+        shouldActivateTimeBoost = true;
+      }
+    }
+
+    // Apply multipliers
+    if (isSpecialClick) {
+      gainedPower *= specialMultiplier;
+    }
+    gainedPower *= comboMultiplier;
+
+    // Apply time boost if active
+    if (currentState.timeBoostActive && currentTime < currentState.timeBoostEndTime) {
+      gainedPower *= currentState.timeBoostMultiplier;
+    }
+
+    setGameState(prev => {
+      const updates: Partial<GameState> = {
+        totalClicks: prev.totalClicks + 1,
+        currentPower: prev.currentPower + gainedPower,
+        totalPower: prev.totalPower + gainedPower,
+        currentResources: prev.currentPower + gainedPower,
+        lastSaveTime: currentTime,
+        lastClickTime: currentTime
+      };
+
+      // Update combo count
+      if (hasComboSystem) {
+        updates.comboCount = newComboCount;
+      }
+
+      // Activate time boost if triggered
+      if (shouldActivateTimeBoost) {
+        const boostDuration = 10000 + (timeBoostLevel - 1) * 2000; // 10s base + 2s per level
+        const boostMultiplier = 2 + (timeBoostLevel - 1) * 0.5; // 2x base + 0.5x per level
+        updates.timeBoostActive = true;
+        updates.timeBoostEndTime = currentTime + boostDuration;
+        updates.timeBoostMultiplier = boostMultiplier;
+      }
+
+      // Check if time boost should end
+      if (prev.timeBoostActive && currentTime >= prev.timeBoostEndTime) {
+        updates.timeBoostActive = false;
+        updates.timeBoostEndTime = 0;
+        updates.timeBoostMultiplier = 1;
+      }
+
+      return { ...prev, ...updates };
+    });
+
+    return { 
+      gained: gainedPower, 
+      isSpecialClick, 
+      specialMultiplier: isSpecialClick ? specialMultiplier : 1,
+      comboMultiplier,
+      comboCount: newComboCount,
+      timeBoostActivated: shouldActivateTimeBoost
+    };
   }, []);
 
-  const buyUpgrade = useCallback((upgradeId: number) => {
+  const buyUpgrade = useCallback((upgradeId: number, quantity: number = 1) => {
     const upgrade = upgrades.find(u => u.id === upgradeId);
     if (!upgrade) return false;
 
     const currentLevel = gameState.upgrades[upgradeId] || 0;
-    const cost = getUpgradeCost(upgrade, currentLevel);
+    let totalCost = 0;
+    let actualQuantity = 0;
 
-    if (gameState.currentPower >= cost) {
+    // QUANTITY COST
+    for (let i = 0; i < quantity; i++) {
+      const cost = getUpgradeCost(upgrade, currentLevel + i);
+      if (gameState.currentPower >= totalCost + cost) {
+        totalCost += cost;
+        actualQuantity++;
+      } else {
+        break;
+      }
+    }
+
+    if (actualQuantity > 0 && gameState.currentPower >= totalCost) {
+      setGameState(prev => ({
+        ...prev,
+        currentPower: prev.currentPower - totalCost,
+        currentResources: prev.currentPower - totalCost,
+        upgrades: {
+          ...prev.upgrades,
+          [upgradeId]: currentLevel + actualQuantity
+        },
+        lastSaveTime: Date.now()
+      }));
+      return actualQuantity;
+    }
+
+    return 0;
+  }, [gameState.currentPower, gameState.upgrades, upgrades]);
+
+  const buySpecialItem = useCallback((specialItemId: number) => {
+    const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId);
+    if (!specialItem) return false;
+
+    const currentLevel = gameState.specialItems[specialItemId] || 0;
+    const cost = getSpecialItemCost(specialItem, currentLevel);
+
+    if (canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.upgrades)) {
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
         currentResources: prev.currentPower - cost,
-        upgrades: {
-          ...prev.upgrades,
-          [upgradeId]: currentLevel + 1
+        specialItems: {
+          ...prev.specialItems,
+          [specialItemId]: currentLevel + 1
         },
         lastSaveTime: Date.now()
       }));
@@ -118,7 +304,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     return false;
-  }, [gameState.currentPower, gameState.upgrades, upgrades]);
+  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades]);
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
@@ -277,6 +463,95 @@ export const useClickerGame = (options: GameOptions = {}) => {
     };
   }, [gameState.rps]);
 
+  // Auto-clicker effect
+  useEffect(() => {
+    const specialItems = gameState.specialItems;
+    let autoClicksPerSecond = 0;
+
+    // Calculate total auto-clicks per second
+    if (specialItems[SPECIAL_ITEM_IDS.AUTO_CLICKER]) {
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.AUTO_CLICKER] * 1;
+    }
+    if (specialItems[SPECIAL_ITEM_IDS.TURBO_AUTO_CLICKER]) {
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.TURBO_AUTO_CLICKER] * 5;
+    }
+    if (specialItems[SPECIAL_ITEM_IDS.HYPER_AUTO_CLICKER]) {
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.HYPER_AUTO_CLICKER] * 10;
+    }
+    if (specialItems[SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER]) {
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER] * 25;
+    }
+
+    if (autoClicksPerSecond > 0) {
+      const interval = 1000 / autoClicksPerSecond; // Calculate interval between clicks
+      autoClickerIntervalRef.current = setInterval(() => {
+        setGameState(prev => {
+          const clickPower = prev.clickPower;
+          return {
+            ...prev,
+            totalClicks: prev.totalClicks + 1,
+            currentPower: prev.currentPower + clickPower,
+            totalPower: prev.totalPower + clickPower,
+            currentResources: prev.currentPower + clickPower,
+            lastSaveTime: Date.now()
+          };
+        });
+      }, interval);
+    } else {
+      if (autoClickerIntervalRef.current) {
+        clearInterval(autoClickerIntervalRef.current);
+        autoClickerIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (autoClickerIntervalRef.current) {
+        clearInterval(autoClickerIntervalRef.current);
+      }
+    };
+  }, [gameState.specialItems, gameState.clickPower]);
+
+  // Time Boost expiration effect
+  useEffect(() => {
+    if (gameState.timeBoostActive && gameState.timeBoostEndTime > 0) {
+      const timeLeft = gameState.timeBoostEndTime - Date.now();
+      if (timeLeft > 0) {
+        timeBoostIntervalRef.current = setTimeout(() => {
+          setGameState(prev => ({
+            ...prev,
+            timeBoostActive: false,
+            timeBoostEndTime: 0,
+            timeBoostMultiplier: 1,
+            lastSaveTime: Date.now()
+          }));
+        }, timeLeft);
+      } else {
+        console.log('-----');
+        console.log('Time Boost expired, resetting state');
+        console.log('Current Game State:', gameState);
+        console.log('-----');
+        setGameState(prev => ({
+          ...prev,
+          timeBoostActive: false,
+          timeBoostEndTime: 0,
+          timeBoostMultiplier: 1,
+          lastSaveTime: Date.now()
+        }));
+      }
+    } else {
+      if (timeBoostIntervalRef.current) {
+        clearTimeout(timeBoostIntervalRef.current);
+        timeBoostIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timeBoostIntervalRef.current) {
+        clearTimeout(timeBoostIntervalRef.current);
+      }
+    };
+  }, [gameState.timeBoostActive, gameState.timeBoostEndTime]);
+
   useEffect(() => {
     if (autoSaveInterval > 0 && !isLoading) {
       autoSaveIntervalRef.current = setInterval(() => {
@@ -328,6 +603,30 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }));
   }, []);
 
+  const addPower = useCallback((amount: number) => {
+    if (typeof amount !== 'number' || !isFinite(amount) || amount <= 0) {
+      console.warn('Invalid power amount:', amount);
+      return false;
+    }
+
+    const maxAllowed = Math.max(gameState.clickPower * 10, 100);
+    const safeAmount = Math.min(amount, maxAllowed);
+
+    if (safeAmount !== amount) {
+      console.warn(`Power amount capped from ${amount} to ${safeAmount} for security`);
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      currentPower: prev.currentPower + safeAmount,
+      totalPower: prev.totalPower + safeAmount,
+      currentResources: prev.currentPower + safeAmount,
+      lastSaveTime: Date.now()
+    }));
+
+    return true;
+  }, [gameState.clickPower]);
+
   return {
     gameState,
     isLoading,
@@ -335,12 +634,20 @@ export const useClickerGame = (options: GameOptions = {}) => {
     
     handleClick,
     buyUpgrade,
+    buySpecialItem,
     saveGame,
     resetGame,
     updateAchievements,
+    addPower,
     
     upgradesInfo,
+    specialItemsState: gameState.specialItems,
     
-    getUpgradeCost
+    getUpgradeCost,
+    
+    comboCount: gameState.comboCount,
+    timeBoostActive: gameState.timeBoostActive,
+    timeBoostTimeLeft: gameState.timeBoostActive ? Math.max(0, gameState.timeBoostEndTime - Date.now()) : 0,
+    timeBoostMultiplier: gameState.timeBoostMultiplier
   };
 };

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { SaveGameRequestSchema } from '@/lib/validation/game-schemas'
 
 // Create admin client with service role key for secure operations
 const supabaseAdmin = createClient(
@@ -19,10 +20,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { gameData } = body
+    
+    const validationResult = SaveGameRequestSchema.safeParse(body)
+    if (!validationResult.success) {
+      return NextResponse.json({ 
+        error: 'Invalid game data format',
+        details: validationResult.error.message
+      }, { status: 400 })
+    }
 
-    if (!gameData) {
-      return NextResponse.json({ error: 'Game data is required' }, { status: 400 })
+    const { gameData } = validationResult.data
+
+    const dataSize = JSON.stringify(gameData).length
+    if (dataSize > 1024 * 1024) {
+      return NextResponse.json({ error: 'Game data too large' }, { status: 413 })
     }
 
     // Use admin client to update the database securely
@@ -33,7 +44,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (checkError) {
-      console.error('Error checking existing save:', checkError)
+      console.error('Database check error for user:', user.id)
       return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
 
@@ -57,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error('Supabase save error:', result.error)
+      console.error('Save operation failed for user:', user.id)
       return NextResponse.json({ error: 'Failed to save game data' }, { status: 500 })
     }
 

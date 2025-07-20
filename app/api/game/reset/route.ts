@@ -25,7 +25,7 @@ export async function DELETE() {
       .eq('user_id', user.id)
     
     if (error) {
-      console.error('Error resetting game data:', error)
+      console.error('Reset operation failed for user:', user.id)
       return NextResponse.json({ error: 'Failed to reset game data' }, { status: 500 })
     }
 

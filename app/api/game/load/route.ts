@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { GameStateSchema } from '@/lib/validation/game-schemas'
 
 export const GET = async() => {
   try {
@@ -19,12 +20,23 @@ export const GET = async() => {
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error loading game data:', error)
+      console.error('Load operation failed for user:', user.id)
       return NextResponse.json({ error: 'Failed to load game data' }, { status: 500 })
     }
 
+    let validatedGameData = null;
+    if (data?.game_data) {
+      const validationResult = GameStateSchema.safeParse(data.game_data);
+      if (validationResult.success) {
+        validatedGameData = validationResult.data;
+      } else {
+        console.error('Invalid game data in database for user:', user.id);
+        validatedGameData = null;
+      }
+    }
+
     return NextResponse.json({ 
-      gameData: data?.game_data || null 
+      gameData: validatedGameData
     })
   } catch (error) {
     console.error('API error:', error)
