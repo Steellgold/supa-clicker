@@ -5,8 +5,16 @@ import { ReactElement } from "react";
 import { Button } from "./ui/button";
 import { AuthButton } from "./auth/auth-button";
 import { AchievementsDialog } from "./achievements-dialog";
+import { ConfirmResetDialog } from "./confirm-reset-dialog";
+import { useGame } from "@/lib/providers/game-provider";
 
 export const Header = (): ReactElement => {
+  const { resetGame } = useGame();
+
+  const handleReset = async () => {
+    await resetGame();
+  }
+
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
       <div className="flex items-center justify-between">
@@ -20,6 +28,12 @@ export const Header = (): ReactElement => {
               <Trophy />
             </Button>
           </AchievementsDialog>
+
+          <ConfirmResetDialog onConfirm={handleReset}>
+            <Button variant="retro" size="sm">
+              Reset
+            </Button>
+          </ConfirmResetDialog>
 
           <AuthButton />
         </div>
