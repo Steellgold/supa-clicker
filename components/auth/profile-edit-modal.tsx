@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, User, Upload, X } from "lucide-react"
+import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 
 export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => {
@@ -173,9 +174,11 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
               <div className="relative">
                 {iconPreview ? (
                   <div className="relative w-16 h-16 border-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-800">
-                    <img 
+                    <Image 
                       src={iconPreview} 
                       alt="Profile icon" 
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                     />
                     <button
