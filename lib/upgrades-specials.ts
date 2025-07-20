@@ -131,6 +131,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 10,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
     unlockRequirement: 50000,
+    maxPurchases: 1,
   },
 
   // Special Effects - Tier 1
@@ -223,6 +224,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 10,
     category: SPECIAL_ITEM_CATEGORIES.AUTOMATION,
     unlockRequirement: 15000,
+    maxPurchases: 5,
   },
   {
     id: SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER,
@@ -234,6 +236,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 25,
     category: SPECIAL_ITEM_CATEGORIES.AUTOMATION,
     unlockRequirement: 30000,
+    maxPurchases: 3,
   },
 
   // Fun/Meme Items (easier to get early)

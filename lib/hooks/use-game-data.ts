@@ -42,7 +42,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const [lastSaveTime, setLastSaveTime] = useState(Date.now());
   
   const { makeSignedRequest, isReady: cryptoReady } = useCryptoSecurity();
-  
   const rpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoClickerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -123,9 +122,12 @@ export const useClickerGame = (options: GameOptions = {}) => {
       }
     });
 
+    const prestigeBonus = GAME_CONFIG.PRESTIGE.BASE_BONUS + (gameStateRef.current.prestigeLevel * GAME_CONFIG.PRESTIGE.BONUS_PER_LEVEL);
+    const prestigeMultiplier = Math.pow(prestigeBonus, gameStateRef.current.prestigeLevel);
+
     return { 
-      totalRps: totalRps * globalMultiplier, 
-      totalClickMultiplier: totalClickMultiplier * globalMultiplier 
+      totalRps: totalRps * globalMultiplier * prestigeMultiplier, 
+      totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier 
     };
   }, [upgrades]);
 
@@ -142,7 +144,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         lastSaveTime: Date.now()
       };
     });
-  }, [gameState.upgrades, gameState.specialItems, calculateTotalStats]);
+  }, [gameState.upgrades, gameState.specialItems, gameState.prestigeLevel, calculateTotalStats]);
 
   const handleClick = useCallback(() => {
     const currentState = gameStateRef.current;
@@ -363,6 +365,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       }
 
       console.log('✅ Game saved to Supabase successfully');
+      
       return true;
     } catch (error) {
       console.error("Error saving to Supabase:", error);
@@ -497,7 +500,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           const clickPower = prev.clickPower;
           return {
             ...prev,
-            totalClicks: prev.totalClicks + 1,
+            // Auto-clickers don't count towards totalClicks (only manual user clicks)
             currentPower: prev.currentPower + clickPower,
             totalPower: prev.totalPower + clickPower,
             currentResources: prev.currentPower + clickPower,
@@ -635,6 +638,30 @@ export const useClickerGame = (options: GameOptions = {}) => {
     return true;
   }, [gameState.clickPower]);
 
+  const canPrestige = useCallback(() => {
+    return gameState.totalPower >= GAME_CONFIG.PRESTIGE.MINIMUM_POWER;
+  }, [gameState.totalPower]);
+
+  const getPrestigeBonus = useCallback(() => {
+    const baseBonus = GAME_CONFIG.PRESTIGE.BASE_BONUS;
+    const levelBonus = gameState.prestigeLevel * GAME_CONFIG.PRESTIGE.BONUS_PER_LEVEL;
+    return baseBonus + levelBonus;
+  }, [gameState.prestigeLevel]);
+
+  const performPrestige = useCallback(() => {
+    if (!canPrestige()) return false;
+
+    const newPrestigeLevel = gameState.prestigeLevel + 1;
+    
+    setGameState(prev => ({
+      ...DEFAULT_GAME_STATE,
+      prestigeLevel: newPrestigeLevel,
+      lastSaveTime: Date.now()
+    }));
+
+    return true;
+  }, [gameState.prestigeLevel, gameState.totalPower, canPrestige]);
+
   return {
     gameState,
     isLoading,
@@ -647,6 +674,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
     resetGame,
     updateAchievements,
     addPower,
+    canPrestige,
+    getPrestigeBonus,
+    performPrestige,
     
     upgradesInfo,
     specialItemsState: gameState.specialItems,

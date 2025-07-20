@@ -202,6 +202,20 @@ export const GAME_CONFIG = {
   },
 
   // ===============================
+  // PRESTIGE SYSTEM
+  // ===============================
+  PRESTIGE: {
+    /** Minimum power required to prestige */
+    MINIMUM_POWER: 100000000, // 100M
+    
+    /** Base bonus multiplier per prestige level */
+    BASE_BONUS: 1.1,
+    
+    /** Additional bonus per prestige level */
+    BONUS_PER_LEVEL: 0.05, // 5% per level
+  },
+
+  // ===============================
   // ACHIEVEMENT THRESHOLDS
   // ===============================
   ACHIEVEMENTS: {

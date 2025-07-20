@@ -35,21 +35,26 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   }, [achievementData.unlockedAchievements, gameData]);
 
   useEffect(() => {
-    if (!gameData.isLoading) {
-      const stats: GameStats = {
-        totalClicks: gameData.gameState.totalClicks,
-        currentResources: gameData.gameState.currentPower,
-        resourcesPerSecond: gameData.gameState.rps,
-        lastSaveTime: gameData.gameState.lastSaveTime,
-        prestigeLevel: gameData.gameState.prestigeLevel,
-      };
+    if (!gameData.isLoading && gameData.gameState.lastSaveTime > 0) {
+      const timeSinceLastSave = Date.now() - gameData.gameState.lastSaveTime;
+      const isActiveGameplay = timeSinceLastSave < 10000; // Less than 10 seconds
+      
+      if (isActiveGameplay) {
+        const stats: GameStats = {
+          totalClicks: gameData.gameState.totalClicks,
+          currentResources: gameData.gameState.currentPower,
+          resourcesPerSecond: gameData.gameState.rps,
+          lastSaveTime: gameData.gameState.lastSaveTime,
+          prestigeLevel: gameData.gameState.prestigeLevel,
+        };
 
-      const upgrades: UserUpgrade[] = Object.entries(gameData.gameState.upgrades).map(([id, quantity]) => ({
-        upgradeId: parseInt(id),
-        quantity,
-      }));
+        const upgrades: UserUpgrade[] = Object.entries(gameData.gameState.upgrades).map(([id, quantity]) => ({
+          upgradeId: parseInt(id),
+          quantity,
+        }));
 
-      achievementData.checkForNewAchievements(stats, upgrades);
+        achievementData.checkForNewAchievements(stats, upgrades);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -57,7 +62,6 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
     gameData.gameState.currentPower,
     gameData.gameState.rps,
     gameData.gameState.upgrades,
-    gameData.gameState.lastSaveTime,
     gameData.gameState.prestigeLevel,
     gameData.isLoading,
   ]);
