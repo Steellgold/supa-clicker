@@ -3,6 +3,7 @@ import { SPECIAL_ITEM_IDS, SPECIAL_ITEM_EFFECTS } from '../constants/special-ite
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, GameOptions } from '@/type/game';
 import { getUpgradeCost } from '../upgrades';
+import { GAME_CONFIG } from '../config/game-config';
 
 const DEFAULT_GAME_STATE: GameState = {
   totalClicks: 0,
@@ -30,9 +31,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const {
     saveToSupabase = false,
     userId = null,
-    autoSaveInterval = 5000,
+    autoSaveInterval = GAME_CONFIG.INTERVALS.AUTO_SAVE,
     upgrades = [],
-    storageKey = 'clicker_game_save'
+    storageKey = GAME_CONFIG.STORAGE.GAME_SAVE_KEY
   } = options;
 
   const [gameState, setGameState] = useState(DEFAULT_GAME_STATE);
@@ -158,19 +159,19 @@ export const useClickerGame = (options: GameOptions = {}) => {
     let shouldActivateTimeBoost = false;
 
     // Golden Click and Lucky Streak logic
-    if (hasGoldenClick && Math.random() < 0.01) { // 1% chance for x100
+    if (hasGoldenClick && Math.random() < GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_CHANCE) {
       isSpecialClick = true;
-      specialMultiplier = 100;
-    } else if (hasLuckyStreak && Math.random() < 0.02) { // 2% chance for x50
+      specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_MULTIPLIER;
+    } else if (hasLuckyStreak && Math.random() < GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_CHANCE) {
       isSpecialClick = true;
-      specialMultiplier = 50;
+      specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_MULTIPLIER;
     }
 
     // Combo System logic
     let newComboCount = 0;
     if (hasComboSystem) {
       const timeSinceLastClick = currentTime - currentState.lastClickTime;
-      if (timeSinceLastClick < 500) { // 500ms eeach
+      if (timeSinceLastClick < GAME_CONFIG.INTERVALS.COMBO_TIMEOUT) {
         newComboCount = currentState.comboCount + 1;
       } else {
         newComboCount = 1; // Reset
@@ -178,14 +179,14 @@ export const useClickerGame = (options: GameOptions = {}) => {
       
       // Apply combo multiplier (1.1x per combo level, capped at 10x total)
       if (newComboCount > 1) {
-        comboMultiplier = Math.min(1 + (newComboCount - 1) * 0.1, 10);
+        comboMultiplier = Math.min(1 + (newComboCount - 1) * GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MULTIPLIER_INCREMENT, GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MAX_MULTIPLIER);
       }
     }
 
     // Time Boost activation logic
     if (hasTimeBoost && !currentState.timeBoostActive) {
-      // Base 5% chance + 1% per level
-      const timeBoostChance = 0.05 + (timeBoostLevel - 1) * 0.01;
+      // Base chance + chance per level
+      const timeBoostChance = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_CHANCE + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.CHANCE_PER_LEVEL;
       if (Math.random() < timeBoostChance) {
         shouldActivateTimeBoost = true;
       }
@@ -219,8 +220,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
       // Activate time boost if triggered
       if (shouldActivateTimeBoost) {
-        const boostDuration = 10000 + (timeBoostLevel - 1) * 2000; // 10s base + 2s per level
-        const boostMultiplier = 2 + (timeBoostLevel - 1) * 0.5; // 2x base + 0.5x per level
+        const boostDuration = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_DURATION + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.DURATION_PER_LEVEL;
+        const boostMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_MULTIPLIER + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.MULTIPLIER_PER_LEVEL;
         updates.timeBoostActive = true;
         updates.timeBoostEndTime = currentTime + boostDuration;
         updates.timeBoostMultiplier = boostMultiplier;
@@ -341,10 +342,18 @@ export const useClickerGame = (options: GameOptions = {}) => {
     try {
       console.log('🔄 Saving to Supabase via API...', { userId, dataKeys: Object.keys(data) });
       
-      const response = await fetch('/api/game/save', {
+      // Get CSRF token first
+      const csrfResponse = await fetch(GAME_CONFIG.ENDPOINTS.CSRF);
+      if (!csrfResponse.ok) {
+        throw new Error('Failed to get CSRF token');
+      }
+      const { csrfToken } = await csrfResponse.json();
+      
+      const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_SAVE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
         },
         body: JSON.stringify({ gameData: data }),
       });
@@ -368,7 +377,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     try {
-      const response = await fetch('/api/game/load');
+      const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_LOAD);
       
       if (!response.ok) {
         throw new Error('Failed to load game data');
@@ -409,7 +418,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (saveToSupabase && userId) {
       try {
         console.log('🗑️ Resetting Supabase data via API...');
-        const response = await fetch('/api/game/reset', {
+        const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_RESET, {
           method: 'DELETE',
         });
 
@@ -448,7 +457,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
             lastSaveTime: Date.now()
           };
         });
-      }, 1000);
+      }, GAME_CONFIG.INTERVALS.RPS_UPDATE);
     } else {
       if (rpsIntervalRef.current) {
         clearInterval(rpsIntervalRef.current);
@@ -470,16 +479,16 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // Calculate total auto-clicks per second
     if (specialItems[SPECIAL_ITEM_IDS.AUTO_CLICKER]) {
-      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.AUTO_CLICKER] * 1;
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.AUTO_CLICKER] * GAME_CONFIG.SPECIAL_ABILITIES.AUTO_CLICKER.BASIC;
     }
     if (specialItems[SPECIAL_ITEM_IDS.TURBO_AUTO_CLICKER]) {
-      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.TURBO_AUTO_CLICKER] * 5;
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.TURBO_AUTO_CLICKER] * GAME_CONFIG.SPECIAL_ABILITIES.AUTO_CLICKER.TURBO;
     }
     if (specialItems[SPECIAL_ITEM_IDS.HYPER_AUTO_CLICKER]) {
-      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.HYPER_AUTO_CLICKER] * 10;
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.HYPER_AUTO_CLICKER] * GAME_CONFIG.SPECIAL_ABILITIES.AUTO_CLICKER.HYPER;
     }
     if (specialItems[SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER]) {
-      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER] * 25;
+      autoClicksPerSecond += specialItems[SPECIAL_ITEM_IDS.QUANTUM_AUTO_CLICKER] * GAME_CONFIG.SPECIAL_ABILITIES.AUTO_CLICKER.QUANTUM;
     }
 
     if (autoClicksPerSecond > 0) {
@@ -609,7 +618,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       return false;
     }
 
-    const maxAllowed = Math.max(gameState.clickPower * 10, 100);
+    const maxAllowed = Math.max(gameState.clickPower * GAME_CONFIG.LIMITS.POWER_VALIDATION.MAX_MULTIPLIER, GAME_CONFIG.LIMITS.POWER_VALIDATION.MIN_THRESHOLD);
     const safeAmount = Math.min(amount, maxAllowed);
 
     if (safeAmount !== amount) {

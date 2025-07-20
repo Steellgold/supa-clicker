@@ -7,6 +7,7 @@ import { getAllUpgrades } from '@/lib/upgrades';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Component } from '@/type/component';
 import { GameStats, UserUpgrade } from '@/type/game';
+import { GAME_CONFIG } from '../config/game-config';
 
 type GameContextType = ReturnType<typeof useClickerGame> & ReturnType<typeof useAchievements>;
 
@@ -19,8 +20,8 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
     upgrades: getAllUpgrades(),
     saveToSupabase: !!user,
     userId: user?.id || null,
-    autoSaveInterval: 5000,
-    storageKey: 'clicker_game_save'
+    autoSaveInterval: GAME_CONFIG.INTERVALS.AUTO_SAVE,
+    storageKey: GAME_CONFIG.STORAGE.GAME_SAVE_KEY
   });
 
   const achievementData = useAchievements(gameData.gameState.unlockedAchievements);
