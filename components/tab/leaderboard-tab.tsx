@@ -2,7 +2,7 @@
 
 import React, { useState, ReactElement } from 'react';
 import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
-import { LeaderboardType } from '@/type/leaderboard';
+import { LeaderboardType, LeaderboardEntry } from '@/type/leaderboard';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '../ui/button';
 import { UserProfileLink } from '../user-profile-link';
@@ -27,7 +27,7 @@ export const LeaderboardTab = (): ReactElement => {
     return num.toString();
   };
 
-  const getValueForType = (entry: any, type: LeaderboardType): number => {
+  const getValueForType = (entry: LeaderboardEntry, type: LeaderboardType): number => {
     switch (type) {
       case 'total_clicks': return entry.total_clicks || 0;
       case 'total_power': return entry.total_power || 0;
