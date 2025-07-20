@@ -1,19 +1,14 @@
 "use client";
 
-import { Trophy } from "lucide-react";
+import { Moon, Sun, Trophy } from "lucide-react";
 import { ReactElement } from "react";
 import { Button } from "./ui/button";
 import { AuthButton } from "./auth/auth-button";
 import { AchievementsDialog } from "./achievements-dialog";
-import { ConfirmResetDialog } from "./confirm-reset-dialog";
-import { useGame } from "@/lib/providers/game-provider";
+import { useTheme } from "next-themes";
 
 export const Header = (): ReactElement => {
-  const { resetGame } = useGame();
-
-  const handleReset = async () => {
-    await resetGame();
-  }
+  const { theme, setTheme } = useTheme();
 
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
@@ -22,18 +17,23 @@ export const Header = (): ReactElement => {
           <span className="font-mono font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase">SupaClicker</span>
         </div>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="retro"
+            size="sm"
+            className="font-mono font-bold"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+            <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+
           <AchievementsDialog>
             <Button variant="retro" size="sm">
               <Trophy />
             </Button>
           </AchievementsDialog>
-
-          <ConfirmResetDialog onConfirm={handleReset}>
-            <Button variant="retro" size="sm">
-              Reset
-            </Button>
-          </ConfirmResetDialog>
 
           <AuthButton />
         </div>

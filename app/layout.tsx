@@ -2,10 +2,8 @@ import { Geist_Mono } from "next/font/google"
 import type { Component } from "@/type/component"
 import type { PropsWithChildren } from "react"
 import type { Metadata } from "next"
-import { AuthProvider } from "@/lib/auth/auth-context"
-import { GameProvider } from "@/lib/providers/game-provider"
-import { BulkBuyProvider } from "@/lib/contexts/bulk-buy-context"
 import "./globals.css"
+import { Providers } from "./providers"
 
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
@@ -46,14 +44,9 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
     <html lang="en">
       <body className={`${geistMono.className} antialiased bg-background text-foreground`}>
         <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.svg')] opacity-10 mix-blend-screen h-screen" />
-
-        <AuthProvider>
-          <GameProvider>
-            <BulkBuyProvider>
-              <main className="relative z-10">{children}</main>
-            </BulkBuyProvider>
-          </GameProvider>
-        </AuthProvider>
+          <Providers>
+            <main className="relative z-10">{children}</main>
+          </Providers>            
       </body>
     </html>
   )
