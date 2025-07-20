@@ -42,8 +42,24 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
       setUsername(userProfile.username || "")
       setBio(userProfile.bio || "")
       setIconPreview(userProfile.icon_url || null)
+    } else {
+      // Reset form when userProfile is null/undefined (after logout/re-login)
+      setDisplayName("")
+      setUsername("")
+      setBio("")
+      setIconPreview(null)
     }
   }, [userProfile])
+
+  // Force refresh profile data when modal opens if profile seems empty
+  useEffect(() => {
+    if (isOpen && user && !loading && (!userProfile || !userProfile.username)) {
+      const timer = setTimeout(() => {
+        window.location.reload()
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, user, loading, userProfile])
 
   useEffect(() => {
     if (displayName && !userProfile?.username) {
