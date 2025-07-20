@@ -653,7 +653,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     const newPrestigeLevel = gameState.prestigeLevel + 1;
     
-    setGameState(prev => ({
+    setGameState(() => ({
       ...DEFAULT_GAME_STATE,
       prestigeLevel: newPrestigeLevel,
       lastSaveTime: Date.now()
