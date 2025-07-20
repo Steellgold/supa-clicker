@@ -219,7 +219,7 @@ export const GAME_CONFIG = {
   // API ENDPOINTS
   // ===============================
   ENDPOINTS: {
-    /** CSRF token endpoint */
+    /** CSRF token endpoint (deprecated - use crypto signatures) */
     CSRF: '/api/csrf',
 
     /** Game save endpoint */
@@ -230,6 +230,9 @@ export const GAME_CONFIG = {
     
     /** Game reset endpoint */
     GAME_RESET: '/api/game/reset',
+    
+    /** Crypto security key endpoint */
+    SECURITY_KEY: '/api/security/key',
   },
 } as const;
 

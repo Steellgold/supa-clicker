@@ -5,12 +5,25 @@ import { Button } from "@/components/ui/button"
 import { LogOut, User, Save, Loader2 } from "lucide-react"
 import { AuthModal } from "@/components/auth/auth-modal"
 import type { Component } from "@/type/component"
+import { useEffect, useState } from "react"
 
 export const AuthButton: Component<object> = () => {
   const { user, userProfile, signOut, loading } = useAuth()
+  const [timeoutReached, setTimeoutReached] = useState(false)
   const handleSignOut = async () => await signOut()
 
-  if (loading) {
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('AuthButton: Loading timeout reached, forcing to show content')
+        setTimeoutReached(true)
+      }
+    }, 8000) // 8 secondes
+
+    return () => clearTimeout(timeoutId)
+  }, [loading])
+
+  if (loading && !timeoutReached) {
     return (
       <Button size="sm" variant="retro" disabled>
         <Loader2 className="animate-spin" />
