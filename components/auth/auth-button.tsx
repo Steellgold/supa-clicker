@@ -19,7 +19,7 @@ export const AuthButton: Component<object> = () => {
         console.warn('AuthButton: Loading timeout reached, forcing to show content')
         setTimeoutReached(true)
       }
-    }, 8000) // 8 secondes
+    }, 3000) // 3 secondes seulement
 
     return () => clearTimeout(timeoutId)
   }, [loading])
@@ -27,7 +27,7 @@ export const AuthButton: Component<object> = () => {
   if (loading && !timeoutReached) {
     return (
       <Button size="sm" variant="retro" disabled>
-        <Loader2 className="animate-spin" />
+        <Loader2 className="animate-spin w-4 h-4" />
       </Button>
     )
   }

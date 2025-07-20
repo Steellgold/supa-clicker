@@ -26,68 +26,28 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   const loadUserProfile = useCallback(async (userId: string) => {
     try {
       console.log("Loading user profile for:", userId)
-      const { data: existingProfile, error: selectError } = await supabase
+      
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      const { data: profile, error } = await supabase
         .from("user_profiles")
         .select("username, display_name, bio, avatar_url")
         .eq("user_id", userId)
         .single()
 
-      if (selectError && selectError.code !== "PGRST116") {
-        console.error("Error loading user profile:", selectError)
-        setUserProfile({})
-        return
-      }
-
-      if (existingProfile) {
-        console.log("Profile found:", existingProfile)
-        setUserProfile({ 
-          username: existingProfile.username || undefined,
-          display_name: existingProfile.display_name || undefined,
-          bio: existingProfile.bio || undefined,
-          icon_url: existingProfile.avatar_url || undefined
-        })
-        return
-      }
-
-      // Profile doesn't exist, create it
-      console.log("Creating new profile for user:", userId)
-      
-      // Get current user to extract email and metadata
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      
-      const email = currentUser?.email || ''
-      const metadata = currentUser?.user_metadata || {}
-      
-      // Generate a default username from email
-      const defaultUsername = metadata.username || 
-                              metadata.display_name || 
-                              metadata.full_name || 
-                              email.split('@')[0] || 
-                              `user_${userId.slice(0, 8)}`
-
-      const { error: insertError } = await supabase
-        .from("user_profiles")
-        .insert({
-          user_id: userId,
-          username: defaultUsername,
-          display_name: metadata.display_name || metadata.full_name || null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      
-      if (insertError) {
-        console.error("Error creating user profile:", insertError)
-        
-        // If it's a duplicate key error, try to fetch the existing profile
-        if (insertError.code === "23505") {
-          console.log("Profile already exists (race condition), trying to fetch it")
-          const { data: retryProfile } = await supabase
+      if (error) {
+        if (error.code === "PGRST116") {
+          console.log("Profile not found, waiting for trigger to create it...")
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          const { data: retryProfile, error: retryError } = await supabase
             .from("user_profiles")
             .select("username, display_name, bio, avatar_url")
             .eq("user_id", userId)
             .single()
             
-          if (retryProfile) {
+          if (!retryError && retryProfile) {
+            console.log("Profile found after retry:", retryProfile)
             setUserProfile({ 
               username: retryProfile.username || undefined,
               display_name: retryProfile.display_name || undefined,
@@ -96,14 +56,24 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
             })
             return
           }
+          
+          console.log("Profile still not found, setting empty profile")
+          setUserProfile({})
+          return
         }
         
+        console.error("Error loading user profile:", error)
         setUserProfile({})
         return
       }
 
-      console.log("Profile created successfully with username:", defaultUsername)
-      setUserProfile({ username: defaultUsername, display_name: undefined, bio: undefined, icon_url: undefined })
+      console.log("Profile found:", profile)
+      setUserProfile({ 
+        username: profile.username || undefined,
+        display_name: profile.display_name || undefined,
+        bio: profile.bio || undefined,
+        icon_url: profile.avatar_url || undefined
+      })
     } catch (error) {
       console.error("Error loading user profile:", error)
       setUserProfile({})
@@ -113,41 +83,38 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   useEffect(() => {
     let mounted = true
     
-    const timeoutId = setTimeout(() => {
-      if (mounted) {
-        console.warn("Auth loading timeout reached, forcing loading to false")
-        setLoading(false)
-      }
-    }, 10000) // 10 secondes
-
     const getInitialSession = async () => {
       try {
         console.log("Getting initial session...")
         const { data: { session }, error } = await supabase.auth.getSession()
         
+        if (!mounted) return
+        
         if (error) {
           console.error("Error getting session:", error)
-          if (mounted) {
-            setUser(null)
-            setUserProfile(null)
-            setLoading(false)
-          }
+          setUser(null)
+          setUserProfile(null)
+          setLoading(false)
           return
         }
 
         const currentUser = session?.user ?? null
         console.log("Initial session user:", currentUser?.id || "none")
         
-        if (mounted) {
-          setUser(currentUser)
-          
-          if (currentUser) {
+        setUser(currentUser)
+        
+        if (currentUser) {
+          try {
             await loadUserProfile(currentUser.id)
-          } else {
+          } catch (profileError) {
+            console.error("Error loading profile:", profileError)
             setUserProfile(null)
           }
-          setLoading(false)
+        } else {
+          setUserProfile(null)
         }
+        
+        setLoading(false)
       } catch (error) {
         console.error("Error getting initial session:", error)
         if (mounted) {
@@ -169,11 +136,18 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
           const currentUser = session?.user ?? null
           setUser(currentUser)
           
-          if (currentUser) {
-            await loadUserProfile(currentUser.id)
+          if (currentUser && event === 'SIGNED_IN') {
+            setLoading(true)
+            try {
+              await loadUserProfile(currentUser.id)
+            } catch (profileError) {
+              console.error("Error loading profile on sign in:", profileError)
+              setUserProfile(null)
+            }
           } else {
             setUserProfile(null)
           }
+          
           setLoading(false)
         } catch (error) {
           console.error("Error in auth state change:", error)
@@ -186,25 +160,41 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
       }
     )
 
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.warn("Auth loading timeout reached, forcing loading to false")
+        setLoading(false)
+      }
+    }, 5000)
+
     return () => {
       mounted = false
-      clearTimeout(timeoutId)
+      if (timeoutId) clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [supabase.auth, loadUserProfile])
 
   const signInWithMagicLink = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          shouldCreateUser: true
+        }
+      })
+      
+      if (error) {
+        console.error("Supabase auth error:", error)
+        return { error: error.message }
       }
-    })
-    
-    if (error) console.error("Supabase auth error:", error)
-    else console.log("Sign in with magic link initiated successfully for:", email)
-    
-    return { error: error?.message }
+      
+      console.log("Magic link sent successfully to:", email)
+      return { error: undefined }
+    } catch (error) {
+      console.error("Unexpected error sending magic link:", error)
+      return { error: "Failed to send magic link. Please try again." }
+    }
   }
 
   const signOut = async () => {
