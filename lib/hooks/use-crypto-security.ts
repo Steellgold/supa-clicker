@@ -108,7 +108,7 @@ export const useCryptoSecurity = () => {
     }
   }, [user])
 
-  const signSaveRequest = useCallback((gameData: any) => {
+  const signSaveRequest = useCallback((gameData: Record<string, unknown>) => {
     if (!state.cryptoKey) {
       throw new Error('Crypto key not available')
     }
@@ -126,7 +126,7 @@ export const useCryptoSecurity = () => {
 
   const makeSignedRequest = useCallback(async (
     endpoint: string,
-    action: { type: 'save' | 'purchase' | 'click', payload: any },
+    action: { type: 'save' | 'purchase' | 'click', payload: Record<string, unknown> },
     options: RequestInit = {}
   ) => {
     if (!state.cryptoKey) {

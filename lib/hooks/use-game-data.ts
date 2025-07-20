@@ -536,7 +536,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       } else {
         console.log('-----');
         console.log('Time Boost expired, resetting state');
-        console.log('Current Game State:', gameState);
+        console.log('Current Game State:', gameStateRef.current);
         console.log('-----');
         setGameState(prev => ({
           ...prev,

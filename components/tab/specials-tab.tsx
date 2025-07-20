@@ -3,7 +3,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatNumber } from "@/lib/utils";
 import { useGame } from "@/lib/providers/game-provider";
 import { getAllSpecialItems } from "@/lib/upgrades-specials";
-import { PowerTag } from "@/components/power-tag";
 import { useAuth } from "@/lib/auth/auth-context";
 import { SpecialItemCard } from "@/components/special-item-card";
 

@@ -1,14 +1,14 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto"
 
 interface SignedRequest {
-  data: any
+  data: GameAction
   timestamp: number
   signature: string
 }
 
 interface GameAction {
   type: 'save' | 'purchase' | 'click'
-  payload: any
+  payload: Record<string, unknown>
 }
 
 export class GameCryptoSecurity {
@@ -87,7 +87,7 @@ export class GameCryptoSecurity {
     }
   }
 
-  static signGameSave(gameData: any, userSecret: string): SignedRequest {
+  static signGameSave(gameData: Record<string, unknown>, userSecret: string): SignedRequest {
     return this.signGameAction({
       type: 'save',
       payload: gameData
@@ -100,24 +100,9 @@ export class GameCryptoSecurity {
       payload: { upgradeId, quantity }
     }, userSecret)
   }
-
-  static validateGameDataIntegrity(gameData: any, previousData: any, userSecret: string): boolean {
-    const criticalData = {
-      currentPower: gameData.currentPower,
-      totalPower: gameData.totalPower,
-      upgrades: gameData.upgrades,
-      specialItems: gameData.specialItems
-    }
-    
-    const dataHash = createHmac('sha256', userSecret)
-      .update(JSON.stringify(criticalData))
-      .digest('hex')
-    
-    return true
-  }
 }
 
-export function validateSignedGameRequest(request: SignedRequest, userSecret: string): { isValid: boolean; reason?: string; data?: any } {
+export function validateSignedGameRequest(request: SignedRequest, userSecret: string): { isValid: boolean; reason?: string; data?: GameAction } {
   
   const validation = GameCryptoSecurity.verifySignedRequest(request, userSecret)
   
