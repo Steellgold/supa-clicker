@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import { SpecialItemCategory, SpecialItemEffect } from "@/lib/constants/special-items";
 
 export type Upgrade = {
   id: number;
@@ -26,12 +26,20 @@ export type GameState = {
   clickPower: number;
   rps: number;
   upgrades: Record<number, number>;
+  specialItems: Record<number, number>;
   // Achievement-related fields
   unlockedAchievements: number[];
   lastSaveTime: number;
   prestigeLevel: number;
   resourcesPerSecond: number;
   currentResources: number;
+  // Combo System
+  comboCount: number;
+  lastClickTime: number;
+  // Time Boost System
+  timeBoostActive: boolean;
+  timeBoostEndTime: number;
+  timeBoostMultiplier: number;
 }
 
 export type UserUpgrade = {
@@ -54,4 +62,18 @@ export type Achievement = {
   requirement: (stats: GameStats, upgrades?: UserUpgrade[]) => boolean;
   unlocked: boolean;
   icon: string;
+}
+
+export type SpecialItem = {
+  id: number;
+  name: string;
+  description: string;
+  baseCost: number;
+  costGrowth: number;
+  category: SpecialItemCategory;
+  effect: SpecialItemEffect;
+  multiplier: number;
+  unlockRequirement?: number;
+  maxPurchases?: number;
+  isFeatureUnlock?: boolean;
 }
