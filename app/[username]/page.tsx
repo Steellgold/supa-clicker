@@ -63,31 +63,33 @@ const UserProfilePage: Component<Props> = ({ params }) => {
         console.log('Loading profile for username:', username);
         setLoading(true);
         
-        // Check if username is actually a UUID (user_id)
-        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
-        console.log('Is UUID:', isUUID);
-        
-        // Get user profile
-        console.log('Fetching user profile...');
-        const { data: profileData, error: profileError } = await supabase
-          .from('user_profiles')
-          .select('username, avatar_url, bio, display_name, created_at, user_id')
-          .eq(isUUID ? 'user_id' : 'username', username)
-          .single();
+        const { data, error } = await supabase.rpc('get_user_profile_by_username', {
+          p_username: username
+        });
 
-        console.log('Profile data:', profileData, 'Error:', profileError);
+        console.log('Profile data:', data, 'Error:', error);
 
-        if (profileError) {
-          console.error('Profile error:', profileError);
-          setError(`User not found: ${profileError.message}`);
+        if (error) {
+          console.error('Profile error:', error);
+          setError(`Error loading profile: ${error.message}`);
           return;
         }
 
-        if (!profileData) {
+        if (!data) {
           setError('User not found');
           return;
         }
 
+        const profileResponse = data as { profile: UserProfile; stats: UserStats; gameData: UserGameData };
+        
+        if (!profileResponse.profile) {
+          setError('User not found');
+          return;
+        }
+
+        const { profile: profileData, stats: statsData, gameData: gameDataResult } = profileResponse;
+
+        // Set profile data
         setProfile({
           username: profileData.username,
           avatar_url: profileData.avatar_url,
@@ -95,60 +97,31 @@ const UserProfilePage: Component<Props> = ({ params }) => {
           bio: profileData.bio,
           created_at: profileData.created_at
         });
-        console.log('Profile set successfully');
 
-        // Get leaderboard stats using the view
-        console.log('Fetching leaderboard stats...');
-        const actualUsername = profileData.username;
-        
-        const { data: statsData, error: statsError } = await supabase
-          .from('leaderboard_view')
-          .select('total_clicks, total_power, clicks_per_second, prestige_level, achievements_count, updated_at')
-          .eq('username', actualUsername)
-          .maybeSingle();
+        // Set stats data
+        setStats({
+          total_clicks: statsData.total_clicks || 0,
+          total_power: statsData.total_power || 0,
+          clicks_per_second: statsData.clicks_per_second || 0,
+          prestige_level: statsData.prestige_level || 0,
+          achievements_count: statsData.achievements_count || 0,
+          updated_at: statsData.updated_at || new Date().toISOString()
+        });
 
-        console.log('Stats data:', statsData, 'Error:', statsError);
+        // Set game data
+        setGameData({
+          totalClicks: gameDataResult.totalClicks || 0,
+          totalPower: gameDataResult.totalPower || 0,
+          prestigeLevel: gameDataResult.prestigeLevel || 0,
+          unlockedAchievements: Array.isArray(gameDataResult.unlockedAchievements) ? 
+            gameDataResult.unlockedAchievements as number[] : [],
+          upgrades: gameDataResult.upgrades ? 
+            (gameDataResult.upgrades as Record<number, number>) : {},
+          specialItems: gameDataResult.specialItems ? 
+            (gameDataResult.specialItems as Record<number, number>) : {}
+        });
 
-        if (!statsError && statsData) {
-          setStats({
-            total_clicks: statsData.total_clicks || 0,
-            total_power: statsData.total_power || 0,
-            clicks_per_second: statsData.clicks_per_second || 0,
-            prestige_level: statsData.prestige_level || 0,
-            achievements_count: statsData.achievements_count || 0,
-            updated_at: statsData.updated_at || new Date().toISOString()
-          });
-        }
-
-        // Get game data from clicker_saves for this user
-        console.log('Fetching game data for username:', actualUsername);
-        try {
-          const { data: gameDataResult, error: gameError } = await supabase
-            .from('clicker_saves')
-            .select('total_clicks, total_power, prestige_level, achievements, upgrades, special_items')
-            .eq('user_id', profileData.user_id)
-            .maybeSingle();
-
-          console.log('Game data:', gameDataResult, 'Error:', gameError);
-
-          if (!gameError && gameDataResult) {
-            setGameData({
-              totalClicks: gameDataResult.total_clicks || 0,
-              totalPower: gameDataResult.total_power || 0,
-              prestigeLevel: gameDataResult.prestige_level || 0,
-              unlockedAchievements: Array.isArray(gameDataResult.achievements) ? 
-                gameDataResult.achievements as number[] : [],
-              upgrades: gameDataResult.upgrades ? 
-                (gameDataResult.upgrades as Record<number, number>) : {},
-              specialItems: gameDataResult.special_items ? 
-                (gameDataResult.special_items as Record<number, number>) : {}
-            });
-          } else {
-            console.log('No game data available for this user');
-          }
-        } catch (err) {
-          console.log('Error fetching game data:', err);
-        }
+        console.log('Profile loaded successfully');
 
       } catch (err) {
         console.error('Unexpected error loading profile:', err);

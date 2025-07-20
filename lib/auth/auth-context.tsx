@@ -27,8 +27,6 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     try {
       console.log("Loading user profile for:", userId)
       
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
       const { data: profile, error } = await supabase
         .from("user_profiles")
         .select("username, display_name, bio, avatar_url")
@@ -37,27 +35,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
       if (error) {
         if (error.code === "PGRST116") {
-          console.log("Profile not found, waiting for trigger to create it...")
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          
-          const { data: retryProfile, error: retryError } = await supabase
-            .from("user_profiles")
-            .select("username, display_name, bio, avatar_url")
-            .eq("user_id", userId)
-            .single()
-            
-          if (!retryError && retryProfile) {
-            console.log("Profile found after retry:", retryProfile)
-            setUserProfile({ 
-              username: retryProfile.username || undefined,
-              display_name: retryProfile.display_name || undefined,
-              bio: retryProfile.bio || undefined,
-              icon_url: retryProfile.avatar_url || undefined
-            })
-            return
-          }
-          
-          console.log("Profile still not found, setting empty profile")
+          console.log("Profile not found, setting empty profile")
           setUserProfile({})
           return
         }
@@ -212,54 +190,29 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     }
 
     try {
-      const updateData = {
-        username: profile.username,
-        updated_at: new Date().toISOString(),
-        ...(profile.display_name !== undefined && { display_name: profile.display_name }),
-        ...(profile.bio !== undefined && { bio: profile.bio }),
-        ...(profile.icon_url && { avatar_url: profile.icon_url })
+      const { data, error } = await supabase.rpc('update_user_profile', {
+        p_user_id: user.id,
+        p_username: profile.username,
+        p_display_name: profile.display_name || undefined,
+        p_bio: profile.bio || undefined,
+        p_avatar_url: profile.icon_url
+      })
+
+      if (error) {
+        console.error("Profile update error:", error)
+        return { error: error.message }
       }
 
-      const { error: updateError } = await supabase
-        .from("user_profiles")
-        .update(updateData)
-        .eq("user_id", user.id)
-
-      if (updateError) {
-        console.error("Update error:", updateError)
-        const insertData = {
-          user_id: user.id,
-          ...updateData
-        }
-
-        const { error: insertError } = await supabase
-          .from("user_profiles")
-          .insert(insertData)
-
-        if (insertError) {
-          console.error("Insert error:", insertError)
-          if (insertError.code === "42P01" || insertError.message?.includes("406")) {
-            return { error: "Database table not ready. Please contact support or try again later." }
-          }
-
-          if (insertError.code === "23505") {
-            const { error: upsertError } = await supabase
-              .from("user_profiles")
-              .upsert(insertData, {
-                onConflict: "user_id"
-              })
-
-            if (upsertError) {
-              console.error("Upsert error:", upsertError)
-              return { error: upsertError.message }
-            }
-          } else {
-            return { error: insertError.message }
-          }
-        }
+      if (data) {
+        const profileData = data as { username?: string; display_name?: string; bio?: string; avatar_url?: string }
+        setUserProfile({
+          username: profileData.username || undefined,
+          display_name: profileData.display_name || undefined,
+          bio: profileData.bio || undefined,
+          icon_url: profileData.avatar_url || undefined
+        })
       }
 
-      await loadUserProfile(user.id)
       return {}
     } catch (error) {
       console.error("Error updating profile:", error)

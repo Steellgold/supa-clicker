@@ -206,12 +206,26 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_user_profile_by_username: {
+        Args: { p_username: string }
+        Returns: Json
+      }
       get_user_rank: {
         Args: { target_user_id: string; order_by?: string }
         Returns: {
           rank_position: number
           user_data: Json
         }[]
+      }
+      update_user_profile: {
+        Args: {
+          p_user_id: string
+          p_username: string
+          p_display_name?: string
+          p_bio?: string
+          p_avatar_url?: string
+        }
+        Returns: Json
       }
     }
     Enums: {
