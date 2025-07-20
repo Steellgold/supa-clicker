@@ -44,8 +44,8 @@ export const UpgradesTab = (): ReactElement => {
       <ScrollArea
         style={{
           height: user
-            ? "calc(100vh - 70px - 60px - 24px - 20px - 60px)" // Header - Tabs - Padding - Next unlock section - Bulk buy selector
-            : "calc(100vh - 70px - 60px - 24px - 120px - 60px - 60px)", // + Alert section - Bulk buy selector
+            ? `calc(100vh - 70px - 60px - 24px - 20px${isBBUnlocked ? " - 60px" : ""})` // Header - Tabs - Padding - Next unlock section - Bulk buy selector (if unlocked)
+            : `calc(100vh - 70px - 60px - 24px - 120px - 60px${isBBUnlocked ? " - 60px" : ""})`, // + Alert section - Bulk buy selector (if unlocked)
           }}
         >
           <div className="flex flex-col gap-2">

@@ -63,30 +63,42 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
   useEffect(() => {
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const currentUser = session?.user ?? null
-      setUser(currentUser)
-      
-      if (currentUser) {
-        await loadUserProfile(currentUser.id)
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+        
+        if (currentUser) {
+          await loadUserProfile(currentUser.id)
+        } else {
+          setUserProfile(null)
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error)
+        setUser(null)
         setUserProfile(null)
+      } finally {
+        setLoading(false)
       }
-      
-      setLoading(false)
     }
 
     getInitialSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-        
-        if (currentUser) await loadUserProfile(currentUser.id)
-        else setUserProfile(null)
-        
-        setLoading(false)
+        try {
+          const currentUser = session?.user ?? null
+          setUser(currentUser)
+          
+          if (currentUser) await loadUserProfile(currentUser.id)
+          else setUserProfile(null)
+        } catch (error) {
+          console.error("Error in auth state change:", error)
+          setUser(null)
+          setUserProfile(null)
+        } finally {
+          setLoading(false)
+        }
       }
     )
 
