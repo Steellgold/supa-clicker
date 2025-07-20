@@ -24,6 +24,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
   const loadUserProfile = useCallback(async (userId: string) => {
     try {
+      console.log("Loading user profile for:", userId)
       const { data: existingProfile, error: selectError } = await supabase
         .from("user_profiles")
         .select("username")
@@ -37,10 +38,12 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
       }
 
       if (existingProfile) {
+        console.log("Profile found:", existingProfile)
         setUserProfile(existingProfile.username ? { username: existingProfile.username } : {})
         return
       }
 
+      console.log("Creating new profile for user:", userId)
       const { error: upsertError } = await supabase
         .from("user_profiles")
         .upsert({ user_id: userId, username: null}, {
@@ -62,23 +65,51 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   }, [supabase])
 
   useEffect(() => {
+    let mounted = true
+    
+    // Timeout de sécurité pour éviter un loader permanent
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        console.warn("Auth loading timeout reached, forcing loading to false")
+        setLoading(false)
+      }
+    }, 10000) // 10 secondes
+
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
+        console.log("Getting initial session...")
+        const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (currentUser) {
-          await loadUserProfile(currentUser.id)
-        } else {
-          setUserProfile(null)
+        if (error) {
+          console.error("Error getting session:", error)
+          if (mounted) {
+            setUser(null)
+            setUserProfile(null)
+            setLoading(false)
+          }
+          return
+        }
+
+        const currentUser = session?.user ?? null
+        console.log("Initial session user:", currentUser?.id || "none")
+        
+        if (mounted) {
+          setUser(currentUser)
+          
+          if (currentUser) {
+            await loadUserProfile(currentUser.id)
+          } else {
+            setUserProfile(null)
+          }
+          setLoading(false)
         }
       } catch (error) {
         console.error("Error getting initial session:", error)
-        setUser(null)
-        setUserProfile(null)
-      } finally {
-        setLoading(false)
+        if (mounted) {
+          setUser(null)
+          setUserProfile(null)
+          setLoading(false)
+        }
       }
     }
 
@@ -87,22 +118,34 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         try {
+          console.log("Auth state change:", event, session?.user?.id || "no user")
+          if (!mounted) return
+          
           const currentUser = session?.user ?? null
           setUser(currentUser)
           
-          if (currentUser) await loadUserProfile(currentUser.id)
-          else setUserProfile(null)
+          if (currentUser) {
+            await loadUserProfile(currentUser.id)
+          } else {
+            setUserProfile(null)
+          }
+          setLoading(false)
         } catch (error) {
           console.error("Error in auth state change:", error)
-          setUser(null)
-          setUserProfile(null)
-        } finally {
-          setLoading(false)
+          if (mounted) {
+            setUser(null)
+            setUserProfile(null)
+            setLoading(false)
+          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      clearTimeout(timeoutId)
+      subscription.unsubscribe()
+    }
   }, [supabase.auth, loadUserProfile])
 
   const signInWithMagicLink = async (email: string) => {
