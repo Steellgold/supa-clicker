@@ -1031,3 +1031,8 @@ export const getRequiredTotalForNext = (currentTotalPower: number): number | nul
 export const getAllUpgrades = (): Upgrade[] => {
   return UPGRADES_DATA;
 }
+
+export const getFirstLockedUpgradeIndex = (totalPower: number): number => {
+  const allUpgrades = getAllUpgrades();
+  return allUpgrades.findIndex((_, index) => totalPower < getUnlockThreshold(index));
+};
