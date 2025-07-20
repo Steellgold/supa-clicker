@@ -6,10 +6,14 @@ import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades";
 import { PowerTag } from "@/components/power-tag";
 import { useAuth } from "@/lib/auth/auth-context";
 import { UpgradeCard } from "@/components/upgrade-card";
+import { BulkBuySettings } from "@/components/bulk-buy-settings";
+import { isBulkBuyUnlocked } from "@/lib/features-utils";
 
 export const UpgradesTab = (): ReactElement => {
   const { gameState } = useGame();
   const { user } = useAuth();
+
+  const isBBUnlocked = isBulkBuyUnlocked(gameState);
 
   return (
     <>
@@ -31,11 +35,17 @@ export const UpgradesTab = (): ReactElement => {
         </span>
       </div>
 
+      {isBBUnlocked && (
+        <div className="flex justify-end  border-neutral-200 dark:border-neutral-700">
+          <BulkBuySettings />
+        </div>
+      )}
+
       <ScrollArea
         style={{
           height: user
-            ? "calc(100vh - 70px - 60px - 24px - 20px)" // Header - Tabs - Padding - Next unlock section
-            : "calc(100vh - 70px - 60px - 24px - 120px - 60px)", // + Alert section
+            ? "calc(100vh - 70px - 60px - 24px - 20px - 60px)" // Header - Tabs - Padding - Next unlock section - Bulk buy selector
+            : "calc(100vh - 70px - 60px - 24px - 120px - 60px - 60px)", // + Alert section - Bulk buy selector
           }}
         >
           <div className="flex flex-col gap-2">

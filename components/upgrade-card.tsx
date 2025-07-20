@@ -9,6 +9,8 @@ import { getUnlockThreshold, getFirstLockedUpgradeIndex } from "@/lib/upgrades";
 import { PowerTag } from "./power-tag";
 import { cn } from "@/lib/utils";
 import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
+import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
+import { isBulkBuyUnlocked } from "@/lib/features-utils";
 
 interface UpgradeCardProps {
   upgrade: Upgrade;
@@ -17,10 +19,44 @@ interface UpgradeCardProps {
 
 export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 }) => {
   const { buyUpgrade, getUpgradeCost, gameState, upgradesInfo } = useGame();
+  const { bulkBuyOption } = useBulkBuy();
   
   const upgradeInfo = upgradesInfo?.find(u => u.id === upgrade.id);
   const currentLevel = upgradeInfo?.currentLevel || 0;
-  const cost = upgradeInfo?.cost || getUpgradeCost(upgrade, currentLevel);
+  
+  // Check if bulk buy is unlocked, otherwise default to 1
+  const isBulkUnlocked = isBulkBuyUnlocked(gameState);
+  const effectiveBulkBuyOption = isBulkUnlocked ? bulkBuyOption : 1;
+  
+  // Calculate bulk buy amounts and costs
+  const getBulkBuyAmount = (): number => {
+    if (effectiveBulkBuyOption === "MAX") {
+      let maxAffordable = 0;
+      let currentCost = upgradeInfo?.cost || getUpgradeCost(upgrade, currentLevel);
+      let remainingPower = gameState.currentPower;
+      
+      while (remainingPower >= currentCost && maxAffordable < 1000) { // Safety limit
+        remainingPower -= currentCost;
+        maxAffordable++;
+        currentCost = getUpgradeCost(upgrade, currentLevel + maxAffordable);
+      }
+      
+      return Math.max(1, maxAffordable);
+    }
+    return typeof effectiveBulkBuyOption === "number" ? effectiveBulkBuyOption : 1;
+  };
+  
+  const actualBuyAmount = getBulkBuyAmount();
+  
+  const calculateBulkCost = (amount: number): number => {
+    let totalCost = 0;
+    for (let i = 0; i < amount; i++) {
+      totalCost += getUpgradeCost(upgrade, currentLevel + i);
+    }
+    return totalCost;
+  };
+  
+  const cost = calculateBulkCost(actualBuyAmount);
   const canAfford = gameState.currentPower >= cost;
   
   const unlockThreshold = getUnlockThreshold(index);
@@ -33,7 +69,7 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
 
   const handleBuy = () => {
     if (canAfford && isUnlocked) {
-      buyUpgrade(upgrade.id);
+      buyUpgrade(upgrade.id, actualBuyAmount);
     }
   };
   
@@ -110,7 +146,9 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                       : "bg-neutral-200 text-neutral-500 hover:bg-red-200 hover:text-red-500 cursor-not-allowed"
                   }`}
                 >
-                  {canAfford ? `Buy (${formatNumber(cost)})` : (
+                  {canAfford ? (
+                    `Buy (${formatNumber(cost)})`
+                  ) : (
                     <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 grayscale" }}>
                       Need {formatNumber(cost)}
                     </PowerTag>

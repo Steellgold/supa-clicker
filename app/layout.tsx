@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react"
 import type { Metadata } from "next"
 import { AuthProvider } from "@/lib/auth/auth-context"
 import { GameProvider } from "@/lib/providers/game-provider"
+import { BulkBuyProvider } from "@/lib/contexts/bulk-buy-context"
 import "./globals.css"
 
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
@@ -48,7 +49,9 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
 
         <AuthProvider>
           <GameProvider>
-            <main className="relative z-10">{children}</main>
+            <BulkBuyProvider>
+              <main className="relative z-10">{children}</main>
+            </BulkBuyProvider>
           </GameProvider>
         </AuthProvider>
       </body>
