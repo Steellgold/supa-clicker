@@ -46,44 +46,44 @@ export const SPECIAL_ITEM_IDS = {
  */
 export const SPECIAL_ITEM_EFFECTS = {
   // Upgrade Boosts
-  AI_INTERN_BOOST: 'x2 AI Intern',
-  JUNIOR_DEV_BOOST: 'x3 Junior Dev',
-  DEVOPS_BOOST: 'x2 DevOps',
-  CLOUD_BOOST: 'x1.5 Cloud',
-  AI_ML_BOOST: 'x3 AI/ML',
+  AI_INTERN_BOOST: "x2 AI Intern",
+  JUNIOR_DEV_BOOST: "x3 Junior Dev",
+  DEVOPS_BOOST: "x2 DevOps",
+  CLOUD_BOOST: "x1.5 Cloud",
+  AI_ML_BOOST: "x3 AI/ML",
 
   // Global Effects
-  GLOBAL_1_5X: 'x1.5 Global',
-  GLOBAL_2X: 'x2 Global',
-  GLOBAL_3X: 'x3 Global',
-  GLOBAL_5X: 'x5 Global',
-  GLOBAL_10X: 'x10 Global',
+  GLOBAL_1_5X: "x1.5 Global",
+  GLOBAL_2X: "x2 Global",
+  GLOBAL_3X: "x3 Global",
+  GLOBAL_5X: "x5 Global",
+  GLOBAL_10X: "x10 Global",
 
   // Special Effects
-  GOLDEN_CLICK: 'Golden Click',
-  LUCKY_STREAK: 'Lucky Streak',
-  COMBO_SYSTEM: 'Combo System',
-  TIME_BOOST: 'Time Boost',
-  CLICK_FRENZY: 'Click Frenzy',
+  GOLDEN_CLICK: "Golden Click",
+  LUCKY_STREAK: "Lucky Streak",
+  COMBO_SYSTEM: "Combo Master",
+  TIME_BOOST: "Time Warp",
+  CLICK_FRENZY: "Frenzy Mode",
 
   // Automation Effects
-  AUTO_CLICK: 'Auto Click',
-  TURBO_AUTO: 'Turbo Auto',
-  HYPER_AUTO: 'Hyper Auto',
-  QUANTUM_AUTO: 'Quantum Auto',
+  AUTO_CLICK: "Auto-Clicker",
+  TURBO_AUTO: "Turbo Auto-Clicker",
+  HYPER_AUTO: "Hyper Auto-Clicker",
+  QUANTUM_AUTO: "Quantum Auto-Clicker",
 
   // Feature Unlocks
-  BULK_BUY_FEATURE: 'Bulk Buy Feature',
-  DEBUG_MODE: 'Debug Mode',
-  DUCK_WALKER: 'Duck Walker',
-  CAFFEINE_BOOST: 'Caffeine Boost',
+  BULK_BUY_FEATURE: "Bulk Purchase System",
+  DEBUG_MODE: "Debug Mode",
+  DUCK_WALKER: "Duck Walker",
+  CAFFEINE_BOOST: "Caffeine Boost",
 } as const;
 
 export const SPECIAL_ITEM_CATEGORIES = {
-  UPGRADE_BOOST: 'upgrade_boost',
-  GLOBAL: 'global',
-  SPECIAL: 'special',
-  AUTOMATION: 'automation',
+  UPGRADE_BOOST: "upgrade_boost",
+  GLOBAL: "global",
+  SPECIAL: "special",
+  AUTOMATION: "automation",
 } as const;
 
 export type SpecialItemId = typeof SPECIAL_ITEM_IDS[keyof typeof SPECIAL_ITEM_IDS];
