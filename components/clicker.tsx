@@ -5,6 +5,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { formatWithSpaces } from "@/lib/numbers";
 
 type ClickEffect = {
   id: number;
@@ -94,7 +95,7 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
           initial={{ opacity: 1, scale: 0, x: effect.x, y: effect.y }}
           animate={{ opacity: 0, scale: 1.5, y: effect.y - 40 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className={`absolute pointer-events-none text-lg font-bold z-20 ${
+          className={`absolute pointer-events-none text-3xl font-bold z-20 ${
             effect.isPlatinum 
               ? "text-purple-400" 
                 : effect.isGolden 
@@ -103,7 +104,7 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
           }`}
           style={{ left: "50%", top: "50%" }}
         >
-          +{effect.gained}
+          +{formatWithSpaces(effect.gained)}
         </motion.div>
       ))}
     </div>
