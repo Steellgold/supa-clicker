@@ -41,7 +41,7 @@ export const GET = async (request: NextRequest) => {
 
     const { data: existingKey, error: selectError } = await supabaseAdmin
       .from('user_crypto_keys')
-      .select('crypto_key, created_at')
+      .select('public_key, created_at')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -53,8 +53,8 @@ export const GET = async (request: NextRequest) => {
     let cryptoKey: string
     let isNewKey = false
 
-    if (existingKey?.crypto_key) {
-      cryptoKey = existingKey.crypto_key
+    if (existingKey?.public_key) {
+      cryptoKey = existingKey.public_key
       
       const keyAge = now - new Date(existingKey.created_at).getTime()
       const thirtyDays = 30 * 24 * 60 * 60 * 1000
@@ -66,9 +66,9 @@ export const GET = async (request: NextRequest) => {
         const { error: updateError } = await supabaseAdmin
           .from('user_crypto_keys')
           .update({
-            crypto_key: cryptoKey,
+            public_key: cryptoKey,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
           })
           .eq('user_id', user.id)
 
@@ -85,9 +85,9 @@ export const GET = async (request: NextRequest) => {
         .from('user_crypto_keys')
         .upsert({
           user_id: user.id,
-          crypto_key: cryptoKey,
+          public_key: cryptoKey,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }, {
           onConflict: 'user_id'
         })
@@ -133,9 +133,9 @@ export async function POST(request: NextRequest) {
       .from('user_crypto_keys')
       .upsert({
         user_id: user.id,
-        crypto_key: newCryptoKey,
+        public_key: newCryptoKey,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       }, {
         onConflict: 'user_id'
       })

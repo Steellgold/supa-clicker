@@ -41,45 +41,72 @@ export type Database = {
     Tables: {
       clicker_saves: {
         Row: {
+          achievements: Json | null
+          clicks_per_second: number | null
           created_at: string
-          game_data: Json
+          current_power: number | null
           id: string
+          last_save_time: number | null
+          prestige_level: number | null
+          special_items: Json | null
+          total_clicks: number | null
+          total_power: number | null
           updated_at: string
+          upgrades: Json | null
           user_id: string
         }
         Insert: {
+          achievements?: Json | null
+          clicks_per_second?: number | null
           created_at?: string
-          game_data: Json
+          current_power?: number | null
           id?: string
+          last_save_time?: number | null
+          prestige_level?: number | null
+          special_items?: Json | null
+          total_clicks?: number | null
+          total_power?: number | null
           updated_at?: string
+          upgrades?: Json | null
           user_id: string
         }
         Update: {
+          achievements?: Json | null
+          clicks_per_second?: number | null
           created_at?: string
-          game_data?: Json
+          current_power?: number | null
           id?: string
+          last_save_time?: number | null
+          prestige_level?: number | null
+          special_items?: Json | null
+          total_clicks?: number | null
+          total_power?: number | null
           updated_at?: string
+          upgrades?: Json | null
           user_id?: string
         }
         Relationships: []
       }
       user_crypto_keys: {
         Row: {
-          created_at: string | null
-          crypto_key: string
-          updated_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          public_key: string
           user_id: string
         }
         Insert: {
-          created_at?: string | null
-          crypto_key: string
-          updated_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          public_key: string
           user_id: string
         }
         Update: {
-          created_at?: string | null
-          crypto_key?: string
-          updated_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          public_key?: string
           user_id?: string
         }
         Relationships: []
@@ -90,30 +117,27 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
-          id: string
           updated_at: string
           user_id: string
-          username: string | null
+          username: string
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
-          id?: string
           updated_at?: string
           user_id: string
-          username?: string | null
+          username: string
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
-          id?: string
           updated_at?: string
           user_id?: string
-          username?: string | null
+          username?: string
         }
         Relationships: []
       }
@@ -123,6 +147,7 @@ export type Database = {
         Row: {
           achievements_count: number | null
           clicks_per_second: number | null
+          current_power: number | null
           display_name: string | null
           prestige_level: number | null
           total_clicks: number | null
@@ -139,38 +164,50 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
-          last_played: string | null
-          prestige_level: string | null
-          special_items: Json | null
-          total_clicks: string | null
-          total_power: string | null
-          unlocked_achievements: Json | null
-          upgrades: Json | null
           user_id: string | null
           username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
     }
     Functions: {
+      cleanup_expired_crypto_keys: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       get_leaderboard: {
         Args: { order_by?: string; limit_count?: number }
         Returns: {
           user_id: string
           username: string
           display_name: string
+          current_power: number
+          total_power: number
           total_clicks: number
           clicks_per_second: number
-          total_power: number
           prestige_level: number
           achievements_count: number
           updated_at: string
         }[]
       }
       get_user_rank: {
-        Args:
-          | { target_user_id: string; order_by?: string }
-          | { target_user_id: string; order_by?: string }
+        Args: { target_user_id: string; order_by?: string }
         Returns: {
           rank_position: number
           user_data: Json
