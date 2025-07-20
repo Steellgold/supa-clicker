@@ -13,8 +13,9 @@ import { Clicker } from "@/components/clicker";
 import { Header } from "@/components/header";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { UpgradesTab } from "@/components/tab/upgrades-tab";
+import { DuckWalker } from "@/components/duck-walker";
 
 type TabType = "UPGRADES" | "SPECIALS";
 
@@ -24,6 +25,18 @@ const Home: Component<object> = () => {
   const { user } = useAuth();
 
   const leftPanelRef = useRef<HTMLDivElement>(null);
+  const [leftPanelWidth, setLeftPanelWidth] = useState<number>(0);
+
+  useEffect(() => {
+    function updateWidth() {
+      if (leftPanelRef.current) {
+        setLeftPanelWidth(leftPanelRef.current.offsetWidth);
+      }
+    }
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
   
   return (
     <>
@@ -66,7 +79,6 @@ const Home: Component<object> = () => {
             </div>
           </div>
 
-          {/* Achievements notifications in left panel */}
           <AnimatePresence>
             {newAchievements.map((achievement) => (
               <motion.div
@@ -89,9 +101,11 @@ const Home: Component<object> = () => {
               </motion.div>
             ))}
           </AnimatePresence>
+
+          <DuckWalker maxX={leftPanelWidth} />
         </div>
 
-        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors">
+        <div className="w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors z-0 md:z-20">
           <div className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-700 flex transition-colors sticky top-0 z-10 md:static">
             <Button
               onClick={() => setTab("UPGRADES")}
