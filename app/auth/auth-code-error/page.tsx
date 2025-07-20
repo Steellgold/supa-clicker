@@ -2,29 +2,9 @@
 
 import Link from 'next/link'
 import { ReactElement } from 'react'
-import { useSearchParams } from 'next/navigation'
 
 const AuthCodeErrorPage = (): ReactElement => {
-  const searchParams = useSearchParams()
-  const error = searchParams.get('error')
   
-  const getErrorMessage = (errorType: string | null) => {
-    switch (errorType) {
-      case 'otp_verification_failed':
-        return 'Failed to verify magic link. The link may be expired or invalid.'
-      case 'pkce_verification_failed':
-        return 'Failed to verify magic link. The link may be expired or invalid.'
-      case 'code_exchange_failed':
-        return 'Failed to authenticate. The link may be expired or invalid.'
-      case 'missing_parameters':
-        return 'Invalid authentication link. Please request a new magic link.'
-      case 'unexpected_error':
-        return 'An unexpected error occurred during authentication.'
-      default:
-        return 'An error occurred during authentication. Please try again.'
-    }
-  }
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center max-w-md">
@@ -32,7 +12,7 @@ const AuthCodeErrorPage = (): ReactElement => {
           Authentication Error
         </h1>
         <p className="text-neutral-600 mb-6">
-          {getErrorMessage(error)}
+          An error occurred while trying to verify your authentication code. This could be due to an invalid or expired link.
         </p>
         <div className="space-y-3">
           <Link
