@@ -233,6 +233,9 @@ export const GAME_CONFIG = {
     
     /** Crypto security key endpoint */
     SECURITY_KEY: '/api/security/key',
+    
+    /** Leaderboard endpoint */
+    LEADERBOARD: '/api/leaderboard',
   },
 } as const;
 
