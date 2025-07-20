@@ -2,8 +2,9 @@
 
 import { useAuth } from "@/lib/auth/auth-context"
 import { Button } from "@/components/ui/button"
-import { LogOut, User, Save, Loader2 } from "lucide-react"
+import { LogOut, User, Save, Loader2, Settings } from "lucide-react"
 import { AuthModal } from "@/components/auth/auth-modal"
+import { ProfileEditModal } from "@/components/auth/profile-edit-modal"
 import type { Component } from "@/type/component"
 import { useEffect, useState } from "react"
 
@@ -32,16 +33,30 @@ export const AuthButton: Component<object> = () => {
   }
 
   if (user) {
-    const displayName = userProfile?.username || user.email?.split("@")[0] || "User"
-    
+    const displayName = userProfile?.display_name || userProfile?.username || user.email?.split("@")[0] || "User"
+    const needsProfileSetup = !userProfile?.username
+
     return (
       <div className="flex items-center gap-2">
-        <AuthModal>
-          <Button size="sm" variant="retro" className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            <span className="hidden sm:inline">{displayName}</span>
+        <ProfileEditModal>
+          <Button 
+            size="sm" 
+            variant="retro" 
+            className={`flex items-center gap-2 ${needsProfileSetup ? 'bg-yellow-400 text-neutral-900 border-yellow-600' : ''}`}
+          >
+            {needsProfileSetup ? (
+              <>
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline font-mono">SETUP PROFILE</span>
+              </>
+            ) : (
+              <>
+                <User className="w-4 h-4" />
+                <span className="hidden sm:inline">{displayName}</span>
+              </>
+            )}
           </Button>
-        </AuthModal>
+        </ProfileEditModal>
 
         <Button size="sm" variant="retro" onClick={handleSignOut}>
           <LogOut />
