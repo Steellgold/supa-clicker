@@ -1,6 +1,6 @@
 "use client"
 
-import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers";
+import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
 import { SpecialsTab } from "@/components/tab/specials-tab";
 import { AuthModal } from "@/components/auth/auth-modal";
 import { useGame } from "@/lib/providers/game-provider";

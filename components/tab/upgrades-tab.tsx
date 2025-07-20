@@ -1,6 +1,6 @@
 import { ReactElement } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatNumber } from "@/lib/numbers";
+import { formatNumber } from "@/lib/utils";
 import { useGame } from "@/lib/providers/game-provider";
 import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades";
 import { PowerTag } from "@/components/power-tag";

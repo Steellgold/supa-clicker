@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { formatWithSpaces } from "@/lib/numbers";
+import { formatWithSpaces } from "@/lib/utils";
 
 type ClickEffect = {
   id: number;

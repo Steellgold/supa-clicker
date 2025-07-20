@@ -4,7 +4,7 @@ import { useGame } from "@/lib/providers/game-provider";
 import { Component } from "@/type/component";
 import { Upgrade } from "@/type/game";
 import { Card } from "@/components/ui/card";
-import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/numbers";
+import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
 import { getUnlockThreshold, getFirstLockedUpgradeIndex } from "@/lib/upgrades";
 import { PowerTag } from "./power-tag";
 import { cn } from "@/lib/utils";
