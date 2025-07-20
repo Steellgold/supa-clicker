@@ -207,6 +207,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
   const updateProfile = async (profile: { username: string; display_name?: string | null; bio?: string | null; icon_url?: string }) => {
     if (!user) {
+      console.error("Not logged in")
       return { error: "Not logged in" }
     }
 
@@ -225,6 +226,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
         .eq("user_id", user.id)
 
       if (updateError) {
+        console.error("Update error:", updateError)
         const insertData = {
           user_id: user.id,
           ...updateData
@@ -235,6 +237,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
           .insert(insertData)
 
         if (insertError) {
+          console.error("Insert error:", insertError)
           if (insertError.code === "42P01" || insertError.message?.includes("406")) {
             return { error: "Database table not ready. Please contact support or try again later." }
           }
@@ -246,7 +249,10 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
                 onConflict: "user_id"
               })
 
-            if (upsertError) return { error: upsertError.message }
+            if (upsertError) {
+              console.error("Upsert error:", upsertError)
+              return { error: upsertError.message }
+            }
           } else {
             return { error: insertError.message }
           }
