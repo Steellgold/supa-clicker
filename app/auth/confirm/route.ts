@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     console.log('Verifying OTP with token_hash and type:', type)
     const { error } = await supabase.auth.verifyOtp({
       token_hash,
-      type: type as any
+      type: "email"
     })
     
     if (error) {
