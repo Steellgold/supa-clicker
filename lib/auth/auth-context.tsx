@@ -114,12 +114,12 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
           const currentUser = session?.user ?? null
           setUser(currentUser)
           
-          if (currentUser && event === 'SIGNED_IN') {
+          if (currentUser) {
             setLoading(true)
             try {
               await loadUserProfile(currentUser.id)
             } catch (profileError) {
-              console.error("Error loading profile on sign in:", profileError)
+              console.error("Error loading profile:", profileError)
               setUserProfile(null)
             }
           } else {
