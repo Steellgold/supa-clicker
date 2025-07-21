@@ -148,16 +148,28 @@ export type Database = {
     Views: {
       leaderboard_view: {
         Row: {
-          achievements_count: number | null
-          clicks_per_second: number | null
           current_power: number | null
-          display_name: string | null
           prestige_level: number | null
           total_clicks: number | null
           total_power: number | null
           updated_at: string | null
           user_id: string | null
-          username: string | null
+        }
+        Insert: {
+          current_power?: number | null
+          prestige_level?: number | null
+          total_clicks?: number | null
+          total_power?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          current_power?: number | null
+          prestige_level?: number | null
+          total_clicks?: number | null
+          total_power?: number | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
