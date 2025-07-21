@@ -32,6 +32,7 @@ const Home = () => {
   return (
     <>
       <Header />
+
       <div className="flex flex-col md:flex-row h-full" style={{ height: "calc(100vh - 70px)" }}>
         {process.env.NODE_ENV === "development" && <DebugPanel user={user} />}
 
