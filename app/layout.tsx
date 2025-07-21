@@ -1,7 +1,7 @@
-import { Geist_Mono } from "next/font/google"
 import type { Component } from "@/type/component"
-import type { PropsWithChildren } from "react"
 import type { Metadata } from "next"
+import { Geist_Mono } from "next/font/google"
+import type { PropsWithChildren } from "react"
 import "./globals.css"
 import { Providers } from "./providers"
 
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 
 const RootLayout: Component<PropsWithChildren> = ({ children }) => {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistMono.className} antialiased bg-background text-foreground`}>
         <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.svg')] opacity-10 mix-blend-screen h-screen" />
           <Providers>
