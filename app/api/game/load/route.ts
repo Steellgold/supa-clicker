@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { GameStateSchema } from '@/lib/validation/game-schemas'
+import { NextResponse } from 'next/server'
 
 export const GET = async() => {
   try {
@@ -15,7 +15,7 @@ export const GET = async() => {
     // Try to load existing save data
     const { data, error } = await supabase
       .from('clicker_saves')
-      .select('current_power, total_power, total_clicks, clicks_per_second, prestige_level, upgrades, special_items, achievements, last_save_time')
+      .select('current_power, total_power, total_clicks, clicks_per_second, prestige_level, upgrades, special_items, achievements, last_save_time, combo_active')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -48,6 +48,7 @@ export const GET = async() => {
           resourcesPerSecond: Number(data.clicks_per_second) || 0,
           currentResources: Number(data.current_power) || 0,
           comboCount: 0,
+          comboActive: data.combo_active || false,
           lastClickTime: Number(data.last_save_time) || Date.now(),
           timeBoostActive: false,
           timeBoostEndTime: 0,

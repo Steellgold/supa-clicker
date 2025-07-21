@@ -43,6 +43,7 @@ export type Database = {
         Row: {
           achievements: Json | null
           clicks_per_second: number | null
+          combo_active: boolean | null
           created_at: string
           current_power: number | null
           id: string
@@ -58,6 +59,7 @@ export type Database = {
         Insert: {
           achievements?: Json | null
           clicks_per_second?: number | null
+          combo_active?: boolean | null
           created_at?: string
           current_power?: number | null
           id?: string
@@ -73,6 +75,7 @@ export type Database = {
         Update: {
           achievements?: Json | null
           clicks_per_second?: number | null
+          combo_active?: boolean | null
           created_at?: string
           current_power?: number | null
           id?: string

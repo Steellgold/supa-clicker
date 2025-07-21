@@ -333,9 +333,29 @@ export const useClickerGame = (options: GameOptions = {}) => {
       if (saved) {
         const data = JSON.parse(saved);
         
+        const validatedData = {
+          totalClicks: data.totalClicks || DEFAULT_GAME_STATE.totalClicks,
+          totalPower: data.totalPower || DEFAULT_GAME_STATE.totalPower,
+          currentPower: data.currentPower || DEFAULT_GAME_STATE.currentPower,
+          clickPower: data.clickPower || DEFAULT_GAME_STATE.clickPower,
+          pps: data.pps || DEFAULT_GAME_STATE.pps,
+          upgrades: data.upgrades || DEFAULT_GAME_STATE.upgrades,
+          specialItems: data.specialItems || DEFAULT_GAME_STATE.specialItems,
+          unlockedAchievements: data.unlockedAchievements || DEFAULT_GAME_STATE.unlockedAchievements,
+          prestigeLevel: data.prestigeLevel || DEFAULT_GAME_STATE.prestigeLevel,
+          resourcesPerSecond: data.resourcesPerSecond || DEFAULT_GAME_STATE.resourcesPerSecond,
+          currentResources: data.currentResources || DEFAULT_GAME_STATE.currentResources,
+          comboCount: data.comboCount || DEFAULT_GAME_STATE.comboCount,
+          comboActive: data.comboActive || DEFAULT_GAME_STATE.comboActive,
+          lastClickTime: data.lastClickTime || DEFAULT_GAME_STATE.lastClickTime,
+          timeBoostActive: data.timeBoostActive || DEFAULT_GAME_STATE.timeBoostActive,
+          timeBoostEndTime: data.timeBoostEndTime || DEFAULT_GAME_STATE.timeBoostEndTime,
+          timeBoostMultiplier: data.timeBoostMultiplier || DEFAULT_GAME_STATE.timeBoostMultiplier
+        };
+        
         return {
           ...DEFAULT_GAME_STATE,
-          ...data,
+          ...validatedData,
           lastSaveTime: Date.now()
         };
       }

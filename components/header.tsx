@@ -1,14 +1,34 @@
 "use client";
 
-import { Moon, Sun, Trophy } from "lucide-react";
+import { Moon, Sun, Trophy, Save, Check, X } from "lucide-react";
 import { useTheme } from "next-themes";
-import { ReactElement } from "react";
+import { ReactElement, useState } from "react";
 import { AchievementsDialog } from "./achievements-dialog";
 import { AuthButton } from "./auth/auth-button";
 import { Button } from "./ui/button";
+import { useAuth } from "@/lib/auth/auth-context";
+import { useGame } from "@/lib/providers/game-provider";
 
 export const Header = (): ReactElement => {
   const { theme, setTheme } = useTheme();
+  const { user } = useAuth();
+  const { saveGame } = useGame();
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+
+  const handleManualSave = async () => {
+    if (saveState === 'saving') return;
+    
+    setSaveState('saving');
+    try {
+      const success = await saveGame();
+      setSaveState(success ? 'success' : 'error');
+      setTimeout(() => setSaveState('idle'), 2000);
+    } catch (error) {
+      console.error('Manual save failed:', error);
+      setSaveState('error');
+      setTimeout(() => setSaveState('idle'), 2000);
+    }
+  };
 
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
@@ -34,6 +54,22 @@ export const Header = (): ReactElement => {
               <Trophy />
             </Button>
           </AchievementsDialog>
+
+          {user && (
+            <Button
+              variant="retro"
+              size="sm"
+              className="font-mono font-bold"
+              onClick={handleManualSave}
+              disabled={saveState === 'saving'}
+            >
+              {saveState === 'saving' && <div className="h-[1.2rem] w-[1.2rem] animate-spin rounded-full border-2 border-transparent border-t-current" />}
+              {saveState === 'success' && <Check className="h-[1.2rem] w-[1.2rem] text-green-600" />}
+              {saveState === 'error' && <X className="h-[1.2rem] w-[1.2rem] text-red-600" />}
+              {saveState === 'idle' && <Save className="h-[1.2rem] w-[1.2rem]" />}
+              <span className="sr-only">Manual save</span>
+            </Button>
+          )}
 
           <AuthButton />
         </div>
