@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
       special_items: validatedGameData.specialItems,
       achievements: validatedGameData.unlockedAchievements,
       last_save_time: validatedGameData.lastSaveTime,
+      combo_active: validatedGameData.comboActive,
       updated_at: new Date().toISOString()
     }
 
