@@ -8,6 +8,7 @@ import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import Image from "next/image";
 import { PowerTag } from "../power-tag";
+import { PrestigeConfirmationDialog } from "../dialogs/prestige-confirmation-dialog";
 
 export const PrestigeCard: Component<object> = () => {
   const { gameState, setGameState } = useGame();
@@ -138,12 +139,11 @@ export const PrestigeCard: Component<object> = () => {
         </div>
 
         {canDoPrestige ? (
-          <button
-            onClick={handlePrestige}
-            className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-bold px-4 py-2 transition-all uppercase"
-          >
-            Upgrade
-          </button>
+          <PrestigeConfirmationDialog gameState={gameState} onConfirm={handlePrestige}>
+            <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-bold px-4 py-2 transition-all uppercase">
+              Upgrade
+            </button>
+          </PrestigeConfirmationDialog>
         ) : (
           <div className="px-1.5 py-0 bg-purple-500/20 dark:bg-purple-900/20 rounded-xs border border-purple-500/20 dark:border-purple-900/20">
             <span className="text-xs text-purple-500 dark:text-purple-400 font-bold">

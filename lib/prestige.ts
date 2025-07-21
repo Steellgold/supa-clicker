@@ -19,7 +19,7 @@ export const getPrestigeRequirement = (currentPrestigeLevel: number): number => 
 
 export const calculatePrestigeGain = (gameState: GameState): number => {
   if (!canPrestige(gameState)) return 0;
-  return Math.floor(Math.log10(gameState.currentPower / PRESTIGE_CONFIG.MIN_TOTAL_POWER)) + 1;
+  return 1; // Always increase by exactly 1 level
 };
 
 export const getPrestigeMultiplier = (prestigeLevel: number): number => {
@@ -67,7 +67,7 @@ export const performPrestige = (gameState: GameState): GameState => {
     return gameState;
   }
 
-  const newPrestigeLevel = gameState.prestigeLevel + calculatePrestigeGain(gameState);
+  const newPrestigeLevel = gameState.prestigeLevel + 1; // Always increase by exactly 1
 
   return {
     ...gameState,
