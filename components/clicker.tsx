@@ -58,10 +58,9 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
         animate={isClicking ? { scale: [1, 1.05, 1] } : {}}
         transition={{ duration: 0.1 }}
         className={cn(
-          "size-52 rounded-full border-4 border-black dark:border-white bg-white bg-black dark:bg-white relative overflow-hidden",
-          "shadow-[4px_4px_0_#000] dark:shadow-[4px_4px_0_#aaa] transition-transform duration-100 focus:outline-none",
-          {
-            "ring-2 ring-green-600 dark:ring-green-300": isActive || isClicking,
+          "size-82 md:size-92 rounded-full border-4 border-black dark:border-white bg-black dark:bg-white relative overflow-hidden",
+          "shadow-[4px_4px_0_#000] dark:shadow-[4px_4px_0_#aaa] transition-transform duration-100 focus:outline-none", {
+            "ring-4 ring-green-600 dark:ring-green-300": isActive || isClicking,
             "focus:ring-2 focus:ring-green-600 dark:focus:ring-green-400": !isActive && !isClicking,
             "opacity-60 cursor-not-allowed": disabled,
           }
@@ -71,8 +70,8 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
           <Image
             src="https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcBNW5dZLiLn2WUYjB5ursFGVI4PJSbHf0K8p7"
             alt="Clicker button"
-            width={80}
-            height={80}
+            width={120}
+            height={120}
             className="select-none pointer-events-none drag-none"
             draggable={false}
             unoptimized

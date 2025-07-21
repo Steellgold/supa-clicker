@@ -1,8 +1,8 @@
 import { SpecialItem } from "@/type/game";
 import { SPECIAL_ITEM_CATEGORIES, SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items";
 import { UPGRADE_IDS } from "./constants/upgrades";
-import { getUpgradeById } from "./upgrades";
 import { getPrestigePriceMultiplier } from "./prestige";
+import { getUpgradeById } from "./upgrades";
 
 export const SPECIAL_ITEMS: SpecialItem[] = [
   {
@@ -278,10 +278,29 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
   },
 ];
 
-export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0, prestigeLevel: number = 0): number => {
+const getAdaptiveScaling = (totalPower: number, prestigeLevel: number): { costMultiplier: number, gainMultiplier: number } => {
+  const powerScale = Math.max(1, Math.log10(Math.max(1, totalPower)) / 3);
+  const prestigeScale = Math.pow(1.5, prestigeLevel);
+  const baseMultiplier = powerScale * prestigeScale;
+  
+  return {
+    costMultiplier: Math.pow(baseMultiplier, 0.8),
+    gainMultiplier: baseMultiplier
+  };
+};
+
+export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0, prestigeLevel: number = 0, totalPower: number = 0): number => {
   const baseCost = item.baseCost * Math.pow(item.costGrowth, currentLevel);
   const prestigeMultiplier = getPrestigePriceMultiplier(prestigeLevel);
-  return Math.floor(baseCost * prestigeMultiplier);
+  const { costMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
+  
+  return Math.floor(baseCost * prestigeMultiplier * costMultiplier);
+};
+
+export const getSpecialItemMultiplier = (item: SpecialItem, prestigeLevel: number = 0, totalPower: number = 0): number => {
+  const { gainMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
+  const moderatedMultiplier = Math.pow(gainMultiplier, 0.3);
+  return item.multiplier ? item.multiplier * moderatedMultiplier : moderatedMultiplier;
 };
 
 export const isSpecialItemUnlocked = (item: SpecialItem, totalPower: number, prestigeLevel: number = 0): boolean => {
