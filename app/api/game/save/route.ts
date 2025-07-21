@@ -149,13 +149,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error("Save operation failed for user:", user.id)
-      return NextResponse.json({ error: "Failed to save game data" }, { status: 500 })
+      console.error("Save operation failed for user:", user.id, "Database error:", result.error)
+      return NextResponse.json({ 
+        error: "Failed to save game data", 
+        details: result.error 
+      }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("API error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Internal server error", 
+      details: error instanceof Error ? error.message : String(error) 
+    }, { status: 500 })
   }
 }
