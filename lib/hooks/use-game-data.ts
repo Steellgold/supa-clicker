@@ -689,11 +689,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
   return {
     gameState,
     setGameState: (state: GameState) => {
-      if (process.env.NODE_ENV !== 'development') {
-        console.log('Not in development, skipping setGameState');
-        return;
-      }
-
       setGameState(state);
       saveGame();
     },
