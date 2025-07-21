@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/card";
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
-import { isBulkBuyUnlocked } from "@/lib/features-utils";
 import { useGame } from "@/lib/providers/game-provider";
 import { getFirstLockedUpgradeIndex, getUnlockThreshold } from "@/lib/upgrades";
 import { cn, formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
@@ -23,9 +22,7 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
   const upgradeInfo = upgradesInfo?.find(u => u.id === upgrade.id);
   const currentLevel = upgradeInfo?.currentLevel || 0;
   
-  // Check if bulk buy is unlocked, otherwise default to 1
-  const isBulkUnlocked = isBulkBuyUnlocked(gameState);
-  const effectiveBulkBuyOption = isBulkUnlocked ? bulkBuyOption : 1;
+  const effectiveBulkBuyOption = bulkBuyOption;
   
   // Calculate bulk buy amounts and costs
   const getBulkBuyAmount = (): number => {
