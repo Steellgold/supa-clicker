@@ -59,11 +59,14 @@ export const useClickerGame = (options: GameOptions = {}) => {
     let totalClickMultiplier = 1;
     let globalMultiplier = 1;
 
+    const fixedPrestigeLevel = gameState.prestigeLevel;
+    const fixedTotalPower = gameState.prestigeLevel > 0 ? gameState.totalPower : gameState.totalPower;
+
     upgrades.forEach(upgrade => {
       const level = upgradesState[upgrade.id] || 0;
       if (level > 0) {
-        let upgradePps = getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower) * level;
-        let upgradeClick = getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower) * level;
+        let upgradePps = getUpgradePPSGain(upgrade, fixedPrestigeLevel, fixedTotalPower) * level;
+        let upgradeClick = getUpgradeClickMultiplier(upgrade, fixedPrestigeLevel, fixedTotalPower) * level;
 
         SPECIAL_ITEMS.forEach(specialItem => {
           const specialLevel = specialItemsState[specialItem.id] || 0;
@@ -71,32 +74,32 @@ export const useClickerGame = (options: GameOptions = {}) => {
             switch (specialItem.effect) {
               case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai intern')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
                 if (upgrade.name.toLowerCase().includes('junior dev')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
                 if (upgrade.name.toLowerCase().includes('devops')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
                 if (upgrade.name.toLowerCase().includes('cloud')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
                 }
                 break;
             }
@@ -118,7 +121,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
           case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
           case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
-            globalMultiplier *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+            globalMultiplier *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
             break;
         }
       }
@@ -299,7 +302,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
     const currentLevel = gameState.specialItems[specialItemId] || 0;
     const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel, gameState.totalPower);
 
-    if (canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
+    // Fix: Ensure we have enough power AND all other requirements are met
+    if (gameState.currentPower >= cost && canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
@@ -314,7 +318,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     return false;
-  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades]);
+  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel]);
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
