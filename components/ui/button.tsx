@@ -1,6 +1,6 @@
-import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -10,27 +10,35 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+          "border border-neutral-800 dark:border-neutral-200 bg-white text-black dark:bg-neutral-800 dark:text-white rounded-none shadow-[3px_3px_0_#000] dark:shadow-[3px_3px_0_#aaa] hover:bg-neutral-100 dark:hover:bg-neutral-700 font-mono",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-[#ffcccc] text-[#5a0000] border-2 border-[#5a0000] rounded-none font-mono shadow-[3px_3px_0_#5a0000] hover:bg-[#ffaaaa] dark:bg-[#802222] dark:text-[#ffdddd] dark:border-[#ff9999] dark:hover:bg-[#a23333]",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border border-neutral-800 dark:border-neutral-200 bg-transparent text-black dark:text-white rounded-none shadow-[3px_3px_0_#000] dark:shadow-[3px_3px_0_#aaa] hover:bg-neutral-100 dark:hover:bg-neutral-700 font-mono",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+          "bg-[#dddddd] text-black border-2 border-[#444] rounded-none font-mono shadow-[3px_3px_0_#444] hover:bg-[#cccccc] dark:bg-[#333] dark:text-white dark:border-[#aaa] dark:hover:bg-[#555]",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-transparent text-black dark:text-white border-2 border-dashed border-[#666] dark:border-[#aaa] rounded-none font-mono shadow-none hover:bg-[#eee] dark:hover:bg-[#333]",
+        link: "text-blue-700 dark:text-blue-300 font-mono underline underline-offset-2 hover:text-blue-900 dark:hover:text-blue-100",
 
         //
-        retro:
-          "border border-neutral-800 dark:border-neutral-200 rounded-none! bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors",
+        retro: cn(
+          "bg-neutral-100 dark:bg-neutral-800",
+          "text-black dark:text-white",
+          "border-2 border-neutral-800 dark:border-neutral-200",
+          "rounded-none font-mono text-sm uppercase tracking-wide",
+          "shadow-[3px_3px_0_#000] dark:shadow-[3px_3px_0_#aaa]",
+          "hover:bg-neutral-200 dark:hover:bg-neutral-700",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-neutral-600 dark:focus-visible:ring-neutral-300",
+          "transition-all"
+        ),
         tabRetro: "flex-1 p-3 font-mono font-bold text-sm rounded-none! border-r border-neutral-800 dark:border-neutral-200 transition-colors aria-[selected=true]:bg-white aria-[selected=true]:dark:bg-neutral-800 aria-[selected=true]:text-neutral-900 aria-[selected=true]:dark:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300 uppercase",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        xs: "h-5 rounded-sm px-2.5 has-[>svg]:px-2",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        xs: "h-5 px-2.5 has-[>svg]:px-2",
+        sm: "h-8 gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 px-6 has-[>svg]:px-4",
         icon: "size-9",
       },
     },

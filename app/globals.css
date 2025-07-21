@@ -163,6 +163,10 @@ body {
   letter-spacing: var(--tracking-normal);
 }
 
+.pixelated {
+  image-rendering: pixelated;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
