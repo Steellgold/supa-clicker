@@ -1,11 +1,11 @@
 "use client";
 
 import { Moon, Sun, Trophy } from "lucide-react";
-import { ReactElement } from "react";
-import { Button } from "./ui/button";
-import { AuthButton } from "./auth/auth-button";
-import { AchievementsDialog } from "./achievements-dialog";
 import { useTheme } from "next-themes";
+import { ReactElement } from "react";
+import { AchievementsDialog } from "./achievements-dialog";
+import { AuthButton } from "./auth/auth-button";
+import { Button } from "./ui/button";
 
 export const Header = (): ReactElement => {
   const { theme, setTheme } = useTheme();

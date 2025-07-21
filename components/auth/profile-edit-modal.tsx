@@ -1,15 +1,15 @@
 "use client"
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { useState, useEffect, PropsWithChildren, useRef } from "react"
-import type { Component } from "@/type/component"
-import { useAuth } from "@/lib/auth/auth-context"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, User, Upload, X } from "lucide-react"
-import Image from "next/image"
+import { useAuth } from "@/lib/auth/auth-context"
 import { createClient } from "@/lib/supabase/client"
+import type { Component } from "@/type/component"
+import { Loader2, Upload, User, X } from "lucide-react"
+import Image from "next/image"
+import { PropsWithChildren, useEffect, useRef, useState } from "react"
 
 export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => {
   const { user, userProfile, updateProfile, refreshProfile, loading: authLoading } = useAuth()

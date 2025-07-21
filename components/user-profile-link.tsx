@@ -1,9 +1,9 @@
 "use client"
 
 import { Component } from '@/type/component'
-import { Button } from './ui/button'
 import { User } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from './ui/button'
 
 type Props = {
   username: string

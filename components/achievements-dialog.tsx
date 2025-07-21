@@ -2,9 +2,9 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Check, Lock } from "lucide-react"
 import { useGame } from "@/lib/providers/game-provider"
 import { Achievement } from "@/type/game"
+import { Check, Lock, Trophy } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 interface AchievementItemProps {

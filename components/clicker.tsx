@@ -1,11 +1,10 @@
 "use client";
 
-import type React from "react";
-import { useState, useCallback } from "react";
+import { cn, formatWithSpaces } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { formatWithSpaces } from "@/lib/utils";
+import type React from "react";
+import { useCallback, useState } from "react";
 
 type ClickEffect = {
   id: number;

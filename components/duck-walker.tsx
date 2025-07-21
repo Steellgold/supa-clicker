@@ -4,11 +4,11 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useGame } from "@/lib/providers/game-provider";
 import { SPECIAL_ITEM_IDS } from "@/lib/constants/special-items";
-import Image from "next/image";
+import { useGame } from "@/lib/providers/game-provider";
 import { Component } from "@/type/component";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
 interface Duck {
   id: string;

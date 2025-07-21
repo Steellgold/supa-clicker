@@ -1,17 +1,12 @@
-"use client";
-
-import { use, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trophy, Zap, MousePointer } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { getAllUpgrades } from '@/lib/upgrades';
+import { buttonVariants } from '@/components/ui/button';
 import { getAllAchievements } from '@/lib/achievements';
-import type { Upgrade } from '@/type/game';
-import { Component } from '@/type/component';
 import { PRESTIGE_IMAGES } from '@/lib/config/prestige-images';
+import { createAdminClient } from '@/lib/supabase/client';
+import { getAllUpgrades } from '@/lib/upgrades';
+import type { Upgrade } from '@/type/game';
+import { ArrowLeft, MousePointer, Trophy, Zap } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 type UserProfile = {
   username: string;
@@ -43,110 +38,87 @@ interface Props {
   params: Promise<{ username: string }>;
 }
 
-const UserProfilePage: Component<Props> = ({ params }) => {
-  const { username } = use(params)
+type UserProfileResult = {
+  profile: UserProfile;
+  stats: UserStats;
+  gameData: UserGameData;
+}
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [gameData, setGameData] = useState<UserGameData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+const getUserProfile = async (username: string): Promise<UserProfileResult | null> => {
+  const adminClient = createAdminClient();
 
-  const supabase = createClient();
+  const { data, error } = await adminClient.rpc('get_user_profile_by_username', {
+    p_username: username
+  });
+
+  if (error) {
+    console.error('Profile error:', error);
+    throw new Error(`Error loading profile: ${error.message}`);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const { profile: profileData, stats: statsData, gameData: gameDataResult } = data as UserProfileResult;
+
+  const profile: UserProfile = {
+    username: profileData.username,
+    avatar_url: profileData.avatar_url,
+    display_name: profileData.display_name,
+    bio: profileData.bio,
+    created_at: profileData.created_at
+  };
+
+  const stats: UserStats = {
+    total_clicks: statsData.total_clicks || 0,
+    total_power: statsData.total_power || 0,
+    clicks_per_second: statsData.clicks_per_second || 0,
+    prestige_level: statsData.prestige_level || 0,
+    achievements_count: statsData.achievements_count || 0,
+    updated_at: statsData.updated_at || new Date().toISOString()
+  };
+
+  const gameData: UserGameData = {
+    totalClicks: gameDataResult.totalClicks || 0,
+    totalPower: gameDataResult.totalPower || 0,
+    prestigeLevel: gameDataResult.prestigeLevel || 0,
+    unlockedAchievements: Array.isArray(gameDataResult.unlockedAchievements) ? 
+      gameDataResult.unlockedAchievements as number[] : [],
+    upgrades: gameDataResult.upgrades ? 
+      (gameDataResult.upgrades as Record<number, number>) : {},
+    specialItems: gameDataResult.specialItems ? 
+      (gameDataResult.specialItems as Record<number, number>) : {}
+  };
+
+  return { profile, stats, gameData };
+}
+
+const UserProfilePage = async ({ params }: Props) => {
+  const { username } = await params;
+
+  let profile: UserProfile | null = null;
+  let stats: UserStats | null = null;
+  let gameData: UserGameData | null = null;
+  let error: string | null = null;
+
+  try {
+    const result = await getUserProfile(username);
+    if (result) {
+      profile = result.profile;
+      stats = result.stats;
+      gameData = result.gameData;
+    } else {
+      error = 'User not found';
+    }
+  } catch (err) {
+    console.error('Unexpected error loading profile:', err);
+    error = 'Failed to load profile';
+  }
 
   const allUpgrades = getAllUpgrades();
   const allAchievements = getAllAchievements();
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        console.log('Loading profile for username:', username);
-        setLoading(true);
-        
-        const { data, error } = await supabase.rpc('get_user_profile_by_username', {
-          p_username: username
-        });
-
-        if (error) {
-          console.error('Profile error:', error);
-          setError(`Error loading profile: ${error.message}`);
-          return;
-        }
-
-        if (!data) {
-          setError('User not found');
-          return;
-        }
-
-        const profileResponse = data as { profile: UserProfile; stats: UserStats; gameData: UserGameData };
-        
-        if (!profileResponse.profile) {
-          setError('User not found');
-          return;
-        }
-
-        const { profile: profileData, stats: statsData, gameData: gameDataResult } = profileResponse;
-
-        // Set profile data
-        setProfile({
-          username: profileData.username,
-          avatar_url: profileData.avatar_url,
-          display_name: profileData.display_name,
-          bio: profileData.bio,
-          created_at: profileData.created_at
-        });
-
-        // Set stats data
-        setStats({
-          total_clicks: statsData.total_clicks || 0,
-          total_power: statsData.total_power || 0,
-          clicks_per_second: statsData.clicks_per_second || 0,
-          prestige_level: statsData.prestige_level || 0,
-          achievements_count: statsData.achievements_count || 0,
-          updated_at: statsData.updated_at || new Date().toISOString()
-        });
-
-        // Set game data
-        setGameData({
-          totalClicks: gameDataResult.totalClicks || 0,
-          totalPower: gameDataResult.totalPower || 0,
-          prestigeLevel: gameDataResult.prestigeLevel || 0,
-          unlockedAchievements: Array.isArray(gameDataResult.unlockedAchievements) ? 
-            gameDataResult.unlockedAchievements as number[] : [],
-          upgrades: gameDataResult.upgrades ? 
-            (gameDataResult.upgrades as Record<number, number>) : {},
-          specialItems: gameDataResult.specialItems ? 
-            (gameDataResult.specialItems as Record<number, number>) : {}
-        });
-
-        console.log('Profile loaded successfully');
-
-      } catch (err) {
-        console.error('Unexpected error loading profile:', err);
-        setError('Failed to load profile');
-      } finally {
-        console.log('Profile loading completed');
-        setLoading(false);
-      }
-    };
-
-    if (username) loadUserProfile();
-  }, [username, supabase]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-neutral-900 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="border-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-800 p-8 text-center">
-            <div className="font-mono text-lg text-neutral-700 dark:text-neutral-300">
-              LOADING PROFILE FOR: {username}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (error || !profile) {
     return (
@@ -156,10 +128,10 @@ const UserProfilePage: Component<Props> = ({ params }) => {
             <div className="font-mono text-lg text-red-700 dark:text-red-300 mb-4">
               {error || 'PROFILE NOT FOUND'}
             </div>
-            <Button onClick={() => router.back()} variant="retro" className="font-mono font-bold">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              GO BACK
-            </Button>
+            <Link className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })} href="/">
+              <ArrowLeft className="w-4 h-4" />
+              Go Back
+            </Link>
           </div>
         </div>
       </div>
@@ -194,14 +166,9 @@ const UserProfilePage: Component<Props> = ({ params }) => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button
-            onClick={() => router.back()}
-            variant="retro"
-            size="sm"
-            className="font-mono"
-          >
+          <Link href="/" className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })}>
             <ArrowLeft className="w-4 h-4" />
-          </Button>
+          </Link>
           <h1 className="font-mono text-2xl font-bold text-neutral-900 dark:text-neutral-100">
             USER PROFILE
           </h1>
@@ -325,12 +292,6 @@ const UserProfilePage: Component<Props> = ({ params }) => {
                   </div>
                   <div className="font-mono text-lg font-bold text-neutral-900 dark:text-neutral-100">
                     {userAchievements.length} / {allAchievements.length}
-                  </div>
-                  <div className="w-full bg-neutral-300 dark:bg-neutral-600 h-2 rounded mt-1">
-                    <div 
-                      className="bg-purple-600 h-2 rounded transition-all"
-                      style={{ width: `${(userAchievements.length / allAchievements.length) * 100}%` }}
-                    ></div>
                   </div>
                 </div>
               </div>
@@ -467,10 +428,9 @@ const UserProfilePage: Component<Props> = ({ params }) => {
 
         {/* Back to Game */}
         <div className="text-center">
-          <Link href="/">
-            <Button variant="retro" className="font-mono font-bold">
-              BACK TO GAME
-            </Button>
+          <Link href="/" className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })}>
+            <ArrowLeft className="w-4 h-4" />
+            BACK TO GAME
           </Link>
         </div>
       </div>

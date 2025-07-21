@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, ReactElement } from 'react';
-import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
-import { LeaderboardType, LeaderboardEntry } from '@/type/leaderboard';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
+import { cn } from '@/lib/utils';
+import { LeaderboardEntry, LeaderboardType } from '@/type/leaderboard';
+import { ReactElement, useState } from 'react';
 import { Button } from '../ui/button';
 import { UserProfileLink } from '../user-profile-link';
-import { cn } from '@/lib/utils';
 
 const LEADERBOARD_TYPES: { key: LeaderboardType; label: string; symbol: string }[] = [
   { key: 'total_power', label: 'Power', symbol: '⚡' },

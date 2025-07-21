@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { LeaderboardType, LeaderboardResponse, LeaderboardEntry, UserLeaderboardStats } from '@/type/leaderboard';
+import { LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from '@/type/leaderboard';
+import { useCallback, useEffect, useState } from 'react';
 
 export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: number = 50) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);

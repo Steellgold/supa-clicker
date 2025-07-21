@@ -1,8 +1,8 @@
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Achievement, GameStats, UserUpgrade } from '@/type/game';
 import { checkAchievements, getAllAchievements } from '@/lib/achievements';
 import { useAuth } from '@/lib/auth/auth-context';
+import { Achievement, GameStats, UserUpgrade } from '@/type/game';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export interface UseAchievementsReturn {
   // Achievement states

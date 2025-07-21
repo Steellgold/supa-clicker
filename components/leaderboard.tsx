@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
-import { LeaderboardType } from '@/type/leaderboard';
 import { useAuth } from '@/lib/auth/auth-context';
-import { Button } from './ui/button';
+import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
 import { cn } from '@/lib/utils';
+import { LeaderboardType } from '@/type/leaderboard';
+import React, { useState } from 'react';
+import { Button } from './ui/button';
 
 type LeaderboardEntry = {
   user_id: string;

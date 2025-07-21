@@ -1,13 +1,13 @@
-import { ReactElement } from "react";
+import { BulkBuySettings } from "@/components/bulk-buy-settings";
+import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatNumber } from "@/lib/utils";
+import { UpgradeCard } from "@/components/upgrade-card";
+import { useAuth } from "@/lib/auth/auth-context";
+import { isBulkBuyUnlocked } from "@/lib/features-utils";
 import { useGame } from "@/lib/providers/game-provider";
 import { getAllUpgrades, getRequiredTotalForNext } from "@/lib/upgrades";
-import { PowerTag } from "@/components/power-tag";
-import { useAuth } from "@/lib/auth/auth-context";
-import { UpgradeCard } from "@/components/upgrade-card";
-import { BulkBuySettings } from "@/components/bulk-buy-settings";
-import { isBulkBuyUnlocked } from "@/lib/features-utils";
+import { formatNumber } from "@/lib/utils";
+import { ReactElement } from "react";
 
 export const UpgradesTab = (): ReactElement => {
   const { gameState } = useGame();

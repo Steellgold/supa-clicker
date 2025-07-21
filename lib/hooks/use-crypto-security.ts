@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/lib/auth/auth-context'
 import { GameCryptoSecurity } from '@/lib/security/crypto-signature'
+import { useCallback, useEffect, useState } from 'react'
 
 interface CryptoSecurityState {
   cryptoKey: string | null

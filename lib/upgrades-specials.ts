@@ -1,7 +1,7 @@
 import { SpecialItem } from "@/type/game";
-import { getUpgradeById } from "./upgrades";
-import { SPECIAL_ITEM_IDS, SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_CATEGORIES } from "./constants/special-items";
+import { SPECIAL_ITEM_CATEGORIES, SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items";
 import { UPGRADE_IDS } from "./constants/upgrades";
+import { getUpgradeById } from "./upgrades";
 
 export const SPECIAL_ITEMS: SpecialItem[] = [
   {

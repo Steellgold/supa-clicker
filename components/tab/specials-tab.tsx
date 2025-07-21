@@ -1,10 +1,10 @@
-import { ReactElement } from "react";
+import { SpecialItemCard } from "@/components/special-item-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatNumber } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/providers/game-provider";
 import { getAllSpecialItems } from "@/lib/upgrades-specials";
-import { useAuth } from "@/lib/auth/auth-context";
-import { SpecialItemCard } from "@/components/special-item-card";
+import { formatNumber } from "@/lib/utils";
+import { ReactElement } from "react";
 
 export const SpecialsTab = (): ReactElement => {
   const { gameState } = useGame();

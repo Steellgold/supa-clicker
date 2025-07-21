@@ -1,14 +1,13 @@
 "use client";
 
-import { getSpecialItemCost, isSpecialItemUnlocked, canPurchaseSpecialItem, getRequiredUpgradeIds, getRequiredUpgradeNames, getAllSpecialItems } from "@/lib/upgrades-specials";
-import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
-import { useGame } from "@/lib/providers/game-provider";
-import { Component } from "@/type/component";
-import { formatNumber } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { useGame } from "@/lib/providers/game-provider";
+import { canPurchaseSpecialItem, getAllSpecialItems, getRequiredUpgradeIds, getRequiredUpgradeNames, getSpecialItemCost, isSpecialItemUnlocked } from "@/lib/upgrades-specials";
+import { cn, formatNumber } from "@/lib/utils";
+import { Component } from "@/type/component";
 import { SpecialItem } from "@/type/game";
 import { PowerTag } from "./power-tag";
-import { cn } from "@/lib/utils";
+import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
 
 type SpecialItemCardProps = {
   item: SpecialItem;

@@ -1,8 +1,8 @@
 "use client";
 
-import { PropsWithChildren } from "react";
 import { useGame } from "@/lib/providers/game-provider";
 import { Component } from "@/type/component";
+import { PropsWithChildren } from "react";
 
 type UnlockBlurWrapperProps = PropsWithChildren & {
   isUnlocked: boolean;

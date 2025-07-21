@@ -1,16 +1,15 @@
 "use client";
 
-import { useGame } from "@/lib/providers/game-provider";
-import { Component } from "@/type/component";
-import { Upgrade } from "@/type/game";
 import { Card } from "@/components/ui/card";
-import { formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
-import { getUnlockThreshold, getFirstLockedUpgradeIndex } from "@/lib/upgrades";
-import { PowerTag } from "./power-tag";
-import { cn } from "@/lib/utils";
-import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
 import { isBulkBuyUnlocked } from "@/lib/features-utils";
+import { useGame } from "@/lib/providers/game-provider";
+import { getFirstLockedUpgradeIndex, getUnlockThreshold } from "@/lib/upgrades";
+import { cn, formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
+import { Component } from "@/type/component";
+import { Upgrade } from "@/type/game";
+import { PowerTag } from "./power-tag";
+import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
 
 interface UpgradeCardProps {
   upgrade: Upgrade;
