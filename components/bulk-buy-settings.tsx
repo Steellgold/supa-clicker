@@ -1,8 +1,6 @@
 "use client";
 
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
-import { isBulkBuyUnlocked } from "@/lib/features-utils";
-import { useGame } from "@/lib/providers/game-provider";
 import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
 
@@ -16,11 +14,7 @@ export const BulkBuySettings: Component<BulkBuySettingsProps> = ({
   maxAffordable = 999
 }) => {
   const { bulkBuyOption, setBulkBuyOption } = useBulkBuy();
-  const { gameState } = useGame();
   
-  const isUnlocked = isBulkBuyUnlocked(gameState);
-  if (!isUnlocked) return <></>;
-
   const options: BulkBuyOption[] = [1, 3, 5, 10, 20, "MAX"];
 
   const getDisplayValue = (option: BulkBuyOption): string => {
