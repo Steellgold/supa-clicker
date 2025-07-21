@@ -89,9 +89,10 @@ export async function POST(request: NextRequest) {
 
     const validationResult = SaveGameRequestSchema.safeParse({ gameData })
     if (!validationResult.success) {
+      console.error("Validation error:", validationResult.error.issues)
       return NextResponse.json({ 
         error: "Invalid game data format",
-        details: validationResult.error.message
+        details: validationResult.error.issues
       }, { status: 400 })
     }
 

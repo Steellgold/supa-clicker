@@ -27,6 +27,7 @@ export const GameStateSchema = z.object({
   resourcesPerSecond: z.number().min(0),
   currentResources: z.number().min(0),
   comboCount: z.number().int().min(0).max(1000),
+  comboActive: z.boolean(),
   lastClickTime: z.number().min(0),
   timeBoostActive: z.boolean(),
   timeBoostEndTime: z.number().min(0),
