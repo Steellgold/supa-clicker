@@ -8,8 +8,8 @@ import { getFirstLockedUpgradeIndex, getUnlockThreshold } from "@/lib/upgrades";
 import { cn, formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { Upgrade } from "@/type/game";
-import { PowerTag } from "./power-tag";
-import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
+import { PowerTag } from "../power-tag";
+import { UnlockBlurWrapper } from "../unlock-blur-wrapper";
 
 interface UpgradeCardProps {
   upgrade: Upgrade;
@@ -17,7 +17,7 @@ interface UpgradeCardProps {
 }
 
 export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 }) => {
-  const { buyUpgrade, getUpgradeCost, gameState, upgradesInfo } = useGame();
+  const { buyUpgrade, getUpgradeCost, getUpgradePPSGain, getUpgradeClickMultiplier, gameState, upgradesInfo } = useGame();
   const { bulkBuyOption } = useBulkBuy();
   
   const upgradeInfo = upgradesInfo?.find(u => u.id === upgrade.id);
@@ -126,11 +126,11 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   }) }}>
                     {upgrade.ppsGain == 0 && upgrade.clickMultiplier > 0 ? (
                       <>
-                        +{formatDecimal(upgrade.clickMultiplier * (currentLevel == 0 ? 1 : currentLevel))}x Clicks
+                        +{formatDecimal(getUpgradeClickMultiplier(upgrade) * (currentLevel == 0 ? 1 : currentLevel))}x Clicks
                       </>
                     ) : (
                       <>
-                        +{formatDecimal(upgrade.ppsGain * (currentLevel == 0 ? 1 : currentLevel))}/s
+                        +{formatDecimal(getUpgradePPSGain(upgrade) * (currentLevel == 0 ? 1 : currentLevel))}/s
                       </>
                     )}
                   </PowerTag>

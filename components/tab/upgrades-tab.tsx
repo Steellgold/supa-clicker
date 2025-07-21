@@ -1,8 +1,8 @@
 import { BulkBuySettings } from "@/components/bulk-buy-settings";
+import { PrestigeCard } from "@/components/cards/prestige-card";
+import { UpgradeCard } from "@/components/cards/upgrade-card";
 import { PowerTag } from "@/components/power-tag";
-import { PrestigeCard } from "@/components/prestige-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UpgradeCard } from "@/components/upgrade-card";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isBulkBuyUnlocked } from "@/lib/features-utils";
 import { canPrestige } from "@/lib/prestige";

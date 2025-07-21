@@ -1,6 +1,6 @@
 "use client";
 
-import { DebugCard } from "@/components/debug-card";
+import { DebugCard } from "@/components/cards/debug-card";
 import { shouldShowDebugCard } from "@/lib/debug-utils";
 import { Component } from "@/type/component";
 import type { User } from "@supabase/supabase-js";

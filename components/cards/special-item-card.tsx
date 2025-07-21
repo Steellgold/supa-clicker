@@ -6,8 +6,8 @@ import { canPurchaseSpecialItem, getAllSpecialItems, getRequiredUpgradeIds, getR
 import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { SpecialItem } from "@/type/game";
-import { PowerTag } from "./power-tag";
-import { UnlockBlurWrapper } from "./unlock-blur-wrapper";
+import { PowerTag } from "../power-tag";
+import { UnlockBlurWrapper } from "../unlock-blur-wrapper";
 
 type SpecialItemCardProps = {
   item: SpecialItem;
@@ -18,7 +18,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const { buySpecialItem, gameState } = useGame();
   
   const currentLevel = gameState.specialItems[item.id] || 0;
-  const cost = getSpecialItemCost(item, currentLevel, gameState.prestigeLevel);
+  const cost = getSpecialItemCost(item, currentLevel, gameState.prestigeLevel, gameState.totalPower);
   const isUnlocked = isSpecialItemUnlocked(item, gameState.totalPower, gameState.prestigeLevel);
   const canPurchase = canPurchaseSpecialItem(item, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades);
   const isMaxed = item.maxPurchases && currentLevel >= item.maxPurchases;

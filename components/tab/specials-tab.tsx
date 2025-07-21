@@ -1,4 +1,4 @@
-import { SpecialItemCard } from "@/components/special-item-card";
+import { SpecialItemCard } from "@/components/cards/special-item-card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/providers/game-provider";

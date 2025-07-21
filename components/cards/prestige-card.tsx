@@ -7,7 +7,7 @@ import { useGame } from "@/lib/providers/game-provider";
 import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import Image from "next/image";
-import { PowerTag } from "./power-tag";
+import { PowerTag } from "../power-tag";
 
 export const PrestigeCard: Component<object> = () => {
   const { gameState, setGameState } = useGame();
@@ -63,6 +63,7 @@ export const PrestigeCard: Component<object> = () => {
   const requirement = getPrestigeRequirement(gameState.prestigeLevel);
   const estimates = getPrestigeEstimates(gameState);
   const prestigeImageUrl = getPrestigeImageUrl(estimates.newLevel);
+  const nextPrestigeLevel = gameState.prestigeLevel + 1;
 
   const handlePrestige = () => {
     if (canDoPrestige) {
@@ -73,17 +74,16 @@ export const PrestigeCard: Component<object> = () => {
 
   return (
     <Card className={cn(
-      "rounded-none p-3 border-1 transition-colors mb-0",
-      canDoPrestige 
-        ? "border-purple-300 bg-gradient-to-r from-purple-50 to-yellow-50 dark:from-purple-900/20 dark:to-yellow-900/20" 
-        : "border-neutral-300 dark:border-neutral-600"
+      "rounded-none p-3 border-1 transition-colors mb-0 bg-gradient-to-r", {
+        "border-purple-300 from-purple-50 to-yellow-50 dark:from-purple-900/20 dark:to-yellow-900/20": canDoPrestige,
+        "border-purple-300 dark:border-purple-600": !canDoPrestige
+      }
     )}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {/* Simple Icon */}
           <div className={cn(
-            "w-10 h-10 flex items-center justify-center",
-            canDoPrestige ? "text-purple-600" : "text-neutral-500"
+            "w-12 h-12 flex items-center justify-center bg-purple-500/20 dark:bg-purple-900/20 p-1 border-2 border-purple-500/20 dark:border-purple-900/20",
           )}>
             <Image
               src={prestigeImageUrl}
@@ -105,7 +105,12 @@ export const PrestigeCard: Component<object> = () => {
                 "font-semibold text-sm",
                 canDoPrestige ? "text-purple-800 dark:text-purple-200" : "text-neutral-800 dark:text-neutral-200"
               )}>
-                Prestige System
+                Prestige
+                {nextPrestigeLevel == 1 && (
+                  <span className="text-xs bg-purple-800/20 dark:bg-purple-700/20 text-purple-800 dark:text-purple-200 border border-purple-800/20 dark:border-purple-700/20 rounded-sm px-1 py-0.1 ml-1">
+                    {nextPrestigeLevel}
+                  </span>
+                )}
               </h3>
             </div>
 
@@ -114,13 +119,14 @@ export const PrestigeCard: Component<object> = () => {
                 Bonus: {formatNumber(estimates.currentMultiplier)}x → {formatNumber(estimates.newMultiplier)}x
               </p>
             ) : (
-              <div className="space-y-1">
+              <div className="-mt-1">
                 <PowerTag imageProps={{ width: 10, height: 10, className: "mb-0.5 ml-1 grayscale" }}>
                   <span className="text-xs">Need {formatNumber(requirement)}</span>
                 </PowerTag>
+
                 <div className="w-32 bg-neutral-200 dark:bg-neutral-700 h-1">
                   <div
-                    className="h-1 bg-green-500 transition-all"
+                    className="h-1 bg-purple-500 transition-all"
                     style={{
                       width: `${Math.min(100, (gameState.currentPower / requirement) * 100)}%`
                     }}
@@ -139,9 +145,11 @@ export const PrestigeCard: Component<object> = () => {
             Upgrade
           </button>
         ) : (
-          <span className="text-xs text-neutral-500 dark:text-neutral-400">
-            {((gameState.currentPower / requirement) * 100).toFixed(1)}%
-          </span>
+          <div className="px-1.5 py-0 bg-purple-500/20 dark:bg-purple-900/20 rounded-xs border border-purple-500/20 dark:border-purple-900/20">
+            <span className="text-xs text-purple-500 dark:text-purple-400 font-bold">
+              {((gameState.currentPower / requirement) * 100).toFixed(1)}%
+            </span>
+          </div>
         )}
       </div>
     </Card>
