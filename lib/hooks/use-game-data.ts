@@ -2,10 +2,10 @@ import { GameOptions, GameState, Upgrade } from '@/type/game';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GAME_CONFIG } from '../config/game-config';
 import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from '../constants/special-items';
-import { getUpgradeCost } from '../upgrades';
-import { SPECIAL_ITEMS, canPurchaseSpecialItem, getSpecialItemCost } from '../upgrades-specials';
-import { useCryptoSecurity } from './use-crypto-security';
 import { getPrestigeMultiplier } from '../prestige';
+import { getUpgradeClickMultiplier, getUpgradeCost, getUpgradePPSGain } from '../upgrades';
+import { SPECIAL_ITEMS, canPurchaseSpecialItem, getSpecialItemCost, getSpecialItemMultiplier } from '../upgrades-specials';
+import { useCryptoSecurity } from './use-crypto-security';
 
 const DEFAULT_GAME_STATE: GameState = {
   totalClicks: 0,
@@ -22,6 +22,7 @@ const DEFAULT_GAME_STATE: GameState = {
   currentResources: 0,
   // Combo System
   comboCount: 0,
+  comboActive: false,
   lastClickTime: 0,
   // Time Boost System
   timeBoostActive: false,
@@ -61,8 +62,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
     upgrades.forEach(upgrade => {
       const level = upgradesState[upgrade.id] || 0;
       if (level > 0) {
-        let upgradePps = upgrade.ppsGain * level;
-        let upgradeClick = upgrade.clickMultiplier * level;
+        let upgradePps = getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower) * level;
+        let upgradeClick = getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower) * level;
 
         SPECIAL_ITEMS.forEach(specialItem => {
           const specialLevel = specialItemsState[specialItem.id] || 0;
@@ -70,32 +71,32 @@ export const useClickerGame = (options: GameOptions = {}) => {
             switch (specialItem.effect) {
               case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai intern')) {
-                  upgradePps *= specialItem.multiplier;
-                  upgradeClick *= specialItem.multiplier;
+                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
                 if (upgrade.name.toLowerCase().includes('junior dev')) {
-                  upgradePps *= specialItem.multiplier;
-                  upgradeClick *= specialItem.multiplier;
+                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
                 if (upgrade.name.toLowerCase().includes('devops')) {
-                  upgradePps *= specialItem.multiplier;
-                  upgradeClick *= specialItem.multiplier;
+                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
                 if (upgrade.name.toLowerCase().includes('cloud')) {
-                  upgradePps *= specialItem.multiplier;
-                  upgradeClick *= specialItem.multiplier;
+                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
-                  upgradePps *= specialItem.multiplier;
-                  upgradeClick *= specialItem.multiplier;
+                  upgradePps *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+                  upgradeClick *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
                 }
                 break;
             }
@@ -117,7 +118,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
           case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
           case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
-            globalMultiplier *= specialItem.multiplier;
+            globalMultiplier *= getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
             break;
         }
       }
@@ -174,6 +175,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // Combo System logic
     let newComboCount = 0;
+    let comboActive = false;
     if (hasComboSystem) {
       const timeSinceLastClick = currentTime - currentState.lastClickTime;
       if (timeSinceLastClick < GAME_CONFIG.INTERVALS.COMBO_TIMEOUT) {
@@ -181,7 +183,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
       } else {
         newComboCount = 1; // Reset
       }
-      
+      // Combo is active if count > 1
+      comboActive = newComboCount > 1;
       // Apply combo multiplier (1.1x per combo level, capped at 10x total)
       if (newComboCount > 1) {
         comboMultiplier = Math.min(1 + (newComboCount - 1) * GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MULTIPLIER_INCREMENT, GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MAX_MULTIPLIER);
@@ -221,6 +224,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       // Update combo count
       if (hasComboSystem) {
         updates.comboCount = newComboCount;
+        updates.comboActive = comboActive;
       }
 
       // Activate time boost if triggered
@@ -262,7 +266,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // QUANTITY COST
     for (let i = 0; i < quantity; i++) {
-      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel);
+      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel, gameState.totalPower);
       if (gameState.currentPower >= totalCost + cost) {
         totalCost += cost;
         actualQuantity++;
@@ -293,7 +297,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (!specialItem) return false;
 
     const currentLevel = gameState.specialItems[specialItemId] || 0;
-    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel);
+    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel, gameState.totalPower);
 
     if (canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
       setGameState(prev => ({
@@ -593,7 +597,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   const upgradesInfo = upgrades.map(upgrade => {
     const currentLevel = gameState.upgrades[upgrade.id] || 0;
-    const cost = getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel);
+    const cost = getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel, gameState.totalPower);
     const canAfford = gameState.currentPower >= cost;
     
     return {
@@ -601,8 +605,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
       currentLevel,
       cost,
       canAfford,
-      totalPps: upgrade.ppsGain * currentLevel,
-      totalClickBonus: upgrade.clickMultiplier * currentLevel
+      totalPps: getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower) * currentLevel,
+      totalClickBonus: getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower) * currentLevel
     };
   });
 
@@ -690,8 +694,11 @@ export const useClickerGame = (options: GameOptions = {}) => {
     upgradesInfo,
     specialItemsState: gameState.specialItems,
     
-    getUpgradeCost: (upgrade: Upgrade, currentLevel: number = 0) => getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel),
+    getUpgradeCost: (upgrade: Upgrade, currentLevel: number = 0) => getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel, gameState.totalPower),
+    getUpgradePPSGain: (upgrade: Upgrade) => getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower),
+    getUpgradeClickMultiplier: (upgrade: Upgrade) => getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower),
     
+    comboActive: gameState.comboActive,
     comboCount: gameState.comboCount,
     timeBoostActive: gameState.timeBoostActive,
     timeBoostTimeLeft: gameState.timeBoostActive ? Math.max(0, gameState.timeBoostEndTime - Date.now()) : 0,

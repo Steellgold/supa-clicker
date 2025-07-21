@@ -80,6 +80,7 @@ export const performPrestige = (gameState: GameState): GameState => {
     // TOTAL POWER | ACHIEVEMENTS
     prestigeLevel: newPrestigeLevel,
     // RESET SPECIALS
+    comboActive: false,
     comboCount: 0,
     lastClickTime: 0,
     timeBoostActive: false,

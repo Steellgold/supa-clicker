@@ -1013,11 +1013,42 @@ export const getUnlockThreshold = (upgradeIndex: number) => {
   return thresholds[upgradeIndex] || thresholds[thresholds.length - 1] * Math.pow(2, upgradeIndex - thresholds.length + 1);
 };
 
-export const getUpgradeCost = (upgrade: Upgrade, currentLevel: number = 0, prestigeLevel: number = 0): number => {
+// New adaptive scaling system
+const getAdaptiveScaling = (totalPower: number, prestigeLevel: number): { costMultiplier: number, gainMultiplier: number } => {
+  // Base scaling based on total power (logarithmic to avoid exponential explosion)
+  const powerScale = Math.max(1, Math.log10(Math.max(1, totalPower)) / 3);
+  
+  // Prestige scaling (exponential but controlled)
+  const prestigeScale = Math.pow(1.5, prestigeLevel);
+  
+  // Combined scaling
+  const baseMultiplier = powerScale * prestigeScale;
+  
+  return {
+    costMultiplier: Math.pow(baseMultiplier, 0.8), // Costs scale slower than gains
+    gainMultiplier: baseMultiplier // Gains scale with full power
+  };
+};
+
+export const getUpgradeCost = (upgrade: Upgrade, currentLevel: number = 0, prestigeLevel: number = 0, totalPower: number = 0): number => {
   const baseCost = upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel);
   const prestigeMultiplier = getPrestigePriceMultiplier(prestigeLevel);
-  return Math.floor(baseCost * prestigeMultiplier);
-}
+  const { costMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
+  
+  return Math.floor(baseCost * prestigeMultiplier * costMultiplier);
+};
+
+// New function to get scaled PPS gain
+export const getUpgradePPSGain = (upgrade: Upgrade, prestigeLevel: number = 0, totalPower: number = 0): number => {
+  const { gainMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
+  return upgrade.ppsGain * gainMultiplier;
+};
+
+// New function to get scaled click multiplier
+export const getUpgradeClickMultiplier = (upgrade: Upgrade, prestigeLevel: number = 0, totalPower: number = 0): number => {
+  const { gainMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
+  return upgrade.clickMultiplier * gainMultiplier;
+};
 
 export const getRequiredTotalForNext = (currentTotalPower: number): number | null => {
   const allUpgrades = getAllUpgrades();

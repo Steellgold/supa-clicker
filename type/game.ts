@@ -34,6 +34,7 @@ export type GameState = {
   resourcesPerSecond: number;
   currentResources: number;
   // Combo System
+  comboActive: boolean;
   comboCount: number;
   lastClickTime: number;
   // Time Boost System
