@@ -20,7 +20,7 @@ export const BulkBuyProvider: Component<PropsWithChildren> = ({ children }) => {
     <BulkBuyContext.Provider value={{ 
       bulkBuyOption, 
       setBulkBuyOption,
-      isBulkBuyUnlocked: false // Default value, can be updated based on game state
+      isBulkBuyUnlocked: true // Always unlocked by default
     }}>
       {children}
     </BulkBuyContext.Provider>

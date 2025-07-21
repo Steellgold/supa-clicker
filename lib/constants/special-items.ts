@@ -5,7 +5,6 @@
 
 export const SPECIAL_ITEM_IDS = {
   // Features & Unlocks
-  BULK_PURCHASE_SYSTEM: 1,
   STACK_OVERFLOW: 21,
 
   // Upgrade Boosts
@@ -73,7 +72,6 @@ export const SPECIAL_ITEM_EFFECTS = {
   QUANTUM_AUTO: "Quantum Auto-Clicker",
 
   // Feature Unlocks
-  BULK_BUY_FEATURE: "Bulk Purchase System",
   DEBUG_MODE: "Debug Mode",
   DUCK_WALKER: "Duck Walker",
   CAFFEINE_BOOST: "Caffeine Boost",

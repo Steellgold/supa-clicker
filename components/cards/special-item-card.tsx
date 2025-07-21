@@ -2,7 +2,9 @@
 
 import { Card } from "@/components/ui/card";
 import { useGame } from "@/lib/providers/game-provider";
-import { canPurchaseSpecialItem, getAllSpecialItems, getRequiredUpgradeIds, getRequiredUpgradeNames, getSpecialItemCost, isSpecialItemUnlocked } from "@/lib/upgrades-specials";
+import { canPurchaseSpecialItem, getAllSpecialItems, getRequiredUpgradeIds, getRequiredUpgradeNames, getSpecialItemCost, getSpecialItemMultiplier, isSpecialItemUnlocked } from "@/lib/upgrades-specials";
+import { SPECIAL_ITEM_EFFECTS } from "@/lib/constants/special-items";
+import { GAME_CONFIG } from "@/lib/config/game-config";
 import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { SpecialItem } from "@/type/game";
@@ -86,6 +88,66 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
     return effect.includes('x') || effect.includes('/s') || effect.includes('Clicks');
   };
 
+  const getDynamicEffectText = (item: SpecialItem, currentLevel: number) => {
+    if (currentLevel === 0) return item.effect;
+
+    switch (item.effect) {
+      case SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X:
+      case SPECIAL_ITEM_EFFECTS.GLOBAL_2X:
+      case SPECIAL_ITEM_EFFECTS.GLOBAL_3X:
+      case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
+      case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
+      case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} Global`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} AI Intern`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} Junior Dev`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} AI/ML`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} DevOps`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST: {
+        const baseMultiplier = getSpecialItemMultiplier(item, gameState.prestigeLevel, gameState.totalPower);
+        const actualMultiplier = Math.pow(baseMultiplier, currentLevel);
+        return `x${actualMultiplier.toFixed(1)} Cloud`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.GOLDEN_CLICK: {
+        const chance = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_CHANCE * currentLevel * 100;
+        return `${Math.min(chance, 100).toFixed(0)}% chance x100 click`;
+      }
+      
+      case SPECIAL_ITEM_EFFECTS.LUCKY_STREAK: {
+        const chance = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_CHANCE * currentLevel * 100;
+        return `${Math.min(chance, 100).toFixed(0)}% chance x50 click`;
+      }
+      
+      default:
+        return item.effect;
+    }
+  };
+
   return (
     <UnlockBlurWrapper 
       isUnlocked={isUnlocked} 
@@ -134,27 +196,30 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                 "justify-between": item.effect !== item.name,
                 "justify-end": item.effect === item.name
               })}>
-                {shouldShowPowerTag(item.effect) ? (
-                  <div className={cn(
-                    "text-xs font-medium px-1.5 py-0.5", 
-                    currentLevel > 0 ? accent.effect : "text-neutral-500 bg-neutral-200"
-                  )}>
-                    <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
-                      "grayscale": currentLevel === 0
-                    }) }}>
-                      {item.effect}
-                    </PowerTag>
-                  </div>
-                ) : (
-                  <div className={cn("text-xs font-medium px-1.5 py-0.5", {
-                    "text-neutral-500 dark:text-neutral-400 bg-neutral-200 dark:bg-neutral-700": currentLevel === 0,
-                    [accent.effect]: currentLevel > 0,
+{(() => {
+                  const dynamicEffect = getDynamicEffectText(item, currentLevel);
+                  return shouldShowPowerTag(dynamicEffect) ? (
+                    <div className={cn(
+                      "text-xs font-medium px-1.5 py-0.5", 
+                      currentLevel > 0 ? accent.effect : "text-neutral-500 bg-neutral-200"
+                    )}>
+                      <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
+                        "grayscale": currentLevel === 0
+                      }) }}>
+                        {dynamicEffect}
+                      </PowerTag>
+                    </div>
+                  ) : (
+                    <div className={cn("text-xs font-medium px-1.5 py-0.5", {
+                      "text-neutral-500 dark:text-neutral-400 bg-neutral-200 dark:bg-neutral-700": currentLevel === 0,
+                      [accent.effect]: currentLevel > 0,
 
-                    "hidden": item.effect === item.name
-                  })}>
-                    {item.effect}
-                  </div>
-                )}
+                      "hidden": dynamicEffect === item.name
+                    })}>
+                      {dynamicEffect}
+                    </div>
+                  );
+                })()}
 
                 {!isMaxed ? (
                   <button

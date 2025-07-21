@@ -1,8 +1,6 @@
-import { GameState } from "@/type/game";
-import { SPECIAL_ITEM_IDS } from "./constants/special-items";
 
-export const isBulkBuyUnlocked = (gameState: GameState): boolean => {
-  return (gameState.specialItems[SPECIAL_ITEM_IDS.BULK_PURCHASE_SYSTEM] || 0) > 0;
+export const isBulkBuyUnlocked = (): boolean => {
+  return true; // Bulk buy is now always unlocked
 };
 
 export const calculateMaxAffordable = (baseCost: number, costGrowth: number, currentLevel: number, currentPower: number): number => {

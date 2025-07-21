@@ -5,19 +5,6 @@ import { getPrestigePriceMultiplier } from "./prestige";
 import { getUpgradeById } from "./upgrades";
 
 export const SPECIAL_ITEMS: SpecialItem[] = [
-  {
-    id: SPECIAL_ITEM_IDS.BULK_PURCHASE_SYSTEM,
-    name: "Bulk Purchase System",
-    description: "Unlock the ability to buy multiple upgrades at once",
-    baseCost: 50000,
-    costGrowth: 1.0,
-    effect: SPECIAL_ITEM_EFFECTS.BULK_BUY_FEATURE,
-    multiplier: 1,
-    category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
-    unlockRequirement: 40000,
-    maxPurchases: 1,
-    isFeatureUnlock: true,
-  },
   
   {
     id: SPECIAL_ITEM_IDS.AI_TRAINING_PLUS,
@@ -146,6 +133,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 1,
     category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
     unlockRequirement: 3000,
+    maxPurchases: 100
   },
   {
     id: SPECIAL_ITEM_IDS.LUCKY_STREAK,
@@ -157,6 +145,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 1,
     category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
     unlockRequirement: 5000,
+    maxPurchases: 50
   },
   {
     id: SPECIAL_ITEM_IDS.COMBO_MASTER,
@@ -169,28 +158,28 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
     unlockRequirement: 7500,
   },
-  {
-    id: SPECIAL_ITEM_IDS.TIME_WARP,
-    name: "Time Warp",
-    description: "10s of production x2",
-    baseCost: 300000,
-    costGrowth: 2.5,
-    effect: SPECIAL_ITEM_EFFECTS.TIME_BOOST,
-    multiplier: 1,
-    category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
-    unlockRequirement: 10000,
-  },
-  {
-    id: SPECIAL_ITEM_IDS.FRENZY_MODE,
-    name: "Frenzy Mode",
-    description: "30s of clicks x5",
-    baseCost: 600000,
-    costGrowth: 2.5,
-    effect: SPECIAL_ITEM_EFFECTS.CLICK_FRENZY,
-    multiplier: 1,
-    category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
-    unlockRequirement: 15000,
-  },
+  // {
+  //   id: SPECIAL_ITEM_IDS.TIME_WARP,
+  //   name: "Time Warp",
+  //   description: "10s of production x2",
+  //   baseCost: 300000,
+  //   costGrowth: 2.5,
+  //   effect: SPECIAL_ITEM_EFFECTS.TIME_BOOST,
+  //   multiplier: 1,
+  //   category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
+  //   unlockRequirement: 10000,
+  // },
+  // {
+  //   id: SPECIAL_ITEM_IDS.FRENZY_MODE,
+  //   name: "Frenzy Mode",
+  //   description: "30s of clicks x5",
+  //   baseCost: 600000,
+  //   costGrowth: 2.5,
+  //   effect: SPECIAL_ITEM_EFFECTS.CLICK_FRENZY,
+  //   multiplier: 1,
+  //   category: SPECIAL_ITEM_CATEGORIES.SPECIAL,
+  //   unlockRequirement: 15000,
+  // },
 
   // Automation - Tier 1
   {

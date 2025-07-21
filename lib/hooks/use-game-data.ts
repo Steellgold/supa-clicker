@@ -74,32 +74,37 @@ export const useClickerGame = (options: GameOptions = {}) => {
             switch (specialItem.effect) {
               case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai intern')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
+                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
                 if (upgrade.name.toLowerCase().includes('junior dev')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
+                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
                 if (upgrade.name.toLowerCase().includes('devops')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
+                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
                 if (upgrade.name.toLowerCase().includes('cloud')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
+                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
-                  upgradePps *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradeClick *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
+                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
                 }
                 break;
             }
@@ -121,7 +126,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
           case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
           case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
           case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
-            globalMultiplier *= getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+            const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
+            globalMultiplier *= Math.pow(itemMultiplier, specialLevel);
             break;
         }
       }
@@ -156,8 +162,10 @@ export const useClickerGame = (options: GameOptions = {}) => {
     const baseGain = currentState.clickPower;
     let gainedPower = baseGain;
 
-    const hasGoldenClick = (currentState.specialItems[SPECIAL_ITEM_IDS.GOLDEN_CLICK] || 0) > 0;
-    const hasLuckyStreak = (currentState.specialItems[SPECIAL_ITEM_IDS.LUCKY_STREAK] || 0) > 0;
+    const goldenClickLevel = currentState.specialItems[SPECIAL_ITEM_IDS.GOLDEN_CLICK] || 0;
+    const luckyStreakLevel = currentState.specialItems[SPECIAL_ITEM_IDS.LUCKY_STREAK] || 0;
+    const hasGoldenClick = goldenClickLevel > 0;
+    const hasLuckyStreak = luckyStreakLevel > 0;
     const hasComboSystem = (currentState.specialItems[SPECIAL_ITEM_IDS.COMBO_MASTER] || 0) > 0;
     const hasTimeBoost = (currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0) > 0;
     const timeBoostLevel = currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0;
@@ -167,13 +175,19 @@ export const useClickerGame = (options: GameOptions = {}) => {
     let comboMultiplier = 1;
     let shouldActivateTimeBoost = false;
 
-    // Golden Click and Lucky Streak logic
-    if (hasGoldenClick && Math.random() < GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_CHANCE) {
-      isSpecialClick = true;
-      specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_MULTIPLIER;
-    } else if (hasLuckyStreak && Math.random() < GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_CHANCE) {
-      isSpecialClick = true;
-      specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_MULTIPLIER;
+    if (hasGoldenClick) {
+      const goldenClickChance = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_CHANCE * goldenClickLevel;
+      if (Math.random() < goldenClickChance) {
+        isSpecialClick = true;
+        specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_MULTIPLIER;
+      }
+    }
+    if (!isSpecialClick && hasLuckyStreak) {
+      const luckyStreakChance = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_CHANCE * luckyStreakLevel;
+      if (Math.random() < luckyStreakChance) {
+        isSpecialClick = true;
+        specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_MULTIPLIER;
+      }
     }
 
     // Combo System logic
@@ -304,21 +318,28 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // Fix: Ensure we have enough power AND all other requirements are met
     if (gameState.currentPower >= cost && canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
+      const newSpecialItems = {
+        ...gameState.specialItems,
+        [specialItemId]: currentLevel + 1
+      };
+      
+      const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, newSpecialItems);
+      
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
         currentResources: prev.currentPower - cost,
-        specialItems: {
-          ...prev.specialItems,
-          [specialItemId]: currentLevel + 1
-        },
+        specialItems: newSpecialItems,
+        pps: totalPps,
+        clickPower: totalClickMultiplier,
+        resourcesPerSecond: totalPps,
         lastSaveTime: Date.now()
       }));
       return true;
     }
 
     return false;
-  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel]);
+  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel, calculateTotalStats]);
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
@@ -416,6 +437,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       const result = await response.json();
       
       if (result.gameData) {
+        console.log('✅ Loaded existing Supabase save');
         return {
           ...DEFAULT_GAME_STATE,
           ...result.gameData,
@@ -426,8 +448,23 @@ export const useClickerGame = (options: GameOptions = {}) => {
       console.error("Error loading from Supabase:", error);
     }
 
-    return loadFromLocal();
-  }, [saveToSupabase, userId, loadFromLocal]);
+    const localData = loadFromLocal();
+    
+    if (localData.totalPower > 0 || localData.totalClicks > 0 || Object.keys(localData.upgrades).length > 0) {
+      console.log('🔄 Transferring local save to Supabase...');
+      try {
+        const transferSuccess = await saveToSupabaseDB(localData);
+        if (transferSuccess) {
+          console.log('✅ Local save transferred to Supabase successfully');
+          return localData;
+        }
+      } catch (transferError) {
+        console.error('❌ Failed to transfer local save:', transferError);
+      }
+    }
+
+    return localData;
+  }, [saveToSupabase, userId, loadFromLocal, saveToSupabaseDB]);
 
   const saveGame = useCallback(async () => {
     const currentGameState = gameStateRef.current;
