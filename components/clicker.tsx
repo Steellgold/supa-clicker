@@ -1,63 +1,52 @@
-"use client";
+"use client"
 
-import { cn, formatWithSpaces } from "@/lib/utils";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import type React from "react";
-import { useCallback, useState } from "react";
+import { cn, formatNumber } from "@/lib/utils"
+import { motion } from "framer-motion"
+import Image from "next/image"
+import type React from "react"
+import { useCallback, useState } from "react"
 
 type ClickEffect = {
-  id: number;
-  x: number;
-  y: number;
-  gained: number;
-  isGolden?: boolean;
-  isPlatinum?: boolean;
-};
+  id: number
+  x: number
+  y: number
+  gained: number
+}
 
 type ClickerProps = {
   onClick: () => {
-    gained: number;
-    isGolden?: boolean;
-    isPlatinum?: boolean
-  };
-  disabled?: boolean;
+    gained: number
+  }
+  disabled?: boolean
 }
 
 export function Clicker({ onClick, disabled }: ClickerProps) {
-  const [isClicking, setIsClicking] = useState(false);
-  const [clickEffects, setClickEffects] = useState<ClickEffect[]>([]);
-  const [isActive, setIsActive] = useState(false);
+  const [isClicking, setIsClicking] = useState(false)
+  const [clickEffects, setClickEffects] = useState<ClickEffect[]>([])
+  const [isActive, setIsActive] = useState(false)
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
-      if (disabled) return;
+      if (disabled) return
 
-      setIsClicking(true);
-      setIsActive(true);
+      setIsClicking(true)
+      setIsActive(true)
 
-      const result = onClick();
+      const result = onClick()
 
-      const rect = event.currentTarget.getBoundingClientRect();
-      const x = event.clientX - rect.left - rect.width / 2;
-      const y = event.clientY - rect.top - rect.height / 2;
-      const effectId = Date.now();
+      const rect = event.currentTarget.getBoundingClientRect()
+      const x = event.clientX - rect.left - rect.width / 2
+      const y = event.clientY - rect.top - rect.height / 2
+      const effectId = Date.now()
 
-      setClickEffects((prev) => [
-        ...prev,
-        { id: effectId, x, y,
-          gained: result.gained,
-          isGolden: result.isGolden,
-          isPlatinum: result.isPlatinum,
-        },
-      ]);
+      setClickEffects((prev) => [...prev, { id: effectId, x, y, gained: result.gained }])
 
-      setTimeout(() => setClickEffects((prev) => prev.filter((effect) => effect.id !== effectId)), 1000);
-      setTimeout(() => setIsClicking(false), 100);
-      setTimeout(() => setIsActive(false), 300);
+      setTimeout(() => setClickEffects((prev) => prev.filter((effect) => effect.id !== effectId)), 1000)
+      setTimeout(() => setIsClicking(false), 100)
+      setTimeout(() => setIsActive(false), 300)
     },
-    [onClick, disabled],
-  );
+    [onClick, disabled]
+  )
 
   return (
     <div className="relative flex items-center justify-center">
@@ -69,14 +58,17 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
         animate={isClicking ? { scale: [1, 1.05, 1] } : {}}
         transition={{ duration: 0.1 }}
         className={cn(
-          "size-52 rounded-full bg-neutral-900 dark:bg-neutral-100 border-6 border-neutral-800 dark:border-neutral-200 hover:border-neutral-700 dark:hover:border-neutral-300 transition-colors relative overflow-hidden focus:outline-none", {
-          "ring-2 ring-green-500": isActive || isClicking,
-          "focus:ring-2 focus:ring-green-500": !isActive && !isClicking
+          "size-52 rounded-full border-4 border-black dark:border-white bg-white bg-black dark:bg-white relative overflow-hidden",
+          "shadow-[4px_4px_0_#000] dark:shadow-[4px_4px_0_#aaa] transition-transform duration-100 focus:outline-none",
+          {
+            "ring-2 ring-green-600 dark:ring-green-300": isActive || isClicking,
+            "focus:ring-2 focus:ring-green-600 dark:focus:ring-green-400": !isActive && !isClicking,
+            "opacity-60 cursor-not-allowed": disabled,
           }
         )}
       >
         <div className="absolute inset-0 flex items-center justify-center">
-          <Image 
+          <Image
             src="https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcBNW5dZLiLn2WUYjB5ursFGVI4PJSbHf0K8p7"
             alt="Clicker button"
             width={80}
@@ -94,18 +86,12 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
           initial={{ opacity: 1, scale: 0, x: effect.x, y: effect.y }}
           animate={{ opacity: 0, scale: 1.5, y: effect.y - 40 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className={`absolute pointer-events-none text-3xl font-bold z-20 ${
-            effect.isPlatinum 
-              ? "text-purple-400" 
-                : effect.isGolden 
-                  ? "text-yellow-400"
-                    : "text-green-500"
-          }`}
+          className="absolute pointer-events-none z-20 text-green-600 dark:text-green-300 text-2xl font-mono font-bold"
           style={{ left: "50%", top: "50%" }}
         >
-          +{formatWithSpaces(effect.gained)}
+          +{formatNumber(effect.gained)}
         </motion.div>
       ))}
     </div>
-  );
+  )
 }

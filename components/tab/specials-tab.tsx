@@ -5,6 +5,7 @@ import { useGame } from "@/lib/providers/game-provider";
 import { getAllSpecialItems } from "@/lib/upgrades-specials";
 import { formatNumber } from "@/lib/utils";
 import { ReactElement } from "react";
+import { PowerTag } from "../power-tag";
 
 export const SpecialsTab = (): ReactElement => {
   const { gameState } = useGame();
@@ -17,7 +18,10 @@ export const SpecialsTab = (): ReactElement => {
     <>
       <div className="flex flex-row justify-between items-center p-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 overflow-hidden border-b-2 border-purple-200">
         <span className="text-sm text-purple-700 dark:text-purple-300">
-          Total Power: <span className="font-bold">{formatNumber(gameState.totalPower)}</span>
+          Total Power:{" "}
+          <PowerTag imageProps={{ width: 14, height: 14 }}>
+            <span className="font-bold">{formatNumber(gameState.totalPower)}</span>
+          </PowerTag>
         </span>
 
         <span className="text-sm text-purple-700 dark:text-purple-300">

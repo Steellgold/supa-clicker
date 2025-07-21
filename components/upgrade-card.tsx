@@ -124,13 +124,13 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
                     "grayscale": currentLevel === 0
                   }) }}>
-                    {upgrade.rpsGain == 0 && upgrade.clickMultiplier > 0 ? (
+                    {upgrade.ppsGain == 0 && upgrade.clickMultiplier > 0 ? (
                       <>
                         +{formatDecimal(upgrade.clickMultiplier * (currentLevel == 0 ? 1 : currentLevel))}x Clicks
                       </>
                     ) : (
                       <>
-                        +{formatDecimal(upgrade.rpsGain * (currentLevel == 0 ? 1 : currentLevel))}/s
+                        +{formatDecimal(upgrade.ppsGain * (currentLevel == 0 ? 1 : currentLevel))}/s
                       </>
                     )}
                   </PowerTag>

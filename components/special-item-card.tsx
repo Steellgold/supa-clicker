@@ -18,9 +18,9 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const { buySpecialItem, gameState } = useGame();
   
   const currentLevel = gameState.specialItems[item.id] || 0;
-  const cost = getSpecialItemCost(item, currentLevel);
-  const isUnlocked = isSpecialItemUnlocked(item, gameState.totalPower);
-  const canPurchase = canPurchaseSpecialItem(item, currentLevel, gameState.currentPower, gameState.totalPower, gameState.upgrades);
+  const cost = getSpecialItemCost(item, currentLevel, gameState.prestigeLevel);
+  const isUnlocked = isSpecialItemUnlocked(item, gameState.totalPower, gameState.prestigeLevel);
+  const canPurchase = canPurchaseSpecialItem(item, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades);
   const isMaxed = item.maxPurchases && currentLevel >= item.maxPurchases;
   
   const requiredUpgradeIds = getRequiredUpgradeIds(item);
@@ -79,7 +79,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const getUnlockedSpecialItemsCount = (totalPower: number) => {
     return getAllSpecialItems()
       .sort((a, b) => (a.unlockRequirement || 0) - (b.unlockRequirement || 0))
-      .filter(specialItem => isSpecialItemUnlocked(specialItem, totalPower)).length;
+      .filter(specialItem => isSpecialItemUnlocked(specialItem, totalPower, gameState.prestigeLevel)).length;
   };
 
   const shouldShowPowerTag = (effect: string) => {
@@ -101,7 +101,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                 <h3 className="font-semibold text-neutral-600 dark:text-neutral-400">{item.name} 🔒</h3>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
-                Requires {formatNumber(item.unlockRequirement || 0)} total power
+                Requires {formatNumber((gameState.prestigeLevel > 0 ? Math.floor((item.unlockRequirement || 0) * Math.pow(2, Math.min(gameState.prestigeLevel, 10))) : (item.unlockRequirement || 0)))} total power
               </p>
             </div>
           </div>
