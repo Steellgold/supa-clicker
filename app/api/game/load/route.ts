@@ -39,7 +39,7 @@ export const GET = async() => {
           totalPower: Number(data.total_power) || 0,
           totalClicks: Number(data.total_clicks) || 0,
           clickPower: 1, // Default click power
-          rps: Number(data.clicks_per_second) || 0,
+          pps: Number(data.clicks_per_second) || 0,
           prestigeLevel: data.prestige_level || 0,
           upgrades: data.upgrades || {},
           specialItems: data.special_items || {},

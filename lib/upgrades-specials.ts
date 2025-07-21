@@ -2,6 +2,7 @@ import { SpecialItem } from "@/type/game";
 import { SPECIAL_ITEM_CATEGORIES, SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items";
 import { UPGRADE_IDS } from "./constants/upgrades";
 import { getUpgradeById } from "./upgrades";
+import { getPrestigePriceMultiplier } from "./prestige";
 
 export const SPECIAL_ITEMS: SpecialItem[] = [
   {
@@ -277,12 +278,17 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
   },
 ];
 
-export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0): number => {
-  return Math.floor(item.baseCost * Math.pow(item.costGrowth, currentLevel));
+export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0, prestigeLevel: number = 0): number => {
+  const baseCost = item.baseCost * Math.pow(item.costGrowth, currentLevel);
+  const prestigeMultiplier = getPrestigePriceMultiplier(prestigeLevel);
+  return Math.floor(baseCost * prestigeMultiplier);
 };
 
-export const isSpecialItemUnlocked = (item: SpecialItem, totalPower: number): boolean => {
-  return totalPower >= (item.unlockRequirement || 0);
+export const isSpecialItemUnlocked = (item: SpecialItem, totalPower: number, prestigeLevel: number = 0): boolean => {
+  const baseRequirement = item.unlockRequirement || 0;
+  // Increase unlock requirements based on prestige level to make progression more challenging
+  const prestigeAdjustedRequirement = prestigeLevel > 0 ? Math.floor(baseRequirement * Math.pow(2, Math.min(prestigeLevel, 10))) : baseRequirement;
+  return totalPower >= prestigeAdjustedRequirement;
 };
 
 export const canPurchaseSpecialItem = (
@@ -290,9 +296,10 @@ export const canPurchaseSpecialItem = (
   currentLevel: number, 
   currentPower: number,
   totalPower: number,
+  prestigeLevel: number = 0,
   upgradesState: Record<number, number> = {}
 ): boolean => {
-  if (!isSpecialItemUnlocked(item, totalPower)) return false;
+  if (!isSpecialItemUnlocked(item, totalPower, prestigeLevel)) return false;
   if (item.maxPurchases && currentLevel >= item.maxPurchases) return false;
   
   // Check if required upgrades are owned for upgrade boost items
@@ -311,7 +318,7 @@ export const canPurchaseSpecialItem = (
     }
   }
   
-  const cost = getSpecialItemCost(item, currentLevel);
+  const cost = getSpecialItemCost(item, currentLevel, prestigeLevel);
   return currentPower >= cost;
 };
 

@@ -1,17 +1,18 @@
-import { GameOptions, GameState } from '@/type/game';
+import { GameOptions, GameState, Upgrade } from '@/type/game';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GAME_CONFIG } from '../config/game-config';
 import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from '../constants/special-items';
 import { getUpgradeCost } from '../upgrades';
 import { SPECIAL_ITEMS, canPurchaseSpecialItem, getSpecialItemCost } from '../upgrades-specials';
 import { useCryptoSecurity } from './use-crypto-security';
+import { getPrestigeMultiplier } from '../prestige';
 
 const DEFAULT_GAME_STATE: GameState = {
   totalClicks: 0,
   totalPower: 0,
   currentPower: 0,
   clickPower: 1,
-  rps: 0,
+  pps: 0,
   upgrades: {},
   specialItems: {},
   unlockedAchievements: [],
@@ -42,7 +43,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const [lastSaveTime, setLastSaveTime] = useState(Date.now());
   
   const { makeSignedRequest, isReady: cryptoReady } = useCryptoSecurity();
-  const rpsIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const ppsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const autoClickerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timeBoostIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -53,14 +54,14 @@ export const useClickerGame = (options: GameOptions = {}) => {
   }, [gameState]);
 
   const calculateTotalStats = useCallback((upgradesState: Record<number, number>, specialItemsState: Record<number, number> = {}) => {
-    let totalRps = 0;
+    let totalPps = 0;
     let totalClickMultiplier = 1;
     let globalMultiplier = 1;
 
     upgrades.forEach(upgrade => {
       const level = upgradesState[upgrade.id] || 0;
       if (level > 0) {
-        let upgradeRps = upgrade.rpsGain * level;
+        let upgradePps = upgrade.ppsGain * level;
         let upgradeClick = upgrade.clickMultiplier * level;
 
         SPECIAL_ITEMS.forEach(specialItem => {
@@ -69,31 +70,31 @@ export const useClickerGame = (options: GameOptions = {}) => {
             switch (specialItem.effect) {
               case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai intern')) {
-                  upgradeRps *= specialItem.multiplier;
+                  upgradePps *= specialItem.multiplier;
                   upgradeClick *= specialItem.multiplier;
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
                 if (upgrade.name.toLowerCase().includes('junior dev')) {
-                  upgradeRps *= specialItem.multiplier;
+                  upgradePps *= specialItem.multiplier;
                   upgradeClick *= specialItem.multiplier;
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
                 if (upgrade.name.toLowerCase().includes('devops')) {
-                  upgradeRps *= specialItem.multiplier;
+                  upgradePps *= specialItem.multiplier;
                   upgradeClick *= specialItem.multiplier;
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
                 if (upgrade.name.toLowerCase().includes('cloud')) {
-                  upgradeRps *= specialItem.multiplier;
+                  upgradePps *= specialItem.multiplier;
                   upgradeClick *= specialItem.multiplier;
                 }
                 break;
               case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
                 if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
-                  upgradeRps *= specialItem.multiplier;
+                  upgradePps *= specialItem.multiplier;
                   upgradeClick *= specialItem.multiplier;
                 }
                 break;
@@ -101,7 +102,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           }
         });
 
-        totalRps += upgradeRps;
+        totalPps += upgradePps;
         totalClickMultiplier += upgradeClick;
       }
     });
@@ -122,25 +123,24 @@ export const useClickerGame = (options: GameOptions = {}) => {
       }
     });
 
-    const prestigeBonus = GAME_CONFIG.PRESTIGE.BASE_BONUS + (gameStateRef.current.prestigeLevel * GAME_CONFIG.PRESTIGE.BONUS_PER_LEVEL);
-    const prestigeMultiplier = Math.pow(prestigeBonus, gameStateRef.current.prestigeLevel);
+    const prestigeMultiplier = getPrestigeMultiplier(gameStateRef.current.prestigeLevel);
 
     return { 
-      totalRps: totalRps * globalMultiplier * prestigeMultiplier, 
+      totalPps: totalPps * globalMultiplier * prestigeMultiplier, 
       totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier 
     };
   }, [upgrades]);
 
   useEffect(() => {
-    const { totalRps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, gameState.specialItems);
+    const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, gameState.specialItems);
     setGameState(prev => {
-      if (prev.rps === totalRps && prev.clickPower === totalClickMultiplier) return prev;
+      if (prev.pps === totalPps && prev.clickPower === totalClickMultiplier) return prev;
 
       return {
         ...prev,
-        rps: totalRps,
+        pps: totalPps,
         clickPower: totalClickMultiplier,
-        resourcesPerSecond: totalRps,
+        resourcesPerSecond: totalPps,
         lastSaveTime: Date.now()
       };
     });
@@ -262,7 +262,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // QUANTITY COST
     for (let i = 0; i < quantity; i++) {
-      const cost = getUpgradeCost(upgrade, currentLevel + i);
+      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel);
       if (gameState.currentPower >= totalCost + cost) {
         totalCost += cost;
         actualQuantity++;
@@ -293,9 +293,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (!specialItem) return false;
 
     const currentLevel = gameState.specialItems[specialItemId] || 0;
-    const cost = getSpecialItemCost(specialItem, currentLevel);
+    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel);
 
-    if (canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.upgrades)) {
+    if (canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
@@ -447,32 +447,32 @@ export const useClickerGame = (options: GameOptions = {}) => {
   }, [loadFromSupabaseDB]);
 
   useEffect(() => {
-    if (gameState.rps > 0) {
-      rpsIntervalRef.current = setInterval(() => {
+    if (gameState.pps > 0) {
+      ppsIntervalRef.current = setInterval(() => {
         setGameState(prev => {
-          const newCurrentPower = prev.currentPower + prev.rps;
+          const newCurrentPower = prev.currentPower + prev.pps;
           return {
             ...prev,
             currentPower: newCurrentPower,
-            totalPower: prev.totalPower + prev.rps,
+            totalPower: prev.totalPower + prev.pps,
             currentResources: newCurrentPower,
             lastSaveTime: Date.now()
           };
         });
-      }, GAME_CONFIG.INTERVALS.RPS_UPDATE);
+      }, GAME_CONFIG.INTERVALS.PPS_UPDATE);
     } else {
-      if (rpsIntervalRef.current) {
-        clearInterval(rpsIntervalRef.current);
-        rpsIntervalRef.current = null;
+      if (ppsIntervalRef.current) {
+        clearInterval(ppsIntervalRef.current);
+        ppsIntervalRef.current = null;
       }
     }
 
     return () => {
-      if (rpsIntervalRef.current) {
-        clearInterval(rpsIntervalRef.current);
+      if (ppsIntervalRef.current) {
+        clearInterval(ppsIntervalRef.current);
       }
     };
-  }, [gameState.rps]);
+  }, [gameState.pps]);
 
   // Auto-clicker effect
   useEffect(() => {
@@ -593,7 +593,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   const upgradesInfo = upgrades.map(upgrade => {
     const currentLevel = gameState.upgrades[upgrade.id] || 0;
-    const cost = getUpgradeCost(upgrade, currentLevel);
+    const cost = getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel);
     const canAfford = gameState.currentPower >= cost;
     
     return {
@@ -601,7 +601,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       currentLevel,
       cost,
       canAfford,
-      totalRps: upgrade.rpsGain * currentLevel,
+      totalPps: upgrade.ppsGain * currentLevel,
       totalClickBonus: upgrade.clickMultiplier * currentLevel
     };
   });
@@ -664,6 +664,15 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   return {
     gameState,
+    setGameState: (state: GameState) => {
+      if (process.env.NODE_ENV !== 'development') {
+        console.log('Not in development, skipping setGameState');
+        return;
+      }
+
+      setGameState(state);
+      saveGame();
+    },
     isLoading,
     lastSaveTime,
     
@@ -681,7 +690,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     upgradesInfo,
     specialItemsState: gameState.specialItems,
     
-    getUpgradeCost,
+    getUpgradeCost: (upgrade: Upgrade, currentLevel: number = 0) => getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel),
     
     comboCount: gameState.comboCount,
     timeBoostActive: gameState.timeBoostActive,

@@ -18,7 +18,7 @@ export const GameStateSchema = z.object({
   totalPower: z.number().min(0),
   currentPower: z.number().min(0),
   clickPower: z.number().min(1),
-  rps: z.number().min(0),
+  pps: z.number().min(0),
   upgrades: RecordNumberNumberSchema,
   specialItems: RecordNumberNumberSchema,
   unlockedAchievements: z.array(z.number().int().min(0)).max(1000),

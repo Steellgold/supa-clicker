@@ -43,7 +43,7 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
         const stats: GameStats = {
           totalClicks: gameData.gameState.totalClicks,
           currentResources: gameData.gameState.currentPower,
-          resourcesPerSecond: gameData.gameState.rps,
+          resourcesPerSecond: gameData.gameState.pps,
           lastSaveTime: gameData.gameState.lastSaveTime,
           prestigeLevel: gameData.gameState.prestigeLevel,
         };
@@ -60,7 +60,7 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   }, [
     gameData.gameState.totalClicks,
     gameData.gameState.currentPower,
-    gameData.gameState.rps,
+    gameData.gameState.pps,
     gameData.gameState.upgrades,
     gameData.gameState.prestigeLevel,
     gameData.isLoading,

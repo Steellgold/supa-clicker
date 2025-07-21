@@ -410,8 +410,8 @@ const UserProfilePage = async ({ params }: Props) => {
                             LVL {upgrade.level}
                           </div>
                           <div className="font-mono text-xs text-neutral-600 dark:text-neutral-400">
-                            {upgrade.rpsGain > 0 && (
-                              <div>+{(upgrade.rpsGain * upgrade.level).toFixed(1)} RPS</div>
+                            {upgrade.ppsGain > 0 && (
+                              <div>+{(upgrade.ppsGain * upgrade.level).toFixed(1)} PPS</div>
                             )}
                             {upgrade.clickMultiplier > 0 && (
                               <div>+{(upgrade.clickMultiplier * upgrade.level).toFixed(1)}x CLICK</div>

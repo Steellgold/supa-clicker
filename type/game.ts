@@ -6,7 +6,7 @@ export type Upgrade = {
   description: string;
   baseCost: number;
   costGrowth: number;
-  rpsGain: number;
+  ppsGain: number;
   clickMultiplier: number;
   category: string;
 };
@@ -24,7 +24,7 @@ export type GameState = {
   totalPower: number;
   currentPower: number;
   clickPower: number;
-  rps: number;
+  pps: number;
   upgrades: Record<number, number>;
   specialItems: Record<number, number>;
   // Achievement-related fields

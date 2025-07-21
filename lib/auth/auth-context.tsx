@@ -1,6 +1,7 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client"
+import { handlePostDebugAuthReset } from "@/lib/debug-utils"
 import { Component } from "@/type/component"
 import type { User } from "@supabase/supabase-js"
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react"
@@ -36,13 +37,13 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
 
       if (error) {
         if (error.code === "PGRST116") {
-          console.log("Profile not found, setting empty profile")
-          setUserProfile({})
+          console.log("Profile not found, setting null profile")
+          setUserProfile(null)
           return
         }
         
         console.error("Error loading user profile:", error)
-        setUserProfile({})
+        setUserProfile(null)
         return
       }
 
@@ -55,7 +56,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
       })
     } catch (error) {
       console.error("Error loading user profile:", error)
-      setUserProfile({})
+      setUserProfile(null)
     }
   }, [supabase])
 
@@ -117,6 +118,13 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
           
           if (currentUser) {
             setLoading(true)
+            
+            const wasReset = handlePostDebugAuthReset()
+            if (wasReset) {
+              window.location.reload()
+              return
+            }
+            
             // Add a small delay to ensure the session is fully established
             await new Promise(resolve => setTimeout(resolve, 100))
             try {

@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       current_power: validatedGameData.currentPower,
       total_power: validatedGameData.totalPower,
       total_clicks: validatedGameData.totalClicks,
-      clicks_per_second: validatedGameData.rps,
+      clicks_per_second: validatedGameData.pps,
       prestige_level: validatedGameData.prestigeLevel,
       upgrades: validatedGameData.upgrades,
       special_items: validatedGameData.specialItems,

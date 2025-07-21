@@ -3,8 +3,8 @@ export const GAME_CONFIG = {
     /** How often to auto-save game progress */
     AUTO_SAVE: 15000,
     
-    /** How often to update RPS (resources per second) */
-    RPS_UPDATE: 1000,
+    /** How often to update PPS (power per second) */
+    PPS_UPDATE: 1000,
     
     /** Max time between clicks to maintain combo */
     COMBO_TIMEOUT: 500,
@@ -51,11 +51,11 @@ export const GAME_CONFIG = {
       /** Minimum power gain to trigger suspicious activity check */
       MIN_SUSPICIOUS_GAIN: 1000,
       
-      /** Max RPS multiplier increase allowed in short time */
-      RPS_INCREASE_THRESHOLD: 5,
+      /** Max PPS multiplier increase allowed in short time */
+      PPS_INCREASE_THRESHOLD: 5,
       
-      /** Time window for RPS increase detection (ms) */
-      RPS_INCREASE_TIME_WINDOW: 10000, // 10 seconds
+      /** Time window for PPS increase detection (ms) */
+      PPS_INCREASE_TIME_WINDOW: 10000, // 10 seconds
       
       /** Max click power multiplier increase allowed in short time */
       CLICK_POWER_THRESHOLD: 10,
@@ -134,8 +134,8 @@ export const GAME_CONFIG = {
     /** Maximum click power allowed */
     CLICK_POWER: 1000000,
     
-    /** Maximum resources per second allowed */
-    RPS: 1000000,
+    /** Maximum power per second allowed */
+    PPS: 1000000,
     
     /** Maximum number of achievements */
     MAX_ACHIEVEMENTS: 1000,
@@ -225,8 +225,8 @@ export const GAME_CONFIG = {
     /** Resource/power milestones */
     RESOURCE_THRESHOLDS: [1000, 1000000, 1000000000, 1000000000000],
     
-    /** RPS (resources per second) milestones */
-    RPS_THRESHOLDS: [10, 100, 1000, 10000, 100000],
+    /** PPS (power per second) milestones */
+    PPS_THRESHOLDS: [10, 100, 1000, 10000, 100000],
   },
 
   // ===============================
