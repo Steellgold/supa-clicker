@@ -34,7 +34,7 @@ export const AuthButton: Component<object> = () => {
 
   if (user) {
     const displayName = userProfile?.display_name || userProfile?.username || user.email?.split("@")[0] || "User"
-    const needsProfileSetup = !userProfile?.username
+    const needsProfileSetup = !userProfile || !userProfile.username
 
     return (
       <div className="flex items-center gap-2">

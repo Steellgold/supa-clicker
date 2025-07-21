@@ -5,14 +5,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/lib/auth/auth-context"
-import { createClient } from "@/lib/supabase/client"
+import { updateUserProfile, uploadProfileIcon } from "@/lib/actions/profile-actions"
 import type { Component } from "@/type/component"
 import { Loader2, Upload, User, X } from "lucide-react"
 import Image from "next/image"
 import { PropsWithChildren, useEffect, useRef, useState } from "react"
 
 export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => {
-  const { user, userProfile, updateProfile, refreshProfile, loading: authLoading } = useAuth()
+  const { user, userProfile, refreshProfile, loading: authLoading } = useAuth()
   const [displayName, setDisplayName] = useState("")
   const [username, setUsername] = useState("")
   const [bio, setBio] = useState("")
@@ -23,7 +23,6 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
   const [success, setSuccess] = useState("")
   const [isOpen, setIsOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
 
   const generateUsername = (displayName: string): string => {
     return displayName
@@ -53,8 +52,8 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
 
   // Force refresh profile data when modal opens if profile seems empty
   useEffect(() => {
-    if (isOpen && user && !authLoading && (!userProfile || !userProfile.username)) {
-      console.log("Profile seems empty, refreshing...")
+    if (isOpen && user && !authLoading && !userProfile) {
+      console.log("Profile is null, refreshing...")
       refreshProfile()
     }
   }, [isOpen, user, authLoading, userProfile, refreshProfile])
@@ -98,24 +97,16 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
   const uploadIcon = async (): Promise<string | null> => {
     if (!profileIcon || !user) return null
 
-    const fileExt = profileIcon.name.split('.').pop()
-    const fileName = `${user.id}_${Date.now()}.${fileExt}`
-    const filePath = `profile-icons/${fileName}`
+    const formData = new FormData()
+    formData.append('file', profileIcon)
 
-    const { error: uploadError } = await supabase.storage
-      .from('profile-assets')
-      .upload(filePath, profileIcon)
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-      throw new Error('Failed to upload icon')
+    const result = await uploadProfileIcon(formData)
+    
+    if (result.error) {
+      throw new Error(result.error)
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('profile-assets')
-      .getPublicUrl(filePath)
-
-    return publicUrl
+    return result.publicUrl || null
   }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -136,11 +127,13 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
         ...(iconUrl && { icon_url: iconUrl })
       }
 
-      const { error: updateError } = await updateProfile(profileData)
+      const result = await updateUserProfile(profileData)
 
-      if (updateError) {
-        setError(updateError)
+      if (result.error) {
+        setError(result.error)
       } else {
+        // Refresh the profile in the auth context
+        await refreshProfile()
         setIsOpen(false)
         setSuccess("Profile updated successfully!")
       }
@@ -169,7 +162,7 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
           </DialogDescription>
         </DialogHeader>
 
-        {user && !userProfile?.username && !authLoading ? (
+        {user && !userProfile && !authLoading ? (
           <div className="text-center py-8">
             <Loader2 className="animate-spin w-8 h-8 mx-auto mb-3" />
             <p className="text-sm text-neutral-500">Loading your profile...</p>
