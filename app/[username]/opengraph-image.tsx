@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og"
 async function getUserData(username: string) {
   try {
     const response = await fetch(
-      `${process.env.VERCEL_URL || "https://supaclicker.vercel.app"}/api/debug-og/${username}`,
+      `https://supaclicker.vercel.app/${username}/debug-og/`,
       {
         headers: {
           "User-Agent": "OpenGraph-Image-Generator",
@@ -48,26 +48,24 @@ export default async function Image({ params }: { params: Promise<{ username: st
     const result = await getUserData(username)
 
     if (!result) {
-      console.log("No user found, generating error image")
       return new ImageResponse(
         <div
           style={{
-            fontSize: 60,
-            background: "linear-gradient(135deg, #1f2937 0%, #374151 100%)",
+            fontSize: 48,
+            background: "#f5f5f5",
             width: "100%",
             height: "100%",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "white",
+            color: "#000",
             fontFamily: "monospace",
+            border: "4px solid #000",
           }}
         >
           USER NOT FOUND
         </div>,
-        {
-          ...size,
-        },
+        { ...size },
       )
     }
 
@@ -82,163 +80,247 @@ export default async function Image({ params }: { params: Promise<{ username: st
       return num.toLocaleString()
     }
 
-    console.log("Generating image for:", displayName, "Power:", stats.total_power, "Prestige:", stats.prestige_level)
+    // Couleurs basées sur votre CSS
+    const bgColor = "#f5f5f5" // --background light
+    const cardBg = "#ffffff" // --card light
+    const borderColor = "#000000" // Bordures noires comme dans votre style
+    const textColor = "#000000" // --foreground light
+    const primaryColor = stats.prestige_level > 0 ? "#a855f7" : "#10b981" // Purple si prestige, sinon vert
+    const primaryBg = stats.prestige_level > 0 ? "#f3e8ff" : "#d1fae5"
 
     return new ImageResponse(
       <div
         style={{
-          background: "linear-gradient(135deg, #1f2937 0%, #374151 100%)",
+          background: bgColor,
           width: "100%",
           height: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           padding: "40px",
           fontFamily: "monospace",
         }}
       >
+        {/* Container principal avec bordure noire */}
         <div
           style={{
-            background: "#f3f4f6",
-            border: "4px solid #1f2937",
-            padding: "60px",
+            background: cardBg,
+            border: `4px solid ${borderColor}`,
+            boxShadow: "8px 8px 0 #000",
+            width: "100%",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "90%",
-            height: "80%",
+            padding: "40px",
             position: "relative",
           }}
         >
-          {/* Prestige Badge */}
-          {stats.prestige_level > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "#fbbf24",
-                border: "3px solid #d97706",
-                padding: "10px 20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <span style={{ fontSize: "24px" }}>👑</span>
-              <span
+          {/* Header avec nom et prestige */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: "30px",
+            }}
+          >
+            {/* Nom utilisateur */}
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
                 style={{
-                  fontSize: "20px",
+                  fontSize: "48px",
                   fontWeight: "bold",
-                  color: "#92400e",
+                  color: textColor,
+                  textTransform: "uppercase",
+                  letterSpacing: "2px",
+                  display: "flex",
                 }}
               >
-                PRESTIGE {stats.prestige_level}
-              </span>
+                {displayName}
+              </div>
+              {profile.display_name && profile.display_name !== profile.username && (
+                <div
+                  style={{
+                    fontSize: "24px",
+                    color: "#666",
+                    display: "flex",
+                  }}
+                >
+                  @{profile.username}
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Avatar */}
-          <div
-            style={{
-              width: "120px",
-              height: "120px",
-              background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontSize: "48px",
-              fontWeight: "bold",
-              marginBottom: "30px",
-              border: "3px solid #1f2937",
-            }}
-          >
-            {displayName.charAt(0).toUpperCase()}
+            {/* Badge Prestige */}
+            {stats.prestige_level > 0 && (
+              <div
+                style={{
+                  background: primaryBg,
+                  border: `3px solid ${primaryColor}`,
+                  boxShadow: `4px 4px 0 ${primaryColor}`,
+                  padding: "12px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
+              >
+                <div style={{ fontSize: "28px", display: "flex" }}>👑</div>
+                <div
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: primaryColor,
+                    textTransform: "uppercase",
+                    display: "flex",
+                  }}
+                >
+                  PRESTIGE {stats.prestige_level}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Nom */}
-          <div
-            style={{
-              fontSize: "48px",
-              fontWeight: "bold",
-              color: "#1f2937",
-              marginBottom: "10px",
-              textTransform: "uppercase",
-            }}
-          >
-            {displayName}
-          </div>
-
-          {profile.display_name && profile.display_name !== profile.username && (
+          {/* Bio si présente */}
+          {profile.bio && (
             <div
               style={{
-                fontSize: "24px",
-                color: "#6b7280",
+                background: "#f9f9f9",
+                border: `2px solid ${borderColor}`,
+                padding: "20px",
                 marginBottom: "30px",
+                fontSize: "18px",
+                color: "#333",
+                display: "flex",
               }}
             >
-              @{profile.username}
+              {profile.bio}
             </div>
           )}
 
-          {/* Power */}
+          {/* Stats Grid */}
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              background: "#fef3c7",
-              border: "3px solid #f59e0b",
-              padding: "20px 40px",
-              marginTop: "20px",
+              gap: "20px",
+              marginTop: "auto",
             }}
           >
-            <span style={{ fontSize: "36px" }}>⚡</span>
-            <div style={{ textAlign: "left" }}>
+            {/* Total Power - Stat principale */}
+            <div
+              style={{
+                background: primaryBg,
+                border: `3px solid ${primaryColor}`,
+                boxShadow: `4px 4px 0 ${primaryColor}`,
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                flex: 2,
+              }}
+            >
               <div
                 style={{
                   fontSize: "16px",
-                  color: "#92400e",
+                  color: primaryColor,
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  marginBottom: "8px",
+                  display: "flex",
                 }}
               >
-                TOTAL POWER
+                ⚡ TOTAL POWER
               </div>
               <div
                 style={{
-                  fontSize: "36px",
+                  fontSize: "42px",
                   fontWeight: "bold",
-                  color: "#92400e",
+                  color: primaryColor,
+                  display: "flex",
                 }}
               >
                 {formatNumber(stats.total_power)}
               </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              fontSize: "16px",
-              color: "#6b7280",
-              textTransform: "uppercase",
-            }}
-          >
-            SUPA CLICKER PROFILE
+            {/* Autres stats */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "15px",
+                flex: 1,
+              }}
+            >
+              <div
+                style={{
+                  background: "#f0f0f0",
+                  border: `2px solid ${borderColor}`,
+                  boxShadow: `3px 3px 0 ${borderColor}`,
+                  padding: "15px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    textTransform: "uppercase",
+                    marginBottom: "4px",
+                    display: "flex",
+                  }}
+                >
+                  POWER/SEC
+                </div>
+                <div
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: textColor,
+                    display: "flex",
+                  }}
+                >
+                  {formatNumber(stats.clicks_per_second)}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#f0f0f0",
+                  border: `2px solid ${borderColor}`,
+                  boxShadow: `3px 3px 0 ${borderColor}`,
+                  padding: "15px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "12px",
+                    color: "#666",
+                    textTransform: "uppercase",
+                    marginBottom: "4px",
+                    display: "flex",
+                  }}
+                >
+                  🏆 ACHIEVEMENTS
+                </div>
+                <div
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: "bold",
+                    color: textColor,
+                    display: "flex",
+                  }}
+                >
+                  {stats.achievements_count}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>,
-      {
-        ...size,
-      },
+      { ...size },
     )
   } catch (error) {
     console.error("Error generating OG image:", error)
@@ -247,7 +329,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
       <div
         style={{
           fontSize: 40,
-          background: "#dc2626",
+          background: "#ff6b6b",
           width: "100%",
           height: "100%",
           display: "flex",
@@ -255,13 +337,12 @@ export default async function Image({ params }: { params: Promise<{ username: st
           justifyContent: "center",
           color: "white",
           fontFamily: "monospace",
+          border: "4px solid #000",
         }}
       >
         ERROR: {error instanceof Error ? error.message : "Unknown error"}
       </div>,
-      {
-        ...size,
-      },
+      { ...size },
     )
   }
 }
