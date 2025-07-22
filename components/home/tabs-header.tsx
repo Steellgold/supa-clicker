@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { Menu } from "lucide-react";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
+type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD";
 
 interface TabsHeaderProps {
   tab: TabType;
@@ -52,7 +52,7 @@ export const TabsHeader: Component<TabsHeaderProps> = ({ tab, setTab }) => (
     >
       🏆 LEADERBOARD
     </Button>
-    <Button
+    {/* <Button
       variant={"tabRetro"}
       size="lg"
       onClick={() => setTab("CHAT")}
@@ -64,6 +64,6 @@ export const TabsHeader: Component<TabsHeaderProps> = ({ tab, setTab }) => (
       )}
     >
       💬 CHAT
-    </Button>
+    </Button> */}
   </div>
 ); 
