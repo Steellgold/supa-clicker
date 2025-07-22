@@ -36,14 +36,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const gameSignatureHeader = request.headers.get("x-game-signature")
-    if (!gameSignatureHeader) {
-      return NextResponse.json({ error: "Missing game signature" }, { status: 403 })
-    }
-
     let signedRequest
     try {
-      signedRequest = JSON.parse(gameSignatureHeader)
+      signedRequest = await request.json()
     } catch (error) {
       console.error("Invalid signature format:", error)
       return NextResponse.json({ error: "Invalid signature format" }, { status: 403 })

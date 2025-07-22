@@ -148,7 +148,6 @@ export const useCryptoSecurity = () => {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-Game-Signature': JSON.stringify(signedRequest),
         ...options.headers
       },
       body: JSON.stringify(signedRequest)
