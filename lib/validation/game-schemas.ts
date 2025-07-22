@@ -23,7 +23,7 @@ export const GameStateSchema = z.object({
   specialItems: RecordNumberNumberSchema,
   unlockedAchievements: z.array(z.number().int().min(0)).max(1000),
   lastSaveTime: z.number().min(0),
-  prestigeLevel: z.number().int().min(0).max(1000),
+  prestigeLevel: z.number().int().min(0).max(50),
   resourcesPerSecond: z.number().min(0),
   currentResources: z.number().min(0),
   comboCount: z.number().int().min(0).max(1000),

@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
       total_power: validatedGameData.totalPower,
       total_clicks: validatedGameData.totalClicks,
       clicks_per_second: validatedGameData.pps,
-      prestige_level: validatedGameData.prestigeLevel,
+      prestige_level: validatedGameData.prestigeLevel > 50 ? 50 : validatedGameData.prestigeLevel,
       upgrades: validatedGameData.upgrades,
       special_items: validatedGameData.specialItems,
       achievements: validatedGameData.unlockedAchievements,
