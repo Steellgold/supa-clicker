@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { GameCryptoSecurity } from '@/lib/security/crypto-signature'
 import { GAME_CONFIG } from '@/lib/config/game-config'
+import { GameCryptoSecurity } from '@/lib/security/crypto-signature'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
 
 const userLastKeyRequest = new Map<string, number>()
 
@@ -31,7 +31,7 @@ export const GET = async (request: NextRequest) => {
     const lastKeyRequest = userLastKeyRequest.get(user.id) || 0
     const timeSinceLastRequest = now - lastKeyRequest
     
-    if (timeSinceLastRequest < 5000) { // 5 secondes minimum
+    if (timeSinceLastRequest < 15000) { // 15 secondes minimum
       return NextResponse.json({ 
         error: 'Rate limit exceeded. Please wait before requesting a new key.' 
       }, { status: 429 })
@@ -57,7 +57,7 @@ export const GET = async (request: NextRequest) => {
       cryptoKey = existingKey.public_key
       
       const keyAge = now - new Date(existingKey.created_at).getTime()
-      const thirtyDays = 30 * 24 * 60 * 60 * 1000
+      const thirtyDays = 30 * 24 * 60 * 60 * 1000 // 30 days
       
       if (keyAge > thirtyDays) {
         cryptoKey = GameCryptoSecurity.generateUserSecret()
