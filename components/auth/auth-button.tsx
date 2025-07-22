@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { Component } from "@/type/component"
 import { Loader2, LogOut, Save, Settings, User } from "lucide-react"
+import React from "react"
 
-export const AuthButton: Component<object> = () => {
+type AuthButtonProps = React.HTMLAttributes<HTMLDivElement>;
+export const AuthButton: Component<AuthButtonProps> = ({ className = "", ...props }) => {
   const { user, userProfile, signOut, loading } = useAuth()
   const handleSignOut = async () => await signOut()
 
   if (loading) {
     return (
-      <Button size="sm" variant="retro" disabled>
+      <Button size="sm" variant="retro" disabled className={className}>
         <Loader2 className="animate-spin w-4 h-4" />
       </Button>
     )
@@ -24,7 +26,7 @@ export const AuthButton: Component<object> = () => {
     const needsProfileSetup = !userProfile
 
     return (
-      <div className="flex items-center gap-2">
+      <div className={`flex items-center gap-2 ${className}`} {...props}>
         <ProfileEditModal>
           <Button 
             size="sm" 
@@ -55,7 +57,7 @@ export const AuthButton: Component<object> = () => {
 
   return (
     <AuthModal>
-      <Button size="sm" variant="retro">
+      <Button size="sm" variant="retro" className={className}>
         <Save />
         Save Progress
       </Button>
