@@ -3,6 +3,7 @@ import { getAllAchievements } from '@/lib/achievements';
 import { PRESTIGE_IMAGES } from '@/lib/config/prestige-images';
 import { createAdminClient } from '@/lib/supabase/client';
 import { getAllUpgrades } from '@/lib/upgrades';
+import { formatNumber } from '@/lib/utils';
 import type { Upgrade } from '@/type/game';
 import { ArrowLeft, MousePointer, Trophy, Zap } from 'lucide-react';
 import Image from 'next/image';
@@ -92,6 +93,60 @@ const getUserProfile = async (username: string): Promise<UserProfileResult | nul
   };
 
   return { profile, stats, gameData };
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = await params
+
+  try {
+    const result = await getUserProfile(username)
+
+    if (!result) {
+      return {
+        title: "User not found - Supa Clicker",
+        description: "This user profile does not exist.",
+      }
+    }
+
+    const { profile, stats } = result
+    const displayName = profile.display_name || profile.username
+
+    const description = `${displayName} has ${formatNumber(stats.total_power)} total power${
+      stats.prestige_level > 0 ? ` and is Prestige ${stats.prestige_level}` : ""
+    }! Check out their Supa Clicker profile.`
+
+    return {
+      title: `${displayName} (@${profile.username}) - Supa Clicker`,
+      description,
+      openGraph: {
+        title: `${displayName} (@${profile.username}) - Supa Clicker`,
+        description,
+        type: "profile",
+        url: `https://supaclicker.vercel.app/${username}`,
+        siteName: "Supa Clicker",
+        images: [
+          {
+            url: `https://supaclicker.vercel.app/${username}/opengraph-image`,
+            width: 1200,
+            height: 630,
+            alt: `${displayName}'s Supa Clicker Profile`,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${displayName} (@${profile.username}) - Supa Clicker`,
+        description,
+        images: [`https://supaclicker.vercel.app/${username}/opengraph-image`],
+      },
+    }
+  } catch (error) {
+    console.error("Error generating metadata:", error)
+    return {
+      title: "Error - Supa Clicker",
+      description: "Unable to load this user profile.",
+    }
+  }
 }
 
 const UserProfilePage = async ({ params }: Props) => {

@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/utils"
 import { ImageResponse } from "next/og"
 
 async function getUserData(username: string) {
@@ -72,20 +73,12 @@ export default async function Image({ params }: { params: Promise<{ username: st
     const { profile, stats } = result
     const displayName = profile.display_name || profile.username
 
-    const formatNumber = (num: number) => {
-      if (num >= 1e12) return `${(num / 1e12).toFixed(1)}T`
-      if (num >= 1e9) return `${(num / 1e9).toFixed(1)}B`
-      if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`
-      if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`
-      return num.toLocaleString()
-    }
-
-    // Couleurs basées sur votre CSS
+    // Colors based on CSS
     const bgColor = "#f5f5f5" // --background light
     const cardBg = "#ffffff" // --card light
-    const borderColor = "#000000" // Bordures noires comme dans votre style
+    const borderColor = "#000000" // Black borders like in your style
     const textColor = "#000000" // --foreground light
-    const primaryColor = stats.prestige_level > 0 ? "#a855f7" : "#10b981" // Purple si prestige, sinon vert
+    const primaryColor = stats.prestige_level > 0 ? "#a855f7" : "#10b981" // Purple if prestige, green otherwise
     const primaryBg = stats.prestige_level > 0 ? "#f3e8ff" : "#d1fae5"
 
     return new ImageResponse(
@@ -99,7 +92,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
           fontFamily: "monospace",
         }}
       >
-        {/* Container principal avec bordure noire */}
+        {/* Main container with black border */}
         <div
           style={{
             background: cardBg,
@@ -113,7 +106,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             position: "relative",
           }}
         >
-          {/* Header avec nom et prestige */}
+          {/* Header with name and prestige */}
           <div
             style={{
               display: "flex",
@@ -122,7 +115,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
               marginBottom: "30px",
             }}
           >
-            {/* Nom utilisateur */}
+            {/* Username */}
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div
                 style={{
@@ -149,7 +142,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
               )}
             </div>
 
-            {/* Badge Prestige */}
+            {/* Prestige Badge */}
             {stats.prestige_level > 0 && (
               <div
                 style={{
@@ -178,7 +171,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             )}
           </div>
 
-          {/* Bio si présente */}
+          {/* Bio if present */}
           {profile.bio && (
             <div
               style={{
@@ -195,7 +188,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             </div>
           )}
 
-          {/* Stats Grid */}
+          {/* Stats Grid with 2 columns */}
           <div
             style={{
               display: "flex",
@@ -203,7 +196,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
               marginTop: "auto",
             }}
           >
-            {/* Total Power - Stat principale */}
+            {/* Total Power - Main stat */}
             <div
               style={{
                 background: primaryBg,
@@ -240,7 +233,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
               </div>
             </div>
 
-            {/* Autres stats */}
+            {/* Other stats */}
             <div
               style={{
                 display: "flex",
