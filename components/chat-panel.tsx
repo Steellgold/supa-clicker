@@ -72,11 +72,15 @@ export const ChatPanel = () => {
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newMessage.trim() || !user) return;
-    await supabase.from("messages").insert({
+    const { data, error } = await supabase.from("messages").insert({
       user_id: user.id,
       username: profile?.display_name || profile?.username || "Anonyme",
       content: newMessage.trim(),
-    });
+    }).select().single();
+
+    if (data && !error) {
+      setMessages((msgs) => [...msgs, data]);
+    }
     setNewMessage("");
   };
 
