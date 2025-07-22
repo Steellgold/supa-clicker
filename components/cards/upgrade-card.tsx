@@ -150,7 +150,8 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   onClick={handleBuy}
                   disabled={!canAfford || staticCost === undefined}
                   className={cn("text-xs font-medium px-1.5 py-0.5 transition-colors", {
-                    "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canAfford,
+                    "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canAfford && gameState.prestigeLevel === 0,
+                    "bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 dark:text-purple-400": canAfford && gameState.prestigeLevel > 0,
                     "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-red-200 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 cursor-not-allowed": !canAfford || staticCost === undefined
                   })}
                 >
