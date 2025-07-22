@@ -28,7 +28,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     effect: SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST,
     multiplier: 3,
     category: SPECIAL_ITEM_CATEGORIES.UPGRADE_BOOST,
-    unlockRequirement: 1000,
+    unlockRequirement: 1000
   },
   {
     id: SPECIAL_ITEM_IDS.KUBERNETES_MASTER,
@@ -50,7 +50,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     effect: SPECIAL_ITEM_EFFECTS.CLOUD_BOOST,
     multiplier: 1.5,
     category: SPECIAL_ITEM_CATEGORIES.UPGRADE_BOOST,
-    unlockRequirement: 3000,
+    unlockRequirement: 3000
   },
   {
     id: SPECIAL_ITEM_IDS.ML_EXPERTISE,
@@ -74,7 +74,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     effect: SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X,
     multiplier: 1.5,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
-    unlockRequirement: 2500,
+    unlockRequirement: 2500
   },
   {
     id: SPECIAL_ITEM_IDS.ENTERPRISE_PLAN,
@@ -108,6 +108,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 5,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
     unlockRequirement: 25000,
+    maxPurchases: 1
   },
   {
     id: SPECIAL_ITEM_IDS.TECH_MONOPOLY,
