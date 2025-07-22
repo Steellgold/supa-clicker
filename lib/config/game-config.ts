@@ -1,7 +1,7 @@
 export const GAME_CONFIG = {
   INTERVALS: {
     /** How often to auto-save game progress */
-    AUTO_SAVE: 15000,
+    AUTO_SAVE: 30000,
     
     /** How often to update PPS (power per second) */
     PPS_UPDATE: 1000,

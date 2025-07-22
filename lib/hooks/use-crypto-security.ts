@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth/auth-context'
 import { GameCryptoSecurity } from '@/lib/security/crypto-signature'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface CryptoSecurityState {
   cryptoKey: string | null
@@ -20,7 +20,14 @@ export const useCryptoSecurity = () => {
     lastRefresh: 0
   })
 
+  const lastClientKeyRequest = useRef(0);
+
   const fetchCryptoKey = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastClientKeyRequest.current < 16000) {
+      return;
+    }
+    lastClientKeyRequest.current = now;
     if (!user || authLoading) {
       setState(prev => ({ ...prev, isLoading: false, cryptoKey: null }))
       return
