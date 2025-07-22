@@ -1,30 +1,17 @@
 "use client"
 
-import { useAuth } from "@/lib/auth/auth-context"
-import { Button } from "@/components/ui/button"
-import { LogOut, User, Save, Loader2, Settings } from "lucide-react"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { ProfileEditModal } from "@/components/auth/profile-edit-modal"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/lib/auth/auth-context"
 import type { Component } from "@/type/component"
-import { useEffect, useState } from "react"
+import { Loader2, LogOut, Save, Settings, User } from "lucide-react"
 
 export const AuthButton: Component<object> = () => {
   const { user, userProfile, signOut, loading } = useAuth()
-  const [timeoutReached, setTimeoutReached] = useState(false)
   const handleSignOut = async () => await signOut()
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        console.warn('AuthButton: Loading timeout reached, forcing to show content')
-        setTimeoutReached(true)
-      }
-    }, 3000) // 3 secondes seulement
-
-    return () => clearTimeout(timeoutId)
-  }, [loading])
-
-  if (loading && !timeoutReached) {
+  if (loading) {
     return (
       <Button size="sm" variant="retro" disabled>
         <Loader2 className="animate-spin w-4 h-4" />
@@ -34,7 +21,7 @@ export const AuthButton: Component<object> = () => {
 
   if (user) {
     const displayName = userProfile?.display_name || userProfile?.username || user.email?.split("@")[0] || "User"
-    const needsProfileSetup = !userProfile || !userProfile.username
+    const needsProfileSetup = !userProfile
 
     return (
       <div className="flex items-center gap-2">

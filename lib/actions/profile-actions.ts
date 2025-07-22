@@ -7,7 +7,7 @@ type ProfileUpdateData = {
   username: string
   display_name?: string | null
   bio?: string | null
-  icon_url?: string
+  avatar_url?: string | null
 }
 
 export async function updateUserProfile(profileData: ProfileUpdateData) {
@@ -24,7 +24,7 @@ export async function updateUserProfile(profileData: ProfileUpdateData) {
       p_username: profileData.username,
       p_display_name: profileData.display_name || undefined,
       p_bio: profileData.bio || undefined,
-      p_avatar_url: profileData.icon_url
+      p_avatar_url: profileData.avatar_url || undefined
     })
 
     if (error) {

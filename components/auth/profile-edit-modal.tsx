@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useAuth } from "@/lib/auth/auth-context"
 import { updateUserProfile, uploadProfileIcon } from "@/lib/actions/profile-actions"
+import { useAuth } from "@/lib/auth/auth-context"
 import type { Component } from "@/type/component"
 import { Loader2, Upload, User, X } from "lucide-react"
 import Image from "next/image"
@@ -40,7 +40,7 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
       setDisplayName(userProfile.display_name || userProfile.username || "")
       setUsername(userProfile.username || "")
       setBio(userProfile.bio || "")
-      setIconPreview(userProfile.icon_url || null)
+      setIconPreview(userProfile.avatar_url || null)
     } else {
       // Reset form when userProfile is null/undefined (after logout/re-login)
       setDisplayName("")
@@ -115,16 +115,16 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
     setError("")
 
     try {
-      let iconUrl = null
+      let avatarUrl = null
       if (profileIcon) {
-        iconUrl = await uploadIcon()
+        avatarUrl = await uploadIcon()
       }
 
       const profileData = {
         username,
         display_name: displayName.trim() || null,
         bio: bio.trim() || null,
-        ...(iconUrl && { icon_url: iconUrl })
+        avatar_url: avatarUrl || null
       }
 
       const result = await updateUserProfile(profileData)
