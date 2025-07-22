@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
+import { GAME_CONFIG } from "@/lib/config/game-config"
+import { validateSignedGameRequest } from "@/lib/security/crypto-signature"
 import { createClient as createServerClient } from "@/lib/supabase/server"
 import { SaveGameRequestSchema } from "@/lib/validation/game-schemas"
-import { validateSignedGameRequest } from "@/lib/security/crypto-signature"
-import { GAME_CONFIG } from "@/lib/config/game-config"
+import { createClient } from "@supabase/supabase-js"
+import { NextRequest, NextResponse } from "next/server"
 
 const userLastSaveTime = new Map<string, number>()
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Get previous save for progression validation
     const { data: existing, error: checkError } = await supabaseAdmin
       .from("clicker_saves")
-      .select("id, current_power, total_power, clicks_per_second, updated_at")
+      .select("id, current_power, total_power, clicks_per_second, prestige_level, updated_at")
       .eq("user_id", user.id)
       .maybeSingle()
 
@@ -115,7 +115,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 })
     }
 
-    // Skip anti-cheat for now to focus on basic functionality
+    if (existing) {
+      const tolerance = GAME_CONFIG.SECURITY.ANTI_CHEAT.TOLERANCE_MULTIPLIER || 3;
+      const maxAllowedPower = (existing.current_power || 1) * tolerance;
+      const maxAllowedTotalPower = (existing.total_power || 1) * tolerance;
+      const maxAllowedPPS = (existing.clicks_per_second || 1) * (GAME_CONFIG.SECURITY.ANTI_CHEAT.PPS_INCREASE_THRESHOLD || 5);
+      const maxAllowedPrestige = (existing.prestige_level || 1) + 2;
+
+      if (validatedGameData.currentPower > maxAllowedPower) {
+        console.warn(`Anti-cheat: user ${user.id} - currentPower too high: ${validatedGameData.currentPower} > ${maxAllowedPower}`);
+        return NextResponse.json({ error: "Suspicious power gain detected" }, { status: 403 });
+      }
+      if (validatedGameData.totalPower > maxAllowedTotalPower) {
+        console.warn(`Anti-cheat: user ${user.id} - totalPower too high: ${validatedGameData.totalPower} > ${maxAllowedTotalPower}`);
+        return NextResponse.json({ error: "Suspicious total power gain detected" }, { status: 403 });
+      }
+      if (validatedGameData.pps > maxAllowedPPS) {
+        console.warn(`Anti-cheat: user ${user.id} - pps too high: ${validatedGameData.pps} > ${maxAllowedPPS}`);
+        return NextResponse.json({ error: "Suspicious PPS gain detected" }, { status: 403 });
+      }
+      if (validatedGameData.prestigeLevel > maxAllowedPrestige) {
+        console.warn(`Anti-cheat: user ${user.id} - prestigeLevel too high: ${validatedGameData.prestigeLevel} > ${maxAllowedPrestige}`);
+        return NextResponse.json({ error: "Suspicious prestige gain detected" }, { status: 403 });
+      }
+    }
 
     // Convert game data to individual columns
     const saveData = {

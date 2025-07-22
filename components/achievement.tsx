@@ -15,8 +15,8 @@ export const Achievement: Component<AchievementProps> = ({ name, icon }) => {
       "absolute bottom-5 left-1/2 transform -translate-x-1/2 z-50",
       "border-4 rounded-none px-6 py-4",
       "w-[90vw] max-w-md font-mono text-sm text-black", {
-        "bg-green-400/25 border-green-400 shadow-[4px_4px_0_#3a7758]": gameState.prestigeLevel === 0,
-        "bg-purple-400/25 border-purple-400 shadow-[4px_4px_0_#744899]": gameState.prestigeLevel > 0,
+        "bg-green-100 border-green-400 shadow-[4px_4px_0_#3a7758]": gameState.prestigeLevel === 0,
+        "bg-purple-100 border-purple-400 shadow-[4px_4px_0_#744899]": gameState.prestigeLevel > 0,
       }
     )}>
       <div className="flex items-center gap-4">
