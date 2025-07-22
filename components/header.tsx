@@ -1,19 +1,32 @@
 "use client";
 
-import { Moon, Sun, Trophy, Save, Check, X } from "lucide-react";
-import { useTheme } from "next-themes";
-import { ReactElement, useState } from "react";
-import { AchievementsDialog } from "./achievements-dialog";
-import { AuthButton } from "./auth/auth-button";
-import { Button } from "./ui/button";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/providers/game-provider";
+import { Check, Moon, Save, Star, Sun, Trophy, X } from "lucide-react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
+import { ReactElement, useEffect, useState } from "react";
+import { AchievementsDialog } from "./achievements-dialog";
+import { AuthButton } from "./auth/auth-button";
+import { Button, buttonVariants } from "./ui/button";
 
 export const Header = (): ReactElement => {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { saveGame } = useGame();
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [githubStars, setGithubStars] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/Steellgold/supa-clicker")
+      .then((res) => res.json())
+      .then((data) => {
+        if (typeof data.stargazers_count === "number") {
+          setGithubStars(data.stargazers_count);
+        }
+      })
+      .catch(() => setGithubStars(null));
+  }, []);
 
   const handleManualSave = async () => {
     if (saveState === 'saving') return;
@@ -72,6 +85,24 @@ export const Header = (): ReactElement => {
           )}
 
           <AuthButton />
+
+          <Link
+            href="https://github.com/Steellgold/supa-clicker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({
+              variant: "retro",
+              size: "sm",
+              className: "font-mono font-bold"
+            })}
+            title="View the GitHub repository"
+          >
+            <Star className="w-4 h-4 mr-1" fill="#eab308" />
+            <span>Star</span>
+            {githubStars !== null && (
+              <span className="ml-1">{githubStars}</span>
+            )}
+          </Link>
         </div>
       </div>
     </header>
