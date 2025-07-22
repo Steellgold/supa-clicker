@@ -144,31 +144,36 @@ ALTER TABLE user_special_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leaderboard_entries ENABLE ROW LEVEL SECURITY;
 
--- Politiques RLS simples
+-- Corrected RLS policies for INSERT
+-- user_profiles
 CREATE POLICY "Users can manage own profile" ON user_profiles
-    FOR ALL USING (auth.uid() = id);
+    FOR ALL USING ((select auth.uid()) = id);
 
+-- game_progression
 CREATE POLICY "Users can manage own progression" ON game_progression
-    FOR ALL USING (auth.uid() = user_id);
+    FOR ALL USING ((select auth.uid()) = user_id);
 
+-- user_upgrades
 CREATE POLICY "Users can manage own upgrades" ON user_upgrades
-    FOR ALL USING (auth.uid() = user_id);
+    FOR ALL USING ((select auth.uid()) = user_id);
 
+-- user_special_items
 CREATE POLICY "Users can manage own special items" ON user_special_items
-    FOR ALL USING (auth.uid() = user_id);
+    FOR ALL USING ((select auth.uid()) = user_id);
 
+-- user_achievements
 CREATE POLICY "Users can manage own achievements" ON user_achievements
-    FOR ALL USING (auth.uid() = user_id);
+    FOR ALL USING ((select auth.uid()) = user_id);
 
--- Leaderboard: lecture publique, écriture privée
+-- leaderboard_entries
 CREATE POLICY "Public leaderboard read" ON leaderboard_entries
     FOR SELECT USING (true);
 
-CREATE POLICY "Users can update own leaderboard" ON leaderboard_entries
-    FOR INSERT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own leaderboard entry" ON leaderboard_entries
+    FOR INSERT WITH CHECK ((select auth.uid()) = user_id);
 
 CREATE POLICY "Users can update own leaderboard entry" ON leaderboard_entries
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING ((select auth.uid()) = user_id);
 
 -- 5. Vue pour leaderboard
 CREATE VIEW leaderboard_view AS
