@@ -9,6 +9,7 @@ export type Upgrade = {
   ppsGain: number;
   clickMultiplier: number;
   category: string;
+  maxPurchases?: number;
 };
 
 export type GameOptions = {

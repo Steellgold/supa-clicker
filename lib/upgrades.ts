@@ -182,16 +182,16 @@ const UPGRADES_DATA: Upgrade[] = [
     clickMultiplier: 0,
     category: "auto",
   },
-  {
-    id: 19,
-    name: "AGI",
-    description: "Artificial General Intelligence",
-    baseCost: 500000,
-    costGrowth: 1.15,
-    ppsGain: 1500,
-    clickMultiplier: 0,
-    category: "auto",
-  },
+  // {
+  //   id: 19,
+  //   name: "AGI",
+  //   description: "Artificial General Intelligence",
+  //   baseCost: 500000,
+  //   costGrowth: 1.15,
+  //   ppsGain: 1500,
+  //   clickMultiplier: 0,
+  //   category: "auto",
+  // },
   {
     id: 20,
     name: "L1 Cache",
@@ -210,7 +210,7 @@ const UPGRADES_DATA: Upgrade[] = [
     costGrowth: 1.2,
     ppsGain: 0,
     clickMultiplier: 1,
-    category: "click",
+    category: "click"
   },
   {
     id: 22,

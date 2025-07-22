@@ -42,14 +42,24 @@ export type Database = {
       clicker_saves: {
         Row: {
           achievements: Json | null
+          click_power: number | null
           clicks_per_second: number | null
           combo_active: boolean | null
+          combo_count: number | null
           created_at: string
           current_power: number | null
           id: string
+          last_click_time: number | null
           last_save_time: number | null
+          next_special_item_costs: Json | null
+          next_upgrade_costs: Json | null
           prestige_level: number | null
+          purchased_special_items: Json | null
+          purchased_upgrades: Json | null
           special_items: Json | null
+          time_boost_active: boolean | null
+          time_boost_end_time: number | null
+          time_boost_multiplier: number | null
           total_clicks: number | null
           total_power: number | null
           updated_at: string
@@ -58,14 +68,24 @@ export type Database = {
         }
         Insert: {
           achievements?: Json | null
+          click_power?: number | null
           clicks_per_second?: number | null
           combo_active?: boolean | null
+          combo_count?: number | null
           created_at?: string
           current_power?: number | null
           id?: string
+          last_click_time?: number | null
           last_save_time?: number | null
+          next_special_item_costs?: Json | null
+          next_upgrade_costs?: Json | null
           prestige_level?: number | null
+          purchased_special_items?: Json | null
+          purchased_upgrades?: Json | null
           special_items?: Json | null
+          time_boost_active?: boolean | null
+          time_boost_end_time?: number | null
+          time_boost_multiplier?: number | null
           total_clicks?: number | null
           total_power?: number | null
           updated_at?: string
@@ -74,14 +94,24 @@ export type Database = {
         }
         Update: {
           achievements?: Json | null
+          click_power?: number | null
           clicks_per_second?: number | null
           combo_active?: boolean | null
+          combo_count?: number | null
           created_at?: string
           current_power?: number | null
           id?: string
+          last_click_time?: number | null
           last_save_time?: number | null
+          next_special_item_costs?: Json | null
+          next_upgrade_costs?: Json | null
           prestige_level?: number | null
+          purchased_special_items?: Json | null
+          purchased_upgrades?: Json | null
           special_items?: Json | null
+          time_boost_active?: boolean | null
+          time_boost_end_time?: number | null
+          time_boost_multiplier?: number | null
           total_clicks?: number | null
           total_power?: number | null
           updated_at?: string
@@ -89,6 +119,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       user_crypto_keys: {
         Row: {
