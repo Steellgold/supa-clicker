@@ -32,7 +32,7 @@ export const GAME_CONFIG = {
     CSRF_TOKEN_EXPIRY: 3600000, // 1 hour
     
     /** Minimum time between save requests per user */
-    SAVE_RATE_LIMIT: 3000, // 3 seconds
+    SAVE_RATE_LIMIT: 20000, // 20 seconds
     
     /** Max time gap to validate offline progress */
     MAX_OFFLINE_PROGRESS: 30 * 60 * 1000, // 30 minutes
