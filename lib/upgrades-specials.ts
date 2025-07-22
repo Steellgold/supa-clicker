@@ -28,7 +28,8 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     effect: SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST,
     multiplier: 3,
     category: SPECIAL_ITEM_CATEGORIES.UPGRADE_BOOST,
-    unlockRequirement: 1000
+    unlockRequirement: 1000,
+    maxPurchases: 1
   },
   {
     id: SPECIAL_ITEM_IDS.KUBERNETES_MASTER,
@@ -62,6 +63,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 3,
     category: SPECIAL_ITEM_CATEGORIES.UPGRADE_BOOST,
     unlockRequirement: 5000,
+    maxPurchases: 2
   },
 
   // Global Multipliers - Tier 1
@@ -74,7 +76,8 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     effect: SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X,
     multiplier: 1.5,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
-    unlockRequirement: 2500
+    unlockRequirement: 2500,
+    maxPurchases: 2
   },
   {
     id: SPECIAL_ITEM_IDS.ENTERPRISE_PLAN,
@@ -86,6 +89,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 2,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
     unlockRequirement: 5000,
+    maxPurchases: 2
   },
   {
     id: SPECIAL_ITEM_IDS.UNICORN_STATUS,
@@ -97,6 +101,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 3,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
     unlockRequirement: 10000,
+    maxPurchases: 2
   },
   {
     id: SPECIAL_ITEM_IDS.IPO,
@@ -265,6 +270,7 @@ export const SPECIAL_ITEMS: SpecialItem[] = [
     multiplier: 1.2,
     category: SPECIAL_ITEM_CATEGORIES.GLOBAL,
     unlockRequirement: 2000,
+    maxPurchases: 2
   },
 ];
 
