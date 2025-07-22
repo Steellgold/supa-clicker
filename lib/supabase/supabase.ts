@@ -39,63 +39,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      action_history: {
-        Row: {
-          action_type: string
-          cost: number | null
-          created_at: string | null
-          gained_power: number | null
-          id: string
-          power_after: number | null
-          power_before: number | null
-          quantity: number | null
-          session_id: string | null
-          target_id: number | null
-          user_id: string
-        }
-        Insert: {
-          action_type: string
-          cost?: number | null
-          created_at?: string | null
-          gained_power?: number | null
-          id?: string
-          power_after?: number | null
-          power_before?: number | null
-          quantity?: number | null
-          session_id?: string | null
-          target_id?: number | null
-          user_id: string
-        }
-        Update: {
-          action_type?: string
-          cost?: number | null
-          created_at?: string | null
-          gained_power?: number | null
-          id?: string
-          power_after?: number | null
-          power_before?: number | null
-          quantity?: number | null
-          session_id?: string | null
-          target_id?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "action_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "action_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       game_progression: {
         Row: {
           active_boosts: Json | null
@@ -154,22 +97,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "game_progression_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "game_progression_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       leaderboard_entries: {
         Row: {
@@ -205,79 +133,7 @@ export type Database = {
           total_power?: number | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "leaderboard_entries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "leaderboard_entries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      security_audit: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          endpoint: string | null
-          event_type: string
-          id: string
-          ip_address: unknown | null
-          new_values: Json | null
-          old_values: Json | null
-          severity: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          endpoint?: string | null
-          event_type: string
-          id?: string
-          ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
-          severity: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          endpoint?: string | null
-          event_type?: string
-          id?: string
-          ip_address?: unknown | null
-          new_values?: Json | null
-          old_values?: Json | null
-          severity?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "security_audit_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "security_audit_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_achievements: {
         Row: {
@@ -301,22 +157,7 @@ export type Database = {
           unlocked_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_achievements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_achievements_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -360,60 +201,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_sessions: {
-        Row: {
-          clicks_count: number | null
-          ended_at: string | null
-          id: string
-          ip_address: unknown | null
-          last_activity: string | null
-          power_gained: number | null
-          session_token: string | null
-          started_at: string | null
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          clicks_count?: number | null
-          ended_at?: string | null
-          id?: string
-          ip_address?: unknown | null
-          last_activity?: string | null
-          power_gained?: number | null
-          session_token?: string | null
-          started_at?: string | null
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          clicks_count?: number | null
-          ended_at?: string | null
-          id?: string
-          ip_address?: unknown | null
-          last_activity?: string | null
-          power_gained?: number | null
-          session_token?: string | null
-          started_at?: string | null
-          user_agent?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_special_items: {
         Row: {
           effect_multiplier: number | null
@@ -445,22 +232,7 @@ export type Database = {
           total_spent?: number | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_special_items_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_special_items_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_upgrades: {
         Row: {
@@ -490,22 +262,7 @@ export type Database = {
           upgrade_id?: number
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_upgrades_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_upgrades_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -515,6 +272,7 @@ export type Database = {
           avatar_url: string | null
           display_name: string | null
           last_updated: string | null
+          playtime_seconds: number | null
           prestige_level: number | null
           rank: number | null
           total_clicks: number | null
@@ -522,27 +280,18 @@ export type Database = {
           user_id: string | null
           username: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "leaderboard_entries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "leaderboard_entries_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_stats_view"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_stats_view: {
         Row: {
           achievements_count: number | null
+          avatar_url: string | null
+          click_power: number | null
+          display_name: string | null
+          game_started: string | null
           id: string | null
+          last_activity: string | null
+          power_per_second: number | null
           prestige_level: number | null
           special_items_owned: number | null
           total_clicks: number | null
@@ -554,9 +303,27 @@ export type Database = {
       }
     }
     Functions: {
-      update_leaderboard_entry: {
-        Args: { p_user_id: string }
-        Returns: undefined
+      check_setup_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_name: string
+          status: string
+          details: string
+        }[]
+      }
+      get_user_profile_by_username: {
+        Args: { p_username: string }
+        Returns: {
+          id: string
+          username: string
+          display_name: string
+          avatar_url: string
+          created_at: string
+          total_power: number
+          total_clicks: number
+          prestige_level: number
+          achievements_count: number
+        }[]
       }
       validate_progression_increase: {
         Args: {

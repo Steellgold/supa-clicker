@@ -49,10 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    console.log("fetchProfile", user.id)
+
     const { data, error } = await supabase
       .from("user_profiles")
       .select("username, display_name, bio, avatar_url")
-      .eq("user_id", user.id)
+      .eq("id", user.id)
       .single()
 
     if (!error) {
@@ -81,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase
       .from("user_profiles")
       .update({ username })
-      .eq("user_id", user?.id ?? "")
+      .eq("id", user?.id ?? "")
     if (!error) await fetchProfile()
     return { error: error?.message }
   }
@@ -95,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase
       .from("user_profiles")
       .update(profile)
-      .eq("user_id", user?.id ?? "")
+      .eq("id", user?.id ?? "")
     if (!error) await fetchProfile()
     return { error: error?.message }
   }
