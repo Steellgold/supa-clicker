@@ -193,12 +193,11 @@ CREATE TABLE security_audit (
     endpoint VARCHAR(100),
     
     -- Timestamp
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    
-    -- Index pour recherche
-    INDEX idx_security_audit_user_time (user_id, created_at),
-    INDEX idx_security_audit_severity (severity, created_at)
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX idx_security_audit_user_time ON security_audit(user_id, created_at);
+CREATE INDEX idx_security_audit_severity ON security_audit(severity, created_at);
 
 -- 8. TABLE HISTORIQUE DES ACTIONS
 CREATE TABLE action_history (
