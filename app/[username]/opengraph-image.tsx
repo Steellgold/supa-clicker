@@ -1,47 +1,34 @@
-import { createAdminClient } from "@/lib/supabase/client"
 import { ImageResponse } from "next/og"
 
-type UserProfile = {
-  username: string
-  display_name?: string | null
-}
-
-type UserStats = {
-  total_power: number
-  prestige_level: number
-}
-
-type UserProfileResult = {
-  profile: UserProfile
-  stats: UserStats
-}
-
-const getUserProfile = async (username: string): Promise<UserProfileResult | null> => {
+async function getUserData(username: string) {
   try {
-    const adminClient = createAdminClient()
+    const response = await fetch(
+      `${process.env.VERCEL_URL || "https://supaclicker.vercel.app"}/api/debug-og/${username}`,
+      {
+        headers: {
+          "User-Agent": "OpenGraph-Image-Generator",
+        },
+      },
+    )
 
-    const { data, error } = await adminClient.rpc("get_user_profile_by_username", {
-      p_username: username,
-    })
-
-    if (error || !data) {
+    if (!response.ok) {
+      console.error("Failed to fetch user data:", response.status)
       return null
     }
 
-    const { profile: profileData, stats: statsData } = data as UserProfileResult
+    const result = await response.json()
+
+    if (!result.hasData || !result.data) {
+      console.error("No user data found")
+      return null
+    }
 
     return {
-      profile: {
-        username: profileData.username,
-        display_name: profileData.display_name,
-      },
-      stats: {
-        total_power: statsData.total_power || 0,
-        prestige_level: statsData.prestige_level || 0,
-      },
+      profile: result.data.profile,
+      stats: result.data.stats,
     }
   } catch (error) {
-    console.error("Error fetching user profile for OG:", error)
+    console.error("Error fetching user data:", error)
     return null
   }
 }
@@ -56,9 +43,12 @@ export const contentType = "image/png"
 export default async function Image({ params }: { params: Promise<{ username: string }> }) {
   try {
     const { username } = await params
-    const result = await getUserProfile(username)
+    console.log("Generating OG image for:", username)
+
+    const result = await getUserData(username)
 
     if (!result) {
+      console.log("No user found, generating error image")
       return new ImageResponse(
         <div
           style={{
@@ -92,6 +82,8 @@ export default async function Image({ params }: { params: Promise<{ username: st
       return num.toLocaleString()
     }
 
+    console.log("Generating image for:", displayName, "Power:", stats.total_power, "Prestige:", stats.prestige_level)
+
     return new ImageResponse(
       <div
         style={{
@@ -120,6 +112,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             position: "relative",
           }}
         >
+          {/* Prestige Badge */}
           {stats.prestige_level > 0 && (
             <div
               style={{
@@ -147,6 +140,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             </div>
           )}
 
+          {/* Avatar */}
           <div
             style={{
               width: "120px",
@@ -165,6 +159,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             {displayName.charAt(0).toUpperCase()}
           </div>
 
+          {/* Nom */}
           <div
             style={{
               fontSize: "48px",
@@ -189,6 +184,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             </div>
           )}
 
+          {/* Power */}
           <div
             style={{
               display: "flex",
@@ -224,6 +220,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
             </div>
           </div>
 
+          {/* Footer */}
           <div
             style={{
               position: "absolute",
@@ -235,7 +232,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
               textTransform: "uppercase",
             }}
           >
-            CLICKER GAME PROFILE
+            SUPA CLICKER PROFILE
           </div>
         </div>
       </div>,
@@ -260,7 +257,7 @@ export default async function Image({ params }: { params: Promise<{ username: st
           fontFamily: "monospace",
         }}
       >
-        Generation error
+        ERROR: {error instanceof Error ? error.message : "Unknown error"}
       </div>,
       {
         ...size,
