@@ -43,7 +43,7 @@ export const GAME_CONFIG = {
     /** Anti-cheat validation settings */
     ANTI_CHEAT: {
       /** Multiplier tolerance for progression validation */
-      TOLERANCE_MULTIPLIER: 3,
+      TOLERANCE_MULTIPLIER: 10,
       
       /** Max clicks to account for in tolerance calculation */
       MAX_CLICKS_TOLERANCE: 100,
