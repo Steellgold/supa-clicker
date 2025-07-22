@@ -27,13 +27,21 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const staticCost =
     typeof gameState.nextSpecialItemCosts?.[item.id] === "number"
       ? gameState.nextSpecialItemCosts[item.id]
-      : getSpecialItemCost(item, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+      : getSpecialItemCost(item, currentLevel, gameState.prestigeLevel);
 
   // Static gains: sum of effectMultipliers stored
   const totalEffectMultiplier = purchasedSpecials.reduce((prod, s) => prod * Math.pow(s.effectMultiplier, s.quantity), 1);
 
   const isUnlocked = isSpecialItemUnlocked(item, gameState.totalPower, gameState.prestigeLevel);
-  const canPurchase = canPurchaseSpecialItem(item, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades);
+  const canPurchase = canPurchaseSpecialItem(
+    item,
+    currentLevel,
+    gameState.currentPower,
+    gameState.totalPower,
+    gameState.prestigeLevel,
+    gameState.upgrades,
+  );
+
   const isMaxed = item.maxPurchases && currentLevel >= item.maxPurchases;
   
   const requiredUpgradeIds = getRequiredUpgradeIds(item);
@@ -231,7 +239,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                 "justify-between": item.effect !== item.name,
                 "justify-end": item.effect === item.name
               })}>
-{(() => {
+                {(() => {
                   const dynamicEffect = getDynamicEffectText(item, currentLevel);
                   return shouldShowPowerTag(dynamicEffect) ? (
                     <div className={cn(
@@ -261,7 +269,9 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                     onClick={handleBuy}
                     disabled={!canPurchase}
                     className={cn("text-xs font-medium px-1.5 py-0.5 transition-colors", {
-                      "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canPurchase,
+                      "bg-green-500/20 hover:bg-green-500/30 text-green-600 dark:text-green-400": canPurchase && gameState.prestigeLevel == 0,
+                      "bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 dark:text-purple-400": canPurchase && gameState.prestigeLevel > 0,
+                      //
                       "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-red-200 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 cursor-not-allowed": !canPurchase
                     })}
                   >
@@ -276,7 +286,12 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                     )}
                   </button>
                 ) : (
-                  <span className="text-xs font-medium px-1.5 py-0.5 bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400">✓ Maxed</span>
+                  <span className={cn("text-xs font-medium px-1.5 py-0.5", {
+                    "bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400": gameState.prestigeLevel == 0,
+                    "bg-purple-500/20 dark:bg-purple-500/30 text-purple-600 dark:text-purple-400": gameState.prestigeLevel > 0
+                  })}>
+                    ✓ Maxed
+                  </span>
                 )}
               </div>
             </div>

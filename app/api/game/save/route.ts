@@ -115,31 +115,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Database error" }, { status: 500 })
     }
 
-    if (existing) {
-      const tolerance = GAME_CONFIG.SECURITY.ANTI_CHEAT.TOLERANCE_MULTIPLIER || 3;
-      const maxAllowedPower = (existing.current_power || 1) * tolerance;
-      const maxAllowedTotalPower = (existing.total_power || 1) * tolerance;
-      const maxAllowedPPS = (existing.clicks_per_second || 1) * (GAME_CONFIG.SECURITY.ANTI_CHEAT.PPS_INCREASE_THRESHOLD || 5);
-      const maxAllowedPrestige = (existing.prestige_level || 1) + 2;
-
-      if (validatedGameData.currentPower > maxAllowedPower) {
-        console.warn(`Anti-cheat: user ${user.id} - currentPower too high: ${validatedGameData.currentPower} > ${maxAllowedPower}`);
-        return NextResponse.json({ error: "Suspicious power gain detected" }, { status: 403 });
-      }
-      if (validatedGameData.totalPower > maxAllowedTotalPower) {
-        console.warn(`Anti-cheat: user ${user.id} - totalPower too high: ${validatedGameData.totalPower} > ${maxAllowedTotalPower}`);
-        return NextResponse.json({ error: "Suspicious total power gain detected" }, { status: 403 });
-      }
-      if (validatedGameData.pps > maxAllowedPPS) {
-        console.warn(`Anti-cheat: user ${user.id} - pps too high: ${validatedGameData.pps} > ${maxAllowedPPS}`);
-        return NextResponse.json({ error: "Suspicious PPS gain detected" }, { status: 403 });
-      }
-      if (validatedGameData.prestigeLevel > maxAllowedPrestige) {
-        console.warn(`Anti-cheat: user ${user.id} - prestigeLevel too high: ${validatedGameData.prestigeLevel} > ${maxAllowedPrestige}`);
-        return NextResponse.json({ error: "Suspicious prestige gain detected" }, { status: 403 });
-      }
-    }
-
     // Convert game data to individual columns
     const saveData = {
       current_power: validatedGameData.currentPower,
@@ -153,6 +128,37 @@ export async function POST(request: NextRequest) {
       last_save_time: validatedGameData.lastSaveTime,
       combo_active: validatedGameData.comboActive,
       updated_at: new Date().toISOString()
+    };
+
+    // Only log, do not block. If extreme, set suspect flag for admin review.
+    if (existing) {
+      const tolerance = GAME_CONFIG.SECURITY.ANTI_CHEAT.TOLERANCE_MULTIPLIER || 10;
+      const maxAllowedPower = (existing.current_power || 1) * tolerance;
+      const maxAllowedTotalPower = (existing.total_power || 1) * tolerance;
+      const maxAllowedPPS = (existing.clicks_per_second || 1) * (GAME_CONFIG.SECURITY.ANTI_CHEAT.PPS_INCREASE_THRESHOLD || 5);
+      const maxAllowedPrestige = (existing.prestige_level || 1) + 2;
+
+      let suspect = false;
+      if (validatedGameData.currentPower > maxAllowedPower) {
+        console.warn(`[ANTI-CHEAT] user ${user.id} - currentPower very high: ${validatedGameData.currentPower} > ${maxAllowedPower}`);
+        suspect = true;
+      }
+      if (validatedGameData.totalPower > maxAllowedTotalPower) {
+        console.warn(`[ANTI-CHEAT] user ${user.id} - totalPower very high: ${validatedGameData.totalPower} > ${maxAllowedTotalPower}`);
+        suspect = true;
+      }
+      if (validatedGameData.pps > maxAllowedPPS) {
+        console.warn(`[ANTI-CHEAT] user ${user.id} - pps very high: ${validatedGameData.pps} > ${maxAllowedPPS}`);
+        suspect = true;
+      }
+      if (validatedGameData.prestigeLevel > maxAllowedPrestige) {
+        console.warn(`[ANTI-CHEAT] user ${user.id} - prestigeLevel very high: ${validatedGameData.prestigeLevel} > ${maxAllowedPrestige}`);
+        suspect = true;
+      }
+      if (suspect) {
+        // Attach suspect flag to saveData for admin review
+        (saveData as { suspect?: boolean }).suspect = true;
+      }
     }
 
     let result

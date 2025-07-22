@@ -279,12 +279,11 @@ const getAdaptiveScaling = (totalPower: number, prestigeLevel: number): { costMu
   };
 };
 
-export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0, prestigeLevel: number = 0, totalPower: number = 0): number => {
+export const getSpecialItemCost = (item: SpecialItem, currentLevel: number = 0, prestigeLevel: number = 0): number => {
   const baseCost = item.baseCost * Math.pow(item.costGrowth, currentLevel);
   const prestigeMultiplier = getPrestigePriceMultiplier(prestigeLevel);
-  const { costMultiplier } = getAdaptiveScaling(totalPower, prestigeLevel);
-  
-  return Math.floor(baseCost * prestigeMultiplier * costMultiplier);
+  // Remove costMultiplier based on totalPower
+  return Math.floor(baseCost * prestigeMultiplier);
 };
 
 export const getSpecialItemMultiplier = (item: SpecialItem, prestigeLevel: number = 0, totalPower: number = 0): number => {
