@@ -1,11 +1,8 @@
-import { GAME_CONFIG } from "@/lib/config/game-config"
-import { validateSignedGameRequest } from "@/lib/security/crypto-signature"
-import { createClient as createServerClient } from "@/lib/supabase/server"
+import { NextRequest } from "next/server"
+import { GameEngine } from "@/lib/game-engine"
+import { withGameSecurity, GameSecurityMiddleware, SecurityValidationResult, PayloadSchemas } from "@/lib/middleware/security"
+import { GameStateManager } from "@/lib/game-core"
 import { SaveGameRequestSchema } from "@/lib/validation/game-schemas"
-import { createClient } from "@supabase/supabase-js"
-import { NextRequest, NextResponse } from "next/server"
-
-const userLastSaveTime = new Map<string, number>()
 
 // Create admin client with service role key for secure operations
 const supabaseAdmin = createClient(
@@ -36,43 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const gameSignatureHeader = request.headers.get("x-game-signature")
-    if (!gameSignatureHeader) {
-      return NextResponse.json({ error: "Missing game signature" }, { status: 403 })
-    }
-
-    let signedRequest
-    try {
-      signedRequest = JSON.parse(gameSignatureHeader)
-    } catch (error) {
-      console.error("Invalid signature format:", error)
-      return NextResponse.json({ error: "Invalid signature format" }, { status: 403 })
-    }
-
-    const { data: userKey, error: keyError } = await supabaseAdmin
-      .from("user_crypto_keys")
-      .select("public_key")
-      .eq("user_id", user.id)
-      .single()
-
-    if (keyError || !userKey?.public_key) {
-      return NextResponse.json({ 
-        error: "Crypto key not found. Please refresh your security key." 
-      }, { status: 403 })
-    }
-
-    // Validate the signed request
-    const signatureValidation = validateSignedGameRequest(signedRequest, userKey.public_key)
-    if (!signatureValidation.isValid) {
-      console.warn(`Invalid signature from user ${user.id}: ${signatureValidation.reason}`)
-      return NextResponse.json({ 
-        error: `Security validation failed: ${signatureValidation.reason}` 
-      }, { status: 403 })
-    }
-
-    if (signatureValidation.data?.type !== "save") {
-      return NextResponse.json({ error: "Invalid action type for save endpoint" }, { status: 400 })
-    }
+    // REMOVED: Crypto signature validation (replaced with server-side validation)
 
     const lastSaveTime = userLastSaveTime.get(user.id) || 0
     const timeSinceLastSave = now - lastSaveTime

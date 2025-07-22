@@ -1,3 +1,5 @@
+"use client"
+
 import { GameOptions, GameState, Upgrade } from '@/type/game';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { GAME_CONFIG } from '../config/game-config';
@@ -5,8 +7,9 @@ import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from '../constants/special-ite
 import { getPrestigeMultiplier } from '../prestige';
 import { getUpgradeClickMultiplier, getUpgradeCost, getUpgradePPSGain } from '../upgrades';
 import { SPECIAL_ITEMS, canPurchaseSpecialItem, getSpecialItemCost, getSpecialItemMultiplier } from '../upgrades-specials';
-import { useCryptoSecurity } from './use-crypto-security';
+// REMOVED: useCryptoSecurity
 
+// SIMPLIFIED CLIENT STATE - All game logic moved to server
 const DEFAULT_GAME_STATE: GameState = {
   totalClicks: 0,
   totalPower: 0,
@@ -20,11 +23,9 @@ const DEFAULT_GAME_STATE: GameState = {
   prestigeLevel: 0,
   resourcesPerSecond: 0,
   currentResources: 0,
-  // Combo System
   comboCount: 0,
   comboActive: false,
   lastClickTime: 0,
-  // Time Boost System
   timeBoostActive: false,
   timeBoostEndTime: 0,
   timeBoostMultiplier: 1,
@@ -65,359 +66,102 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaveTime, setLastSaveTime] = useState(Date.now());
   
-  const { makeSignedRequest, isReady: cryptoReady } = useCryptoSecurity();
-  const ppsIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const autoClickerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const timeBoostIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const gameStateRef = useRef(gameState);
-  
-  useEffect(() => {
-    gameStateRef.current = gameState;
-  }, [gameState]);
+  // REMOVED: All client-side calculations and crypto security
+  // All game logic will be handled server-side
 
-  useEffect(() => {
-    setGameState(prev => initializeNextCosts(prev, upgrades));
-  }, [upgrades, gameState.prestigeLevel]);
+  // SIMPLIFIED: Only handle UI state, server handles all calculations
+  const handleClick = useCallback(async () => {
+    if (!userId) return { gained: 0 };
 
-  const calculateTotalStats = useCallback((upgradesState: Record<number, number>, specialItemsState: Record<number, number> = {}) => {
-    if (gameState.purchasedUpgrades && gameState.purchasedUpgrades.length > 0) {
-      let totalPps = 0;
-      let totalClickMultiplier = 1;
-      let globalMultiplier = 1;
-
-      for (const pu of gameState.purchasedUpgrades) {
-        totalPps += pu.ppsGain * pu.quantity;
-        totalClickMultiplier += pu.clickMultiplier * pu.quantity;
-      }
-
-      if (gameState.purchasedSpecialItems && gameState.purchasedSpecialItems.length > 0) {
-        for (const psi of gameState.purchasedSpecialItems) {
-          const specialItem = SPECIAL_ITEMS.find(item => item.id === psi.specialItemId);
-          if (specialItem && [
-            "x1.5 Global",
-            "x2 Global",
-            "x3 Global",
-            "x5 Global",
-            "x10 Global",
-            "Caffeine Boost"
-          ].includes(specialItem.effect)) {
-            globalMultiplier *= Math.pow(psi.effectMultiplier, psi.quantity);
-          }
-        }
-      }
-
-      // Prestige
-      const prestigeMultiplier = getPrestigeMultiplier(gameStateRef.current.prestigeLevel);
-      return {
-        totalPps: totalPps * globalMultiplier * prestigeMultiplier,
-        totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier
-      };
-    }
-
-    let totalPps = 0;
-    let totalClickMultiplier = 1;
-    let globalMultiplier = 1;
-    const fixedPrestigeLevel = gameState.prestigeLevel;
-    const fixedTotalPower = gameState.prestigeLevel > 0 ? gameState.totalPower : gameState.totalPower;
-    upgrades.forEach(upgrade => {
-      const level = upgradesState[upgrade.id] || 0;
-      if (level > 0) {
-        let upgradePps = getUpgradePPSGain(upgrade, fixedPrestigeLevel) * level;
-        let upgradeClick = getUpgradeClickMultiplier(upgrade, fixedPrestigeLevel) * level;
-        SPECIAL_ITEMS.forEach(specialItem => {
-          const specialLevel = specialItemsState[specialItem.id] || 0;
-          if (specialLevel > 0) {
-            switch (specialItem.effect) {
-              case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
-                if (upgrade.name.toLowerCase().includes('ai intern')) {
-                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
-                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
-                }
-                break;
-              case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
-                if (upgrade.name.toLowerCase().includes('junior dev')) {
-                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
-                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
-                }
-                break;
-              case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
-                if (upgrade.name.toLowerCase().includes('devops')) {
-                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
-                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
-                }
-                break;
-              case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
-                if (upgrade.name.toLowerCase().includes('cloud')) {
-                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
-                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
-                }
-                break;
-              case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
-                if (upgrade.name.toLowerCase().includes('ai') || upgrade.name.toLowerCase().includes('ml')) {
-                  const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-                  upgradePps *= Math.pow(itemMultiplier, specialLevel);
-                  upgradeClick *= Math.pow(itemMultiplier, specialLevel);
-                }
-                break;
-            }
-          }
-        });
-        totalPps += upgradePps;
-        totalClickMultiplier += upgradeClick;
-      }
-    });
-    SPECIAL_ITEMS.forEach(specialItem => {
-      const specialLevel = specialItemsState[specialItem.id] || 0;
-      if (specialLevel > 0) {
-        switch (specialItem.effect) {
-          case SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X:
-          case SPECIAL_ITEM_EFFECTS.GLOBAL_2X:
-          case SPECIAL_ITEM_EFFECTS.GLOBAL_3X:
-          case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
-          case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
-          case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
-            const itemMultiplier = getSpecialItemMultiplier(specialItem, fixedPrestigeLevel, fixedTotalPower);
-            globalMultiplier *= Math.pow(itemMultiplier, specialLevel);
-            break;
-        }
-      }
-    });
-    const prestigeMultiplier = getPrestigeMultiplier(gameStateRef.current.prestigeLevel);
-    return { 
-      totalPps: totalPps * globalMultiplier * prestigeMultiplier, 
-      totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier 
-    };
-  }, [upgrades]);
-
-  useEffect(() => {
-    const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, gameState.specialItems);
-    setGameState(prev => {
-      if (prev.pps === totalPps && prev.clickPower === totalClickMultiplier) return prev;
-
-      return {
-        ...prev,
-        pps: totalPps,
-        clickPower: totalClickMultiplier,
-        resourcesPerSecond: totalPps,
-        lastSaveTime: Date.now()
-      };
-    });
-  }, [gameState.upgrades, gameState.specialItems, gameState.prestigeLevel, calculateTotalStats]);
-
-  const handleClick = useCallback(() => {
-    const currentState = gameStateRef.current;
-    const currentTime = Date.now();
-    const baseGain = currentState.clickPower;
-    let gainedPower = baseGain;
-
-    const goldenClickLevel = currentState.specialItems[SPECIAL_ITEM_IDS.GOLDEN_CLICK] || 0;
-    const luckyStreakLevel = currentState.specialItems[SPECIAL_ITEM_IDS.LUCKY_STREAK] || 0;
-    const hasGoldenClick = goldenClickLevel > 0;
-    const hasLuckyStreak = luckyStreakLevel > 0;
-    const hasComboSystem = (currentState.specialItems[SPECIAL_ITEM_IDS.COMBO_MASTER] || 0) > 0;
-    const hasTimeBoost = (currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0) > 0;
-    const timeBoostLevel = currentState.specialItems[SPECIAL_ITEM_IDS.TIME_WARP] || 0;
-    
-    let isSpecialClick = false;
-    let specialMultiplier = 1;
-    let comboMultiplier = 1;
-    let shouldActivateTimeBoost = false;
-
-    if (hasGoldenClick) {
-      const goldenClickChance = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_CHANCE * goldenClickLevel;
-      if (Math.random() < goldenClickChance) {
-        isSpecialClick = true;
-        specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.GOLDEN_CLICK_MULTIPLIER;
-      }
-    }
-    if (!isSpecialClick && hasLuckyStreak) {
-      const luckyStreakChance = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_CHANCE * luckyStreakLevel;
-      if (Math.random() < luckyStreakChance) {
-        isSpecialClick = true;
-        specialMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.LUCKY_STREAK_MULTIPLIER;
-      }
-    }
-
-    // Combo System logic
-    let newComboCount = 0;
-    let comboActive = false;
-    if (hasComboSystem) {
-      const timeSinceLastClick = currentTime - currentState.lastClickTime;
-      if (timeSinceLastClick < GAME_CONFIG.INTERVALS.COMBO_TIMEOUT) {
-        newComboCount = currentState.comboCount + 1;
-      } else {
-        newComboCount = 1; // Reset
-      }
-      // Combo is active if count > 1
-      comboActive = newComboCount > 1;
-      // Apply combo multiplier (1.1x per combo level, capped at 10x total)
-      if (newComboCount > 1) {
-        comboMultiplier = Math.min(1 + (newComboCount - 1) * GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MULTIPLIER_INCREMENT, GAME_CONFIG.SPECIAL_ABILITIES.COMBO.MAX_MULTIPLIER);
-      }
-    }
-
-    // Time Boost activation logic
-    if (hasTimeBoost && !currentState.timeBoostActive) {
-      // Base chance + chance per level
-      const timeBoostChance = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_CHANCE + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.CHANCE_PER_LEVEL;
-      if (Math.random() < timeBoostChance) {
-        shouldActivateTimeBoost = true;
-      }
-    }
-
-    // Apply multipliers
-    if (isSpecialClick) {
-      gainedPower *= specialMultiplier;
-    }
-    gainedPower *= comboMultiplier;
-
-    // Apply time boost if active
-    if (currentState.timeBoostActive && currentTime < currentState.timeBoostEndTime) {
-      gainedPower *= currentState.timeBoostMultiplier;
-    }
-
-    setGameState(prev => {
-      const updates: Partial<GameState> = {
-        totalClicks: prev.totalClicks + 1,
-        currentPower: prev.currentPower + gainedPower,
-        totalPower: prev.totalPower + gainedPower,
-        currentResources: prev.currentPower + gainedPower,
-        lastSaveTime: currentTime,
-        lastClickTime: currentTime
-      };
-
-      // Update combo count
-      if (hasComboSystem) {
-        updates.comboCount = newComboCount;
-        updates.comboActive = comboActive;
-      }
-
-      // Activate time boost if triggered
-      if (shouldActivateTimeBoost) {
-        const boostDuration = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_DURATION + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.DURATION_PER_LEVEL;
-        const boostMultiplier = GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.BASE_MULTIPLIER + (timeBoostLevel - 1) * GAME_CONFIG.SPECIAL_ABILITIES.TIME_BOOST.MULTIPLIER_PER_LEVEL;
-        updates.timeBoostActive = true;
-        updates.timeBoostEndTime = currentTime + boostDuration;
-        updates.timeBoostMultiplier = boostMultiplier;
-      }
-
-      // Check if time boost should end
-      if (prev.timeBoostActive && currentTime >= prev.timeBoostEndTime) {
-        updates.timeBoostActive = false;
-        updates.timeBoostEndTime = 0;
-        updates.timeBoostMultiplier = 1;
-      }
-
-      return { ...prev, ...updates };
-    });
-
-    return { 
-      gained: gainedPower, 
-      isSpecialClick, 
-      specialMultiplier: isSpecialClick ? specialMultiplier : 1,
-      comboMultiplier,
-      comboCount: newComboCount,
-      timeBoostActivated: shouldActivateTimeBoost
-    };
-  }, []);
-
-  const buyUpgrade = useCallback((upgradeId: number, quantity: number = 1) => {
-    const upgrade = upgrades.find(u => u.id === upgradeId);
-    if (!upgrade) return false;
-
-    const currentLevel = gameState.upgrades[upgradeId] || 0;
-    let totalCost = 0;
-    let actualQuantity = 0;
-    const purchasedUpgrades = gameState.purchasedUpgrades ? [...gameState.purchasedUpgrades] : [];
-
-    // QUANTITY COST
-    for (let i = 0; i < quantity; i++) {
-      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel);
-      if (gameState.currentPower >= totalCost + cost) {
-        totalCost += cost;
-        actualQuantity++;
-      } else {
-        break;
-      }
-    }
-
-    if (actualQuantity > 0 && gameState.currentPower >= totalCost) {
-      for (let i = 0; i < actualQuantity; i++) {
-        const ppsGain = getUpgradePPSGain(upgrade, gameState.prestigeLevel);
-        const clickMultiplier = getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel);
-        purchasedUpgrades.push({
-          upgradeId,
-          quantity: 1,
-          ppsGain,
-          clickMultiplier
-        });
-      }
-
-      const newNextUpgradeCosts = { ...(gameState.nextUpgradeCosts || {}) };
-      newNextUpgradeCosts[upgradeId] = getUpgradeCost(upgrade, currentLevel + actualQuantity, gameState.prestigeLevel);
-      setGameState(prev => ({
-        ...prev,
-        currentPower: prev.currentPower - totalCost,
-        currentResources: prev.currentPower - totalCost,
-        upgrades: {
-          ...prev.upgrades,
-          [upgradeId]: currentLevel + actualQuantity
-        },
-        purchasedUpgrades,
-        nextUpgradeCosts: newNextUpgradeCosts,
-        lastSaveTime: Date.now()
-      }));
-      return actualQuantity;
-    }
-
-    return 0;
-  }, [gameState.currentPower, gameState.upgrades, upgrades, gameState.prestigeLevel, gameState.totalPower, gameState.purchasedUpgrades]);
-
-  const buySpecialItem = useCallback((specialItemId: number) => {
-    const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId);
-    if (!specialItem) return false;
-
-    const currentLevel = gameState.specialItems[specialItemId] || 0;
-    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel);
-    const purchasedSpecialItems = gameState.purchasedSpecialItems ? [...gameState.purchasedSpecialItems] : [];
-
-    // Fix: Ensure we have enough power AND all other requirements are met
-    if (gameState.currentPower >= cost && canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
-      const effectMultiplier = getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
-      purchasedSpecialItems.push({
-        specialItemId,
-        quantity: 1,
-        effectMultiplier
+    try {
+      const response = await fetch('/api/game/click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timestamp: Date.now(),
+          sessionId: Date.now() // Basic session tracking
+        })
       });
-      const newSpecialItems = {
-        ...gameState.specialItems,
-        [specialItemId]: currentLevel + 1
-      };
-      const newNextSpecialItemCosts = { ...(gameState.nextSpecialItemCosts || {}) };
-      newNextSpecialItemCosts[specialItemId] = getSpecialItemCost(specialItem, currentLevel + 1, gameState.prestigeLevel);
-      const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, newSpecialItems);
-      setGameState(prev => ({
-        ...prev,
-        currentPower: prev.currentPower - cost,
-        currentResources: prev.currentPower - cost,
-        specialItems: newSpecialItems,
-        purchasedSpecialItems,
-        nextSpecialItemCosts: newNextSpecialItemCosts,
-        pps: totalPps,
-        clickPower: totalClickMultiplier,
-        resourcesPerSecond: totalPps,
-        lastSaveTime: Date.now()
-      }));
-      return true;
-    }
 
+      if (response.ok) {
+        const result = await response.json();
+        setGameState(prev => ({
+          ...prev,
+          ...result.gameState
+        }));
+        return { gained: result.gained };
+      }
+    } catch (error) {
+      console.error('Click failed:', error);
+    }
+    
+    return { gained: 0 };
+  }, [userId]);
+
+  // SIMPLIFIED: Delegate to server
+  const buyUpgrade = useCallback(async (upgradeId: number, quantity: number = 1) => {
+    if (!userId) return false;
+
+    try {
+      const response = await fetch('/api/game/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'upgrade',
+          upgradeId,
+          quantity,
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setGameState(prev => ({
+            ...prev,
+            ...result.gameState
+          }));
+          return result.purchased;
+        }
+      }
+    } catch (error) {
+      console.error('Purchase failed:', error);
+    }
+    
     return false;
-  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel, calculateTotalStats, gameState.purchasedSpecialItems]);
+  }, [userId]);
+
+  // SIMPLIFIED: Delegate to server
+  const buySpecialItem = useCallback(async (specialItemId: number) => {
+    if (!userId) return false;
+
+    try {
+      const response = await fetch('/api/game/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'specialItem',
+          specialItemId,
+          timestamp: Date.now()
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setGameState(prev => ({
+            ...prev,
+            ...result.gameState
+          }));
+          return result.purchased;
+        }
+      }
+    } catch (error) {
+      console.error('Special item purchase failed:', error);
+    }
+    
+    return false;
+  }, [userId]);
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
@@ -476,17 +220,17 @@ export const useClickerGame = (options: GameOptions = {}) => {
     try {
       console.log('🔄 Saving to Supabase via API...', { userId, dataKeys: Object.keys(data) });
       
-      if (!cryptoReady) {
-        throw new Error('Crypto security not ready');
-      }
+      // REMOVED: cryptoReady check
       
-      const response = await makeSignedRequest(
-        GAME_CONFIG.ENDPOINTS.GAME_SAVE,
-        {
+      const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_SAVE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           type: 'save',
-          payload: data
-        }
-      );
+          payload: data,
+          userId: userId
+        })
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -500,7 +244,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       console.error("Error saving to Supabase:", error);
       return false;
     }
-  }, [saveToSupabase, userId, cryptoReady, makeSignedRequest]);
+  }, [saveToSupabase, userId]);
 
   const loadFromSupabaseDB = useCallback(async () => {
     if (!saveToSupabase || !userId) {
@@ -547,7 +291,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
   }, [saveToSupabase, userId, loadFromLocal, saveToSupabaseDB]);
 
   const saveGame = useCallback(async () => {
-    const currentGameState = gameStateRef.current;
+    const currentGameState = gameState; // gameStateRef.current; // REMOVED: gameStateRef
     const success = saveToSupabase 
       ? await saveToSupabaseDB(currentGameState)
       : saveToLocal(currentGameState);
@@ -591,33 +335,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     loadGame();
   }, [loadFromSupabaseDB]);
 
-  useEffect(() => {
-    if (gameState.pps > 0) {
-      ppsIntervalRef.current = setInterval(() => {
-        setGameState(prev => {
-          const newCurrentPower = prev.currentPower + prev.pps;
-          return {
-            ...prev,
-            currentPower: newCurrentPower,
-            totalPower: prev.totalPower + prev.pps,
-            currentResources: newCurrentPower,
-            lastSaveTime: Date.now()
-          };
-        });
-      }, GAME_CONFIG.INTERVALS.PPS_UPDATE);
-    } else {
-      if (ppsIntervalRef.current) {
-        clearInterval(ppsIntervalRef.current);
-        ppsIntervalRef.current = null;
-      }
-    }
-
-    return () => {
-      if (ppsIntervalRef.current) {
-        clearInterval(ppsIntervalRef.current);
-      }
-    };
-  }, [gameState.pps]);
+  // REMOVED: PPS update effect
 
   // Auto-clicker effect
   useEffect(() => {
@@ -640,30 +358,13 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     if (autoClicksPerSecond > 0) {
       const interval = 1000 / autoClicksPerSecond; // Calculate interval between clicks
-      autoClickerIntervalRef.current = setInterval(() => {
-        setGameState(prev => {
-          const clickPower = prev.clickPower;
-          return {
-            ...prev,
-            // Auto-clickers don't count towards totalClicks (only manual user clicks)
-            currentPower: prev.currentPower + clickPower,
-            totalPower: prev.totalPower + clickPower,
-            currentResources: prev.currentPower + clickPower,
-            lastSaveTime: Date.now()
-          };
-        });
-      }, interval);
+      // REMOVED: autoClickerIntervalRef
     } else {
-      if (autoClickerIntervalRef.current) {
-        clearInterval(autoClickerIntervalRef.current);
-        autoClickerIntervalRef.current = null;
-      }
+      // REMOVED: autoClickerIntervalRef
     }
 
     return () => {
-      if (autoClickerIntervalRef.current) {
-        clearInterval(autoClickerIntervalRef.current);
-      }
+      // REMOVED: autoClickerIntervalRef
     };
   }, [gameState.specialItems, gameState.clickPower]);
 
@@ -672,19 +373,11 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (gameState.timeBoostActive && gameState.timeBoostEndTime > 0) {
       const timeLeft = gameState.timeBoostEndTime - Date.now();
       if (timeLeft > 0) {
-        timeBoostIntervalRef.current = setTimeout(() => {
-          setGameState(prev => ({
-            ...prev,
-            timeBoostActive: false,
-            timeBoostEndTime: 0,
-            timeBoostMultiplier: 1,
-            lastSaveTime: Date.now()
-          }));
-        }, timeLeft);
+        // REMOVED: timeBoostIntervalRef
       } else {
         console.log('-----');
         console.log('Time Boost expired, resetting state');
-        console.log('Current Game State:', gameStateRef.current);
+        console.log('Current Game State:', gameState);
         console.log('-----');
         setGameState(prev => ({
           ...prev,
@@ -695,36 +388,27 @@ export const useClickerGame = (options: GameOptions = {}) => {
         }));
       }
     } else {
-      if (timeBoostIntervalRef.current) {
-        clearTimeout(timeBoostIntervalRef.current);
-        timeBoostIntervalRef.current = null;
-      }
+      // REMOVED: timeBoostIntervalRef
     }
 
     return () => {
-      if (timeBoostIntervalRef.current) {
-        clearTimeout(timeBoostIntervalRef.current);
-      }
+      // REMOVED: timeBoostIntervalRef
     };
   }, [gameState.timeBoostActive, gameState.timeBoostEndTime]);
 
   useEffect(() => {
     if (autoSaveInterval > 0 && !isLoading) {
-      autoSaveIntervalRef.current = setInterval(() => {
-        saveGame();
-      }, autoSaveInterval);
+      // REMOVED: autoSaveIntervalRef
     }
 
     return () => {
-      if (autoSaveIntervalRef.current) {
-        clearInterval(autoSaveIntervalRef.current);
-      }
+      // REMOVED: autoSaveIntervalRef
     };
   }, [autoSaveInterval, isLoading, saveGame]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const currentGameState = gameStateRef.current;
+      const currentGameState = gameState; // gameStateRef.current; // REMOVED: gameStateRef
       if (saveToSupabase && userId) {
         saveToSupabaseDB(currentGameState);
       } else {
