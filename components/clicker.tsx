@@ -50,6 +50,24 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
     [onClick, disabled]
   );
 
+  const isPrestige = gameState.prestigeLevel > 0;
+  const isRingActive = isActive || isClicking;
+  const isRingInactive = !isActive && !isClicking;
+
+  const ringClass = isRingActive
+    ? isPrestige
+      ? "ring-4 ring-purple-600 dark:ring-purple-300"
+      : "ring-4 ring-green-600 dark:ring-green-300"
+    : "";
+
+  const focusRingClass = isRingInactive
+    ? isPrestige
+      ? "focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400"
+      : "focus:ring-2 focus:ring-green-600 dark:focus:ring-green-400"
+    : "";
+
+  const disabledClass = disabled ? "opacity-60 cursor-not-allowed" : "";
+
   return (
     <div className="relative flex items-center justify-center">
       <motion.button
@@ -61,13 +79,10 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
         transition={{ duration: 0.1 }}
         className={cn(
           "size-82 md:size-92 rounded-full border-4 border-black dark:border-white bg-black dark:bg-white relative overflow-hidden",
-          "shadow-[4px_4px_0_#000] dark:shadow-[4px_4px_0_#aaa] transition-transform duration-100 focus:outline-none", {
-            "ring-4 ring-green-600 dark:ring-green-300": isActive || isClicking && gameState.prestigeLevel === 0,
-            "ring-4 ring-purple-600 dark:ring-purple-300": isActive || isClicking && gameState.prestigeLevel > 0,
-            "focus:ring-2 focus:ring-green-600 dark:focus:ring-green-400": !isActive && !isClicking && gameState.prestigeLevel === 0,
-            "focus:ring-2 focus:ring-purple-600 dark:focus:ring-purple-400": !isActive && !isClicking && gameState.prestigeLevel > 0,
-            "opacity-60 cursor-not-allowed": disabled,
-          }
+          "shadow-[4px_4px_0_#000] dark:shadow-[4px_4px_0_#aaa] transition-transform duration-100 focus:outline-none",
+          ringClass,
+          focusRingClass,
+          disabledClass
         )}
       >
         <div className="absolute inset-0 flex items-center justify-center">
