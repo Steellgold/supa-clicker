@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/providers/game-provider";
 import { useEffect, useRef, useState } from "react";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
+type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD";
 
 const Home = () => {
   const { gameState, handleClick, newAchievements } = useGame();
