@@ -283,30 +283,66 @@ ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leaderboard_entries ENABLE ROW LEVEL SECURITY;
 
 -- Politiques RLS : Les utilisateurs ne voient que leurs propres données
-CREATE POLICY "Users can manage own profile" ON user_profiles
-    FOR ALL USING (auth.uid() = id);
 
-CREATE POLICY "Users can manage own progression" ON game_progression
-    FOR ALL USING (auth.uid() = user_id);
+-- USER_PROFILES
+CREATE POLICY "Users can select own profile" ON user_profiles
+    FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Users can insert own profile" ON user_profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can update own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can delete own profile" ON user_profiles
+    FOR DELETE USING (auth.uid() = id);
 
-CREATE POLICY "Users can manage own upgrades" ON user_upgrades
-    FOR ALL USING (auth.uid() = user_id);
+-- GAME_PROGRESSION
+CREATE POLICY "Users can select own progression" ON game_progression
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own progression" ON game_progression
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own progression" ON game_progression
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own progression" ON game_progression
+    FOR DELETE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can manage own special items" ON user_special_items
-    FOR ALL USING (auth.uid() = user_id);
+-- USER_UPGRADES
+CREATE POLICY "Users can select own upgrades" ON user_upgrades
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own upgrades" ON user_upgrades
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own upgrades" ON user_upgrades
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own upgrades" ON user_upgrades
+    FOR DELETE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can manage own achievements" ON user_achievements
-    FOR ALL USING (auth.uid() = user_id);
+-- USER_SPECIAL_ITEMS
+CREATE POLICY "Users can select own special items" ON user_special_items
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own special items" ON user_special_items
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own special items" ON user_special_items
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own special items" ON user_special_items
+    FOR DELETE USING (auth.uid() = user_id);
 
--- Leaderboard : lecture publique, écriture restreinte
-CREATE POLICY "Public leaderboard read" ON leaderboard_entries
+-- USER_ACHIEVEMENTS
+CREATE POLICY "Users can select own achievements" ON user_achievements
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own achievements" ON user_achievements
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own achievements" ON user_achievements
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own achievements" ON user_achievements
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- LEADERBOARD_ENTRIES (lecture publique, écriture privée)
+CREATE POLICY "Public can read leaderboard" ON leaderboard_entries
     FOR SELECT USING (true);
-
+CREATE POLICY "Users can insert own leaderboard entry" ON leaderboard_entries
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update own leaderboard entry" ON leaderboard_entries
-    FOR INSERT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can modify own leaderboard entry" ON leaderboard_entries
-    FOR UPDATE USING (auth.uid() = user_id);
+    FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own leaderboard entry" ON leaderboard_entries
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- ===============================
 -- 6. VUES OPTIMISÉES
