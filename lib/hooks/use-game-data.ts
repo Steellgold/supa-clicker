@@ -445,7 +445,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
           upgrades: data.upgrades || DEFAULT_GAME_STATE.upgrades,
           specialItems: data.specialItems || DEFAULT_GAME_STATE.specialItems,
           unlockedAchievements: data.unlockedAchievements || DEFAULT_GAME_STATE.unlockedAchievements,
-          prestigeLevel: data.prestigeLevel || DEFAULT_GAME_STATE.prestigeLevel,
+          prestigeLevel: (data.prestigeLevel || DEFAULT_GAME_STATE.prestigeLevel) > 50 ? 50 : (data.prestigeLevel || DEFAULT_GAME_STATE.prestigeLevel),
           resourcesPerSecond: data.resourcesPerSecond || DEFAULT_GAME_STATE.resourcesPerSecond,
           currentResources: data.currentResources || DEFAULT_GAME_STATE.currentResources,
           comboCount: data.comboCount || DEFAULT_GAME_STATE.comboCount,
