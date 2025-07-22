@@ -43,7 +43,7 @@ function initializeNextCosts(gameState: GameState, upgrades: Upgrade[]): GameSta
   });
   SPECIAL_ITEMS.forEach(item => {
     const level = (gameState.specialItems[item.id] || 0);
-    nextSpecialItemCosts[item.id] = getSpecialItemCost(item, level, gameState.prestigeLevel, gameState.totalPower);
+    nextSpecialItemCosts[item.id] = getSpecialItemCost(item, level, gameState.prestigeLevel);
   });
   return {
     ...gameState,
@@ -383,7 +383,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     if (!specialItem) return false;
 
     const currentLevel = gameState.specialItems[specialItemId] || 0;
-    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+    const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel);
     const purchasedSpecialItems = gameState.purchasedSpecialItems ? [...gameState.purchasedSpecialItems] : [];
 
     // Fix: Ensure we have enough power AND all other requirements are met
@@ -399,7 +399,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         [specialItemId]: currentLevel + 1
       };
       const newNextSpecialItemCosts = { ...(gameState.nextSpecialItemCosts || {}) };
-      newNextSpecialItemCosts[specialItemId] = getSpecialItemCost(specialItem, currentLevel + 1, gameState.prestigeLevel, gameState.totalPower);
+      newNextSpecialItemCosts[specialItemId] = getSpecialItemCost(specialItem, currentLevel + 1, gameState.prestigeLevel);
       const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, newSpecialItems);
       setGameState(prev => ({
         ...prev,
