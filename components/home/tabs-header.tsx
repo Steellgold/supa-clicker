@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { Menu } from "lucide-react";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD";
+type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
 
 interface TabsHeaderProps {
   tab: TabType;
