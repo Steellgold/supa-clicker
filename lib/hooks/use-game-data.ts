@@ -27,8 +27,30 @@ const DEFAULT_GAME_STATE: GameState = {
   // Time Boost System
   timeBoostActive: false,
   timeBoostEndTime: 0,
-  timeBoostMultiplier: 1
+  timeBoostMultiplier: 1,
+  purchasedUpgrades: [],
+  purchasedSpecialItems: [],
+  nextUpgradeCosts: {},
+  nextSpecialItemCosts: {},
 };
+
+function initializeNextCosts(gameState: GameState, upgrades: Upgrade[]): GameState {
+  const nextUpgradeCosts: Record<number, number> = {};
+  const nextSpecialItemCosts: Record<number, number> = {};
+  upgrades.forEach(upg => {
+    const level = (gameState.upgrades[upg.id] || 0);
+    nextUpgradeCosts[upg.id] = getUpgradeCost(upg, level, gameState.prestigeLevel);
+  });
+  SPECIAL_ITEMS.forEach(item => {
+    const level = (gameState.specialItems[item.id] || 0);
+    nextSpecialItemCosts[item.id] = getSpecialItemCost(item, level, gameState.prestigeLevel, gameState.totalPower);
+  });
+  return {
+    ...gameState,
+    nextUpgradeCosts,
+    nextSpecialItemCosts,
+  };
+}
 
 export const useClickerGame = (options: GameOptions = {}) => {
   const {
@@ -54,20 +76,55 @@ export const useClickerGame = (options: GameOptions = {}) => {
     gameStateRef.current = gameState;
   }, [gameState]);
 
+  useEffect(() => {
+    setGameState(prev => initializeNextCosts(prev, upgrades));
+  }, [upgrades, gameState.prestigeLevel]);
+
   const calculateTotalStats = useCallback((upgradesState: Record<number, number>, specialItemsState: Record<number, number> = {}) => {
+    if (gameState.purchasedUpgrades && gameState.purchasedUpgrades.length > 0) {
+      let totalPps = 0;
+      let totalClickMultiplier = 1;
+      let globalMultiplier = 1;
+
+      for (const pu of gameState.purchasedUpgrades) {
+        totalPps += pu.ppsGain * pu.quantity;
+        totalClickMultiplier += pu.clickMultiplier * pu.quantity;
+      }
+
+      if (gameState.purchasedSpecialItems && gameState.purchasedSpecialItems.length > 0) {
+        for (const psi of gameState.purchasedSpecialItems) {
+          const specialItem = SPECIAL_ITEMS.find(item => item.id === psi.specialItemId);
+          if (specialItem && [
+            "x1.5 Global",
+            "x2 Global",
+            "x3 Global",
+            "x5 Global",
+            "x10 Global",
+            "Caffeine Boost"
+          ].includes(specialItem.effect)) {
+            globalMultiplier *= Math.pow(psi.effectMultiplier, psi.quantity);
+          }
+        }
+      }
+
+      // Prestige
+      const prestigeMultiplier = getPrestigeMultiplier(gameStateRef.current.prestigeLevel);
+      return {
+        totalPps: totalPps * globalMultiplier * prestigeMultiplier,
+        totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier
+      };
+    }
+
     let totalPps = 0;
     let totalClickMultiplier = 1;
     let globalMultiplier = 1;
-
     const fixedPrestigeLevel = gameState.prestigeLevel;
     const fixedTotalPower = gameState.prestigeLevel > 0 ? gameState.totalPower : gameState.totalPower;
-
     upgrades.forEach(upgrade => {
       const level = upgradesState[upgrade.id] || 0;
       if (level > 0) {
-        let upgradePps = getUpgradePPSGain(upgrade, fixedPrestigeLevel, fixedTotalPower) * level;
-        let upgradeClick = getUpgradeClickMultiplier(upgrade, fixedPrestigeLevel, fixedTotalPower) * level;
-
+        let upgradePps = getUpgradePPSGain(upgrade, fixedPrestigeLevel) * level;
+        let upgradeClick = getUpgradeClickMultiplier(upgrade, fixedPrestigeLevel) * level;
         SPECIAL_ITEMS.forEach(specialItem => {
           const specialLevel = specialItemsState[specialItem.id] || 0;
           if (specialLevel > 0) {
@@ -110,12 +167,10 @@ export const useClickerGame = (options: GameOptions = {}) => {
             }
           }
         });
-
         totalPps += upgradePps;
         totalClickMultiplier += upgradeClick;
       }
     });
-
     SPECIAL_ITEMS.forEach(specialItem => {
       const specialLevel = specialItemsState[specialItem.id] || 0;
       if (specialLevel > 0) {
@@ -132,9 +187,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         }
       }
     });
-
     const prestigeMultiplier = getPrestigeMultiplier(gameStateRef.current.prestigeLevel);
-
     return { 
       totalPps: totalPps * globalMultiplier * prestigeMultiplier, 
       totalClickMultiplier: totalClickMultiplier * globalMultiplier * prestigeMultiplier 
@@ -280,10 +333,11 @@ export const useClickerGame = (options: GameOptions = {}) => {
     const currentLevel = gameState.upgrades[upgradeId] || 0;
     let totalCost = 0;
     let actualQuantity = 0;
+    const purchasedUpgrades = gameState.purchasedUpgrades ? [...gameState.purchasedUpgrades] : [];
 
     // QUANTITY COST
     for (let i = 0; i < quantity; i++) {
-      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel, gameState.totalPower);
+      const cost = getUpgradeCost(upgrade, currentLevel + i, gameState.prestigeLevel);
       if (gameState.currentPower >= totalCost + cost) {
         totalCost += cost;
         actualQuantity++;
@@ -293,6 +347,19 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     if (actualQuantity > 0 && gameState.currentPower >= totalCost) {
+      for (let i = 0; i < actualQuantity; i++) {
+        const ppsGain = getUpgradePPSGain(upgrade, gameState.prestigeLevel);
+        const clickMultiplier = getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel);
+        purchasedUpgrades.push({
+          upgradeId,
+          quantity: 1,
+          ppsGain,
+          clickMultiplier
+        });
+      }
+
+      const newNextUpgradeCosts = { ...(gameState.nextUpgradeCosts || {}) };
+      newNextUpgradeCosts[upgradeId] = getUpgradeCost(upgrade, currentLevel + actualQuantity, gameState.prestigeLevel);
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - totalCost,
@@ -301,13 +368,15 @@ export const useClickerGame = (options: GameOptions = {}) => {
           ...prev.upgrades,
           [upgradeId]: currentLevel + actualQuantity
         },
+        purchasedUpgrades,
+        nextUpgradeCosts: newNextUpgradeCosts,
         lastSaveTime: Date.now()
       }));
       return actualQuantity;
     }
 
     return 0;
-  }, [gameState.currentPower, gameState.upgrades, upgrades]);
+  }, [gameState.currentPower, gameState.upgrades, upgrades, gameState.prestigeLevel, gameState.totalPower, gameState.purchasedUpgrades]);
 
   const buySpecialItem = useCallback((specialItemId: number) => {
     const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId);
@@ -315,21 +384,30 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     const currentLevel = gameState.specialItems[specialItemId] || 0;
     const cost = getSpecialItemCost(specialItem, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+    const purchasedSpecialItems = gameState.purchasedSpecialItems ? [...gameState.purchasedSpecialItems] : [];
 
     // Fix: Ensure we have enough power AND all other requirements are met
     if (gameState.currentPower >= cost && canPurchaseSpecialItem(specialItem, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades)) {
+      const effectMultiplier = getSpecialItemMultiplier(specialItem, gameState.prestigeLevel, gameState.totalPower);
+      purchasedSpecialItems.push({
+        specialItemId,
+        quantity: 1,
+        effectMultiplier
+      });
       const newSpecialItems = {
         ...gameState.specialItems,
         [specialItemId]: currentLevel + 1
       };
-      
+      const newNextSpecialItemCosts = { ...(gameState.nextSpecialItemCosts || {}) };
+      newNextSpecialItemCosts[specialItemId] = getSpecialItemCost(specialItem, currentLevel + 1, gameState.prestigeLevel, gameState.totalPower);
       const { totalPps, totalClickMultiplier } = calculateTotalStats(gameState.upgrades, newSpecialItems);
-      
       setGameState(prev => ({
         ...prev,
         currentPower: prev.currentPower - cost,
         currentResources: prev.currentPower - cost,
         specialItems: newSpecialItems,
+        purchasedSpecialItems,
+        nextSpecialItemCosts: newNextSpecialItemCosts,
         pps: totalPps,
         clickPower: totalClickMultiplier,
         resourcesPerSecond: totalPps,
@@ -339,7 +417,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     return false;
-  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel, calculateTotalStats]);
+  }, [gameState.currentPower, gameState.specialItems, gameState.totalPower, gameState.upgrades, gameState.prestigeLevel, calculateTotalStats, gameState.purchasedSpecialItems]);
 
   const saveToLocal = useCallback((data: GameState) => {
     try {
@@ -375,7 +453,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
           lastClickTime: data.lastClickTime || DEFAULT_GAME_STATE.lastClickTime,
           timeBoostActive: data.timeBoostActive || DEFAULT_GAME_STATE.timeBoostActive,
           timeBoostEndTime: data.timeBoostEndTime || DEFAULT_GAME_STATE.timeBoostEndTime,
-          timeBoostMultiplier: data.timeBoostMultiplier || DEFAULT_GAME_STATE.timeBoostMultiplier
+          timeBoostMultiplier: data.timeBoostMultiplier || DEFAULT_GAME_STATE.timeBoostMultiplier,
+          purchasedUpgrades: data.purchasedUpgrades || DEFAULT_GAME_STATE.purchasedUpgrades,
+          purchasedSpecialItems: data.purchasedSpecialItems || DEFAULT_GAME_STATE.purchasedSpecialItems
         };
         
         return {
@@ -658,7 +738,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   const upgradesInfo = upgrades.map(upgrade => {
     const currentLevel = gameState.upgrades[upgrade.id] || 0;
-    const cost = getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+    const cost = getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel);
     const canAfford = gameState.currentPower >= cost;
     
     return {
@@ -666,8 +746,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
       currentLevel,
       cost,
       canAfford,
-      totalPps: getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower) * currentLevel,
-      totalClickBonus: getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower) * currentLevel
+      totalPps: getUpgradePPSGain(upgrade, gameState.prestigeLevel) * currentLevel,
+      totalClickBonus: getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel) * currentLevel
     };
   });
 
@@ -750,9 +830,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
     upgradesInfo,
     specialItemsState: gameState.specialItems,
     
-    getUpgradeCost: (upgrade: Upgrade, currentLevel: number = 0) => getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel, gameState.totalPower),
-    getUpgradePPSGain: (upgrade: Upgrade) => getUpgradePPSGain(upgrade, gameState.prestigeLevel, gameState.totalPower),
-    getUpgradeClickMultiplier: (upgrade: Upgrade) => getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel, gameState.totalPower),
+    getUpgradeCost: (upgrade: Upgrade, currentLevel: number = 0) => getUpgradeCost(upgrade, currentLevel, gameState.prestigeLevel),
+    getUpgradePPSGain: (upgrade: Upgrade) => getUpgradePPSGain(upgrade, gameState.prestigeLevel),
+    getUpgradeClickMultiplier: (upgrade: Upgrade) => getUpgradeClickMultiplier(upgrade, gameState.prestigeLevel),
     
     comboActive: gameState.comboActive,
     comboCount: gameState.comboCount,

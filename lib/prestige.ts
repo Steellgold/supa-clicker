@@ -76,6 +76,8 @@ export const performPrestige = (gameState: GameState): GameState => {
     pps: 0,
     upgrades: {},
     specialItems: {},
+    purchasedUpgrades: [],
+    purchasedSpecialItems: [],
     totalClicks: 0,
     // TOTAL POWER | ACHIEVEMENTS
     prestigeLevel: newPrestigeLevel,

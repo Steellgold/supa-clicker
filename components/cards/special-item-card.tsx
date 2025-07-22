@@ -1,15 +1,15 @@
 "use client";
 
+import { PowerTag } from "@/components/power-tag";
 import { Card } from "@/components/ui/card";
+import { UnlockBlurWrapper } from "@/components/unlock-blur-wrapper";
+import { GAME_CONFIG } from "@/lib/config/game-config";
+import { SPECIAL_ITEM_EFFECTS } from "@/lib/constants/special-items";
 import { useGame } from "@/lib/providers/game-provider";
 import { canPurchaseSpecialItem, getAllSpecialItems, getRequiredUpgradeIds, getRequiredUpgradeNames, getSpecialItemCost, getSpecialItemMultiplier, isSpecialItemUnlocked } from "@/lib/upgrades-specials";
-import { SPECIAL_ITEM_EFFECTS } from "@/lib/constants/special-items";
-import { GAME_CONFIG } from "@/lib/config/game-config";
 import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { SpecialItem } from "@/type/game";
-import { PowerTag } from "../power-tag";
-import { UnlockBlurWrapper } from "../unlock-blur-wrapper";
 
 type SpecialItemCardProps = {
   item: SpecialItem;
@@ -19,8 +19,19 @@ type SpecialItemCardProps = {
 export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index = 0 }) => {
   const { buySpecialItem, gameState } = useGame();
   
-  const currentLevel = gameState.specialItems[item.id] || 0;
-  const cost = getSpecialItemCost(item, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+  // Find locked upgrades for this upgrade
+  const purchasedSpecials = (gameState.purchasedSpecialItems || []).filter(s => s.specialItemId === item.id);
+  const currentLevel = purchasedSpecials.length > 0 ? purchasedSpecials.length : (gameState.specialItems[item.id] || 0);
+
+  // Static cost: take the cost of the next purchase from the state, otherwise '???'
+  const staticCost =
+    typeof gameState.nextSpecialItemCosts?.[item.id] === "number"
+      ? gameState.nextSpecialItemCosts[item.id]
+      : getSpecialItemCost(item, currentLevel, gameState.prestigeLevel, gameState.totalPower);
+
+  // Static gains: sum of effectMultipliers stored
+  const totalEffectMultiplier = purchasedSpecials.reduce((prod, s) => prod * Math.pow(s.effectMultiplier, s.quantity), 1);
+
   const isUnlocked = isSpecialItemUnlocked(item, gameState.totalPower, gameState.prestigeLevel);
   const canPurchase = canPurchaseSpecialItem(item, currentLevel, gameState.currentPower, gameState.totalPower, gameState.prestigeLevel, gameState.upgrades);
   const isMaxed = item.maxPurchases && currentLevel >= item.maxPurchases;
@@ -90,7 +101,31 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
 
   const getDynamicEffectText = (item: SpecialItem, currentLevel: number) => {
     if (currentLevel === 0) return item.effect;
-
+    // If there are purchased specials, use the static gains
+    if (purchasedSpecials.length > 0) {
+      switch (item.effect) {
+        case SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X:
+        case SPECIAL_ITEM_EFFECTS.GLOBAL_2X:
+        case SPECIAL_ITEM_EFFECTS.GLOBAL_3X:
+        case SPECIAL_ITEM_EFFECTS.GLOBAL_5X:
+        case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
+        case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} Global`;
+        case SPECIAL_ITEM_EFFECTS.AI_INTERN_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} AI Intern`;
+        case SPECIAL_ITEM_EFFECTS.JUNIOR_DEV_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} Junior Dev`;
+        case SPECIAL_ITEM_EFFECTS.AI_ML_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} AI/ML`;
+        case SPECIAL_ITEM_EFFECTS.DEVOPS_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} DevOps`;
+        case SPECIAL_ITEM_EFFECTS.CLOUD_BOOST:
+          return `x${totalEffectMultiplier.toFixed(1)} Cloud`;
+        default:
+          return item.effect;
+      }
+    }
+    // Sinon, fallback dynamique
     switch (item.effect) {
       case SPECIAL_ITEM_EFFECTS.GLOBAL_1_5X:
       case SPECIAL_ITEM_EFFECTS.GLOBAL_2X:
@@ -204,7 +239,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                       currentLevel > 0 ? accent.effect : "text-neutral-500 bg-neutral-200"
                     )}>
                       <PowerTag imageProps={{ width: 12, height: 12, className: cn("mb-0.5 ml-1", {
-                        "grayscale": currentLevel === 0
+                        "neutralscale": currentLevel === 0
                       }) }}>
                         {dynamicEffect}
                       </PowerTag>
@@ -232,11 +267,11 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
                   >
                     {canPurchase ? (
                       <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1" }}>
-                        Buy {formatNumber(cost)}
+                        Buy {formatNumber(staticCost)}
                       </PowerTag>
                     ) : (
-                      <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 grayscale" }}>
-                        Need {formatNumber(cost)}
+                      <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 neutralscale" }}>
+                        Need {formatNumber(staticCost)}
                       </PowerTag>
                     )}
                   </button>

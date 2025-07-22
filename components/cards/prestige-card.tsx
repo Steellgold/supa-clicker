@@ -1,5 +1,6 @@
 "use client";
 
+import { PowerTag } from "@/components/power-tag";
 import { Card } from "@/components/ui/card";
 import { getPrestigeImageUrl } from "@/lib/config/prestige-images";
 import { canPrestige, getPrestigeEstimates, getPrestigeRequirement, performPrestige } from "@/lib/prestige";
@@ -7,7 +8,6 @@ import { useGame } from "@/lib/providers/game-provider";
 import { cn, formatNumber } from "@/lib/utils";
 import { Component } from "@/type/component";
 import Image from "next/image";
-import { PowerTag } from "../power-tag";
 import { PrestigeConfirmationDialog } from "../dialogs/prestige-confirmation-dialog";
 
 export const PrestigeCard: Component<object> = () => {
@@ -121,7 +121,7 @@ export const PrestigeCard: Component<object> = () => {
               </p>
             ) : (
               <div className="-mt-1">
-                <PowerTag imageProps={{ width: 10, height: 10, className: "mb-0.5 ml-1 grayscale" }}>
+                <PowerTag imageProps={{ width: 10, height: 10, className: "mb-0.5 ml-1 neutralscale" }}>
                   <span className="text-xs">Need {formatNumber(requirement)}</span>
                 </PowerTag>
 
@@ -145,7 +145,7 @@ export const PrestigeCard: Component<object> = () => {
             </button>
           </PrestigeConfirmationDialog>
         ) : (
-          <div className="px-1.5 py-0 bg-purple-500/20 dark:bg-purple-900/20 rounded-xs border border-purple-500/20 dark:border-purple-900/20">
+          <div className="px-1.5 py-0 bg-purple-500/20 jedark:bg-purple-900/20 rounded-xs border border-purple-500/20 dark:border-purple-900/20">
             <span className="text-xs text-purple-500 dark:text-purple-400 font-bold">
               {((gameState.currentPower / requirement) * 100).toFixed(1)}%
             </span>

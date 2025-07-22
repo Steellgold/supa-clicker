@@ -19,6 +19,19 @@ export type GameOptions = {
   storageKey?: string;
 };
 
+export type PurchasedUpgrade = {
+  upgradeId: number;
+  quantity: number;
+  ppsGain: number;
+  clickMultiplier: number;
+};
+
+export type PurchasedSpecialItem = {
+  specialItemId: number;
+  quantity: number;
+  effectMultiplier: number;
+};
+
 export type GameState = {
   totalClicks: number;
   totalPower: number;
@@ -27,6 +40,12 @@ export type GameState = {
   pps: number;
   upgrades: Record<number, number>;
   specialItems: Record<number, number>;
+  // Ajout : upgrades et special items figés
+  purchasedUpgrades?: PurchasedUpgrade[];
+  purchasedSpecialItems?: PurchasedSpecialItem[];
+  // Prix figés pour le prochain achat
+  nextUpgradeCosts?: Record<number, number>;
+  nextSpecialItemCosts?: Record<number, number>;
   // Achievement-related fields
   unlockedAchievements: number[];
   lastSaveTime: number;

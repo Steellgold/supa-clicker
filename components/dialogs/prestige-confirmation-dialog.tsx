@@ -5,12 +5,10 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
+  AlertDialogContent, AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { getPrestigeEstimates } from "@/lib/prestige";
 import { formatNumber } from "@/lib/utils";
@@ -42,7 +40,7 @@ export const PrestigeConfirmationDialog: Component<PropsWithChildren<PrestigeCon
           <AlertDialogTitle className="text-purple-800 dark:text-purple-200 font-bold text-center sr-only">
             {isFirstPrestige ? "🌟 UNLOCK PRESTIGE 🌟" : `👑 PRESTIGE TO LEVEL ${nextLevel} 👑`}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-neutral-700 dark:text-neutral-300 space-y-3">
+          <div className="text-neutral-700 dark:text-neutral-300 space-y-3">
             {isFirstPrestige ? (
               <>
                 <div className="border-2 border-purple-500 bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
@@ -110,7 +108,7 @@ export const PrestigeConfirmationDialog: Component<PropsWithChildren<PrestigeCon
                 </span>
               </PowerTag>
             </div>
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="font-mono border-2 border-neutral-600 bg-neutral-200 dark:bg-neutral-800">

@@ -225,7 +225,7 @@ export const DebugCard = (): ReactElement => {
                     <div key={upgrade.id} className="flex items-center gap-2 bg-white dark:bg-neutral-800 p-2 rounded border">
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{upgrade.name}</div>
-                        <div className="text-xs text-gray-500">ID: {upgrade.id}</div>
+                        <div className="text-xs text-neutral-500">ID: {upgrade.id}</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-1 rounded">
@@ -277,7 +277,7 @@ export const DebugCard = (): ReactElement => {
                     <div key={item.id} className="flex items-center gap-2 bg-white dark:bg-neutral-800 p-2 rounded border">
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{item.name}</div>
-                        <div className="text-xs text-gray-500">ID: {item.id} | Max: {item.maxPurchases || '∞'}</div>
+                        <div className="text-xs text-neutral-500">ID: {item.id} | Max: {item.maxPurchases || '∞'}</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-1 rounded">
