@@ -1,6 +1,6 @@
 "use client"
 
-import { createAdminClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js"
 import { createContext, useContext, useEffect, useState } from "react"
 
@@ -30,7 +30,7 @@ export type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createAdminClient()
+  const supabase = createClient()
 
   const [user, setUser] = useState<User | null>(null)
   const [userProfile, setUserProfile] = useState<Profile | null>(null)
