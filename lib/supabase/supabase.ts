@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
   graphql_public: {
     Tables: {
@@ -39,277 +39,533 @@ export type Database = {
   }
   public: {
     Tables: {
-      clicker_saves: {
+      action_history: {
         Row: {
-          achievements: Json | null
-          click_power: number | null
-          clicks_per_second: number | null
-          combo_active: boolean | null
-          combo_count: number | null
-          created_at: string
-          current_power: number | null
-          id: string
-          last_click_time: number | null
-          last_save_time: number | null
-          next_special_item_costs: Json | null
-          next_upgrade_costs: Json | null
-          prestige_level: number | null
-          purchased_special_items: Json | null
-          purchased_upgrades: Json | null
-          special_items: Json | null
-          time_boost_active: boolean | null
-          time_boost_end_time: number | null
-          time_boost_multiplier: number | null
-          total_clicks: number | null
-          total_power: number | null
-          updated_at: string
-          upgrades: Json | null
-          user_id: string
-        }
-        Insert: {
-          achievements?: Json | null
-          click_power?: number | null
-          clicks_per_second?: number | null
-          combo_active?: boolean | null
-          combo_count?: number | null
-          created_at?: string
-          current_power?: number | null
-          id?: string
-          last_click_time?: number | null
-          last_save_time?: number | null
-          next_special_item_costs?: Json | null
-          next_upgrade_costs?: Json | null
-          prestige_level?: number | null
-          purchased_special_items?: Json | null
-          purchased_upgrades?: Json | null
-          special_items?: Json | null
-          time_boost_active?: boolean | null
-          time_boost_end_time?: number | null
-          time_boost_multiplier?: number | null
-          total_clicks?: number | null
-          total_power?: number | null
-          updated_at?: string
-          upgrades?: Json | null
-          user_id: string
-        }
-        Update: {
-          achievements?: Json | null
-          click_power?: number | null
-          clicks_per_second?: number | null
-          combo_active?: boolean | null
-          combo_count?: number | null
-          created_at?: string
-          current_power?: number | null
-          id?: string
-          last_click_time?: number | null
-          last_save_time?: number | null
-          next_special_item_costs?: Json | null
-          next_upgrade_costs?: Json | null
-          prestige_level?: number | null
-          purchased_special_items?: Json | null
-          purchased_upgrades?: Json | null
-          special_items?: Json | null
-          time_boost_active?: boolean | null
-          time_boost_end_time?: number | null
-          time_boost_multiplier?: number | null
-          total_clicks?: number | null
-          total_power?: number | null
-          updated_at?: string
-          upgrades?: Json | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      messages: {
-        Row: {
-          content: string
+          action_type: string
+          cost: number | null
           created_at: string | null
+          gained_power: number | null
           id: string
-          user_id: string | null
-          username: string | null
+          power_after: number | null
+          power_before: number | null
+          quantity: number | null
+          session_id: string | null
+          target_id: number | null
+          user_id: string
         }
         Insert: {
-          content: string
+          action_type: string
+          cost?: number | null
           created_at?: string | null
+          gained_power?: number | null
           id?: string
-          user_id?: string | null
-          username?: string | null
+          power_after?: number | null
+          power_before?: number | null
+          quantity?: number | null
+          session_id?: string | null
+          target_id?: number | null
+          user_id: string
         }
         Update: {
-          content?: string
+          action_type?: string
+          cost?: number | null
           created_at?: string | null
+          gained_power?: number | null
           id?: string
-          user_id?: string | null
-          username?: string | null
+          power_after?: number | null
+          power_before?: number | null
+          quantity?: number | null
+          session_id?: string | null
+          target_id?: number | null
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "messages_user_id_fkey"
+            foreignKeyName: "action_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
-            referencedColumns: ["user_id"]
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
           },
         ]
       }
-      user_crypto_keys: {
+      game_progression: {
         Row: {
-          created_at: string
-          expires_at: string
+          active_boosts: Json | null
+          click_power: number | null
+          combo_active: boolean | null
+          combo_count: number | null
+          created_at: string | null
+          current_power: number | null
           id: string
-          public_key: string
+          last_click_time: string | null
+          last_save_time: string | null
+          power_per_second: number | null
+          prestige_level: number | null
+          prestige_points: number | null
+          total_clicks: number | null
+          total_power: number | null
+          total_prestige_power: number | null
+          updated_at: string | null
           user_id: string
         }
         Insert: {
-          created_at?: string
-          expires_at?: string
+          active_boosts?: Json | null
+          click_power?: number | null
+          combo_active?: boolean | null
+          combo_count?: number | null
+          created_at?: string | null
+          current_power?: number | null
           id?: string
-          public_key: string
+          last_click_time?: string | null
+          last_save_time?: string | null
+          power_per_second?: number | null
+          prestige_level?: number | null
+          prestige_points?: number | null
+          total_clicks?: number | null
+          total_power?: number | null
+          total_prestige_power?: number | null
+          updated_at?: string | null
           user_id: string
         }
         Update: {
-          created_at?: string
-          expires_at?: string
+          active_boosts?: Json | null
+          click_power?: number | null
+          combo_active?: boolean | null
+          combo_count?: number | null
+          created_at?: string | null
+          current_power?: number | null
           id?: string
-          public_key?: string
+          last_click_time?: string | null
+          last_save_time?: string | null
+          power_per_second?: number | null
+          prestige_level?: number | null
+          prestige_points?: number | null
+          total_clicks?: number | null
+          total_power?: number | null
+          total_prestige_power?: number | null
+          updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "game_progression_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_progression_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_entries: {
+        Row: {
+          achievements_count: number | null
+          id: string
+          last_updated: string | null
+          playtime_seconds: number | null
+          prestige_level: number | null
+          season: string | null
+          total_clicks: number | null
+          total_power: number | null
+          user_id: string
+        }
+        Insert: {
+          achievements_count?: number | null
+          id?: string
+          last_updated?: string | null
+          playtime_seconds?: number | null
+          prestige_level?: number | null
+          season?: string | null
+          total_clicks?: number | null
+          total_power?: number | null
+          user_id: string
+        }
+        Update: {
+          achievements_count?: number | null
+          id?: string
+          last_updated?: string | null
+          playtime_seconds?: number | null
+          prestige_level?: number | null
+          season?: string | null
+          total_clicks?: number | null
+          total_power?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      security_audit: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          endpoint: string | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          severity: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          endpoint?: string | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          severity: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          endpoint?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          severity?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "security_audit_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: number
+          id: string
+          unlock_value: number | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id: number
+          id?: string
+          unlock_value?: number | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: number
+          id?: string
+          unlock_value?: number | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
+          achievements_count: number | null
           avatar_url: string | null
-          bio: string | null
-          created_at: string
+          created_at: string | null
           display_name: string | null
-          updated_at: string
-          user_id: string
-          username: string
+          id: string
+          last_active: string | null
+          prestige_level: number | null
+          settings: Json | null
+          total_playtime_seconds: number | null
+          updated_at: string | null
+          username: string | null
         }
         Insert: {
+          achievements_count?: number | null
           avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
-          updated_at?: string
-          user_id: string
-          username: string
+          id: string
+          last_active?: string | null
+          prestige_level?: number | null
+          settings?: Json | null
+          total_playtime_seconds?: number | null
+          updated_at?: string | null
+          username?: string | null
         }
         Update: {
+          achievements_count?: number | null
           avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
+          created_at?: string | null
           display_name?: string | null
-          updated_at?: string
-          user_id?: string
-          username?: string
+          id?: string
+          last_active?: string | null
+          prestige_level?: number | null
+          settings?: Json | null
+          total_playtime_seconds?: number | null
+          updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          clicks_count: number | null
+          ended_at: string | null
+          id: string
+          ip_address: unknown | null
+          last_activity: string | null
+          power_gained: number | null
+          session_token: string | null
+          started_at: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          clicks_count?: number | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_activity?: string | null
+          power_gained?: number | null
+          session_token?: string | null
+          started_at?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          clicks_count?: number | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          last_activity?: string | null
+          power_gained?: number | null
+          session_token?: string | null
+          started_at?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_special_items: {
+        Row: {
+          effect_multiplier: number | null
+          first_purchased_at: string | null
+          id: string
+          last_purchased_at: string | null
+          quantity: number | null
+          special_item_id: number
+          total_spent: number | null
+          user_id: string
+        }
+        Insert: {
+          effect_multiplier?: number | null
+          first_purchased_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          quantity?: number | null
+          special_item_id: number
+          total_spent?: number | null
+          user_id: string
+        }
+        Update: {
+          effect_multiplier?: number | null
+          first_purchased_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          quantity?: number | null
+          special_item_id?: number
+          total_spent?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_special_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_special_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_upgrades: {
+        Row: {
+          first_purchased_at: string | null
+          id: string
+          last_purchased_at: string | null
+          quantity: number | null
+          total_spent: number | null
+          upgrade_id: number
+          user_id: string
+        }
+        Insert: {
+          first_purchased_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          quantity?: number | null
+          total_spent?: number | null
+          upgrade_id: number
+          user_id: string
+        }
+        Update: {
+          first_purchased_at?: string | null
+          id?: string
+          last_purchased_at?: string | null
+          quantity?: number | null
+          total_spent?: number | null
+          upgrade_id?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_upgrades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_upgrades_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       leaderboard_view: {
         Row: {
-          current_power: number | null
+          achievements_count: number | null
+          avatar_url: string | null
+          display_name: string | null
+          last_updated: string | null
           prestige_level: number | null
+          rank: number | null
           total_clicks: number | null
           total_power: number | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          current_power?: number | null
-          prestige_level?: number | null
-          total_clicks?: number | null
-          total_power?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          current_power?: number | null
-          prestige_level?: number | null
-          total_clicks?: number | null
-          total_power?: number | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          display_name: string | null
           user_id: string | null
           username: string | null
         }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          user_id?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          user_id?: string | null
-          username?: string | null
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_stats_view: {
+        Row: {
+          achievements_count: number | null
+          id: string | null
+          prestige_level: number | null
+          special_items_owned: number | null
+          total_clicks: number | null
+          total_power: number | null
+          upgrades_owned: number | null
+          username: string | null
         }
         Relationships: []
       }
     }
     Functions: {
-      cleanup_expired_crypto_keys: {
-        Args: Record<PropertyKey, never>
-        Returns: number
+      update_leaderboard_entry: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
-      get_leaderboard: {
-        Args: { order_by?: string; limit_count?: number }
-        Returns: {
-          user_id: string
-          username: string
-          display_name: string
-          current_power: number
-          total_power: number
-          total_clicks: number
-          clicks_per_second: number
-          prestige_level: number
-          achievements_count: number
-          updated_at: string
-        }[]
-      }
-      get_user_profile_by_username: {
-        Args: { p_username: string }
-        Returns: Json
-      }
-      get_user_rank: {
-        Args: { target_user_id: string; order_by?: string }
-        Returns: {
-          rank_position: number
-          user_data: Json
-        }[]
-      }
-      update_user_profile: {
+      validate_progression_increase: {
         Args: {
           p_user_id: string
-          p_username: string
-          p_display_name?: string
-          p_bio?: string
-          p_avatar_url?: string
+          p_old_power: number
+          p_new_power: number
+          p_action_type: string
         }
-        Returns: Json
+        Returns: boolean
       }
     }
     Enums: {

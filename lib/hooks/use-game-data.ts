@@ -224,6 +224,22 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     try {
+      // First, ensure user profile exists
+      console.log('Initializing user profile...');
+      const profileResponse = await fetch('/api/user/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!profileResponse.ok) {
+        console.error('Failed to initialize profile');
+        throw new Error('Failed to initialize user profile');
+      }
+
+      const profileResult = await profileResponse.json();
+      console.log('Profile initialized:', profileResult.success);
+
+      // Then load game data
       const response = await fetch(GAME_CONFIG.ENDPOINTS.GAME_LOAD);
       
       if (!response.ok) {
@@ -233,6 +249,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       const result = await response.json();
       
       if (result.gameData) {
+        console.log('Game data loaded from Supabase');
         return {
           ...DEFAULT_GAME_STATE,
           ...result.gameData,
@@ -244,11 +261,13 @@ export const useClickerGame = (options: GameOptions = {}) => {
     }
 
     // Fallback to local data
+    console.log('Falling back to local data');
     const localData = loadFromLocal();
     
     // Try to transfer local save to Supabase if it has data
     if (localData.totalPower > 0 || localData.totalClicks > 0) {
       try {
+        console.log('Transferring local data to Supabase...');
         await saveToSupabaseDB(localData);
       } catch (transferError) {
         console.error('Failed to transfer local save:', transferError);

@@ -175,38 +175,76 @@ export class GameEngine {
   }
 
   /**
+   * Ensure user profile exists
+   */
+  static async ensureUserProfile(userId: string): Promise<void> {
+    try {
+      // Check if profile exists
+      const { data: existingProfile, error: checkError } = await supabaseAdmin
+        .from("user_profiles")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle()
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw new Error(`Failed to check profile: ${checkError.message}`)
+      }
+
+      if (!existingProfile) {
+        // Create new profile
+        const { error: createError } = await supabaseAdmin
+          .from("user_profiles")
+          .insert({
+            id: userId,
+            username: `user_${userId.substring(0, 8)}`,
+            display_name: `Player ${userId.substring(0, 8)}`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            last_active: new Date().toISOString(),
+            prestige_level: 0,
+            achievements_count: 0,
+            total_playtime_seconds: 0
+          })
+
+        if (createError) {
+          throw new Error(`Failed to create profile: ${createError.message}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error)
+      throw error
+    }
+  }
+
+  /**
    * Save user game state to new database structure
    */
   static async saveUserGameState(userId: string, gameState: GameState): Promise<void> {
     try {
-      // Start transaction
-      const { error: beginError } = await supabaseAdmin.rpc('begin_transaction')
-      if (beginError) {
-        console.warn('Transaction begin failed, continuing without transaction')
+      // Ensure user profile exists first
+      await this.ensureUserProfile(userId)
+
+      // 1. Save main progression
+      const { error: progError } = await supabaseAdmin
+        .from("game_progression")
+        .upsert({
+          user_id: userId,
+          total_clicks: gameState.totalClicks,
+          total_power: gameState.totalPower,
+          current_power: gameState.currentPower,
+          power_per_second: gameState.pps,
+          click_power: gameState.clickPower,
+          prestige_level: Math.min(gameState.prestigeLevel, 50),
+          combo_count: gameState.comboCount,
+          combo_active: gameState.comboActive,
+          last_click_time: new Date(gameState.lastClickTime).toISOString(),
+          last_save_time: new Date(gameState.lastSaveTime).toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (progError) {
+        throw new Error(`Failed to save progression: ${progError.message}`)
       }
-
-      try {
-        // 1. Save main progression
-        const { error: progError } = await supabaseAdmin
-          .from("game_progression")
-          .upsert({
-            user_id: userId,
-            total_clicks: gameState.totalClicks,
-            total_power: gameState.totalPower,
-            current_power: gameState.currentPower,
-            power_per_second: gameState.pps,
-            click_power: gameState.clickPower,
-            prestige_level: Math.min(gameState.prestigeLevel, 50),
-            combo_count: gameState.comboCount,
-            combo_active: gameState.comboActive,
-            last_click_time: new Date(gameState.lastClickTime).toISOString(),
-            last_save_time: new Date(gameState.lastSaveTime).toISOString(),
-            updated_at: new Date().toISOString()
-          })
-
-        if (progError) {
-          throw new Error(`Failed to save progression: ${progError.message}`)
-        }
 
         // 2. Save upgrades (only non-zero quantities)
         const upgradeData = Object.entries(gameState.upgrades)
@@ -277,29 +315,26 @@ export class GameEngine {
           }
         }
 
-        // 5. Update leaderboard entry
-        const { error: leaderboardError } = await supabaseAdmin
-          .rpc('update_leaderboard_entry', { p_user_id: userId })
-
-        if (leaderboardError) {
-          console.warn('Failed to update leaderboard:', leaderboardError.message)
+        // 5. Update leaderboard entry (simplified version without RPC)
+        try {
+          await supabaseAdmin
+            .from("leaderboard_entries")
+            .upsert({
+              user_id: userId,
+              total_power: gameState.totalPower,
+              total_clicks: gameState.totalClicks,
+              prestige_level: gameState.prestigeLevel,
+              achievements_count: gameState.unlockedAchievements.length,
+              playtime_seconds: 0, // Will be calculated later
+              last_updated: new Date().toISOString(),
+              season: 'global'
+            }, {
+              onConflict: 'user_id,season'
+            })
+        } catch (leaderboardError) {
+          console.warn('Failed to update leaderboard:', leaderboardError)
           // Don't throw error for leaderboard update failure
         }
-
-        // Commit transaction
-        const { error: commitError } = await supabaseAdmin.rpc('commit_transaction')
-        if (commitError) {
-          console.warn('Transaction commit failed')
-        }
-
-      } catch (error) {
-        // Rollback transaction
-        const { error: rollbackError } = await supabaseAdmin.rpc('rollback_transaction')
-        if (rollbackError) {
-          console.warn('Transaction rollback failed')
-        }
-        throw error
-      }
 
     } catch (error) {
       console.error('Error saving game state:', error)

@@ -29,7 +29,7 @@ CREATE TABLE user_profiles (
 -- 2. TABLE PROGRESSION PRINCIPALE (État du jeu)
 CREATE TABLE game_progression (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     
     -- Progression principale
     total_clicks BIGINT DEFAULT 0,
@@ -75,7 +75,7 @@ CREATE TABLE game_progression (
 -- 3. TABLE UPGRADES POSSÉDÉS
 CREATE TABLE user_upgrades (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     upgrade_id INTEGER NOT NULL,
     quantity INTEGER DEFAULT 0,
     total_spent DECIMAL(15,2) DEFAULT 0,
@@ -98,7 +98,7 @@ CREATE TABLE user_upgrades (
 -- 4. TABLE SPECIAL ITEMS POSSÉDÉS
 CREATE TABLE user_special_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     special_item_id INTEGER NOT NULL,
     quantity INTEGER DEFAULT 0,
     total_spent DECIMAL(15,2) DEFAULT 0,
@@ -125,7 +125,7 @@ CREATE TABLE user_special_items (
 -- 5. TABLE ACHIEVEMENTS
 CREATE TABLE user_achievements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     achievement_id INTEGER NOT NULL,
     unlocked_at TIMESTAMPTZ DEFAULT NOW(),
     
@@ -145,7 +145,7 @@ CREATE TABLE user_achievements (
 -- 6. TABLE LEADERBOARDS
 CREATE TABLE leaderboard_entries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     
     -- Scores
     total_power DECIMAL(20,2) DEFAULT 0,
@@ -176,7 +176,7 @@ CREATE TABLE leaderboard_entries (
 -- 7. TABLE AUDIT DE SÉCURITÉ
 CREATE TABLE security_audit (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES user_profiles(id) ON DELETE SET NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     
     -- Type d'événement
     event_type VARCHAR(50) NOT NULL,
@@ -202,7 +202,7 @@ CREATE INDEX idx_security_audit_severity ON security_audit(severity, created_at)
 -- 8. TABLE HISTORIQUE DES ACTIONS
 CREATE TABLE action_history (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     
     -- Type d'action
     action_type VARCHAR(20) NOT NULL CHECK (
@@ -236,7 +236,7 @@ CREATE TABLE action_history (
 -- 9. TABLE SESSIONS UTILISATEUR
 CREATE TABLE user_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     
     -- Informations de session
     session_token VARCHAR(100) UNIQUE,
