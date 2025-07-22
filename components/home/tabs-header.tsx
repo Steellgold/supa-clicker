@@ -52,7 +52,7 @@ export const TabsHeader: Component<TabsHeaderProps> = ({ tab, setTab }) => (
     >
       🏆 LEADERBOARD
     </Button>
-    {/* <Button
+    <Button
       variant={"tabRetro"}
       size="lg"
       onClick={() => setTab("CHAT")}
@@ -64,6 +64,6 @@ export const TabsHeader: Component<TabsHeaderProps> = ({ tab, setTab }) => (
       )}
     >
       💬 CHAT
-    </Button> */}
+    </Button>
   </div>
 ); 
