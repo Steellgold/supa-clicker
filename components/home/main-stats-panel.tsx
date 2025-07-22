@@ -28,7 +28,10 @@ interface MainStatsPanelProps {
 export const MainStatsPanel: Component<MainStatsPanelProps> = ({ gameState, handleClick, newAchievements, leftPanelWidth, leftPanelRef }) => (
   <div ref={leftPanelRef} className="flex-1 relative bg-neutral-50 dark:bg-neutral-900 flex flex-col items-center justify-center transition-colors min-h-[60vh] md:min-h-0 space-y-12">
     <div className="flex flex-col items-center justify-center">
-      <div className="bg-green-400/25 text-2xl md:text-3xl lg:text-5xl p-4 font-medium">
+      <div className={cn("text-2xl md:text-3xl lg:text-5xl p-4 font-medium", {
+        "bg-green-400/25": gameState.prestigeLevel === 0,
+        "bg-purple-400/25": gameState.prestigeLevel > 0,
+      })}>
         <PowerTag imageProps={{ className: "w-6 h-6 md:w-7 md:h-7 lg:w-12 lg:h-12" }}>
           {formatCookieClickerNumber(gameState.currentPower)}
         </PowerTag>
@@ -36,9 +39,10 @@ export const MainStatsPanel: Component<MainStatsPanelProps> = ({ gameState, hand
 
       <div className="flex flex-row items-center justify-center gap-2">
         <div className={cn(
-          "flex flex-row items-center justify-center text-sm md:text-base lg:text-lg p-2 font-medium mt-1",
-            "bg-green-400/25 border-2 border-[#3a7758]",
-            "shadow-[4px_4px_0_#3a7758]"
+          "flex flex-row items-center justify-center text-sm md:text-base lg:text-lg p-2 font-medium mt-1 border-2", {
+            "bg-green-400/25 border-green-400 shadow-[4px_4px_0_#3a7758]": gameState.prestigeLevel === 0,
+            "bg-purple-400/25 border-purple-400 shadow-[4px_4px_0_#744899]": gameState.prestigeLevel > 0,
+          }
         )}>
           <span>
             <PowerTag imageProps={{ className: "w-4 h-4" }}>
