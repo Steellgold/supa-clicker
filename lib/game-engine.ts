@@ -65,93 +65,245 @@ interface PurchaseResult {
 export class GameEngine {
   
   /**
-   * Load user game state from database with validation
+   * Load user game state from new database structure
    */
   static async loadUserGameState(userId: string): Promise<GameState> {
-    const { data, error } = await supabaseAdmin
-      .from("clicker_saves")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle()
+    try {
+      // Load main progression data
+      const { data: progression, error: progError } = await supabaseAdmin
+        .from("game_progression")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle()
 
-    if (error && error.code !== 'PGRST116') { // Not a "no rows" error
-      throw new Error(`Failed to load game state: ${error.message}`)
-    }
+      if (progError && progError.code !== 'PGRST116') {
+        throw new Error(`Failed to load progression: ${progError.message}`)
+      }
 
-    if (!data) {
-      // Return default state for new user
+      // Load upgrades
+      const { data: upgrades, error: upgradesError } = await supabaseAdmin
+        .from("user_upgrades")
+        .select("upgrade_id, quantity")
+        .eq("user_id", userId)
+
+      if (upgradesError) {
+        throw new Error(`Failed to load upgrades: ${upgradesError.message}`)
+      }
+
+      // Load special items
+      const { data: specialItems, error: specialError } = await supabaseAdmin
+        .from("user_special_items")
+        .select("special_item_id, quantity")
+        .eq("user_id", userId)
+
+      if (specialError) {
+        throw new Error(`Failed to load special items: ${specialError.message}`)
+      }
+
+      // Load achievements
+      const { data: achievements, error: achError } = await supabaseAdmin
+        .from("user_achievements")
+        .select("achievement_id")
+        .eq("user_id", userId)
+
+      if (achError) {
+        throw new Error(`Failed to load achievements: ${achError.message}`)
+      }
+
+      if (!progression) {
+        // Return default state for new user
+        return {
+          totalClicks: 0,
+          totalPower: 0,
+          currentPower: 0,
+          clickPower: 1,
+          pps: 0,
+          upgrades: {},
+          specialItems: {},
+          unlockedAchievements: [],
+          lastSaveTime: Date.now(),
+          prestigeLevel: 0,
+          resourcesPerSecond: 0,
+          currentResources: 0,
+          comboCount: 0,
+          comboActive: false,
+          lastClickTime: 0,
+          timeBoostActive: false,
+          timeBoostEndTime: 0,
+          timeBoostMultiplier: 1
+        }
+      }
+
+      // Convert arrays to objects
+      const upgradesObj: Record<number, number> = {}
+      upgrades?.forEach(u => {
+        upgradesObj[u.upgrade_id] = u.quantity
+      })
+
+      const specialItemsObj: Record<number, number> = {}
+      specialItems?.forEach(si => {
+        specialItemsObj[si.special_item_id] = si.quantity
+      })
+
+      const achievementIds = achievements?.map(a => a.achievement_id) || []
+
+      // Reconstruct game state from new database structure
       return {
-        totalClicks: 0,
-        totalPower: 0,
-        currentPower: 0,
-        clickPower: 1,
-        pps: 0,
-        upgrades: {},
-        specialItems: {},
-        unlockedAchievements: [],
-        lastSaveTime: Date.now(),
-        prestigeLevel: 0,
-        resourcesPerSecond: 0,
-        currentResources: 0,
-        comboCount: 0,
-        comboActive: false,
-        lastClickTime: 0,
+        totalClicks: Number(progression.total_clicks) || 0,
+        totalPower: Number(progression.total_power) || 0,
+        currentPower: Number(progression.current_power) || 0,
+        clickPower: Number(progression.click_power) || 1,
+        pps: Number(progression.power_per_second) || 0,
+        upgrades: upgradesObj,
+        specialItems: specialItemsObj,
+        unlockedAchievements: achievementIds,
+        lastSaveTime: progression.last_save_time ? new Date(progression.last_save_time).getTime() : Date.now(),
+        prestigeLevel: progression.prestige_level || 0,
+        resourcesPerSecond: Number(progression.power_per_second) || 0,
+        currentResources: Number(progression.current_power) || 0,
+        comboCount: progression.combo_count || 0,
+        comboActive: progression.combo_active || false,
+        lastClickTime: progression.last_click_time ? new Date(progression.last_click_time).getTime() : Date.now(),
         timeBoostActive: false,
         timeBoostEndTime: 0,
         timeBoostMultiplier: 1
       }
-    }
-
-    // Reconstruct game state from database
-    return {
-      totalClicks: Number(data.total_clicks) || 0,
-      totalPower: Number(data.total_power) || 0,
-      currentPower: Number(data.current_power) || 0,
-      clickPower: 1, // Will be recalculated
-      pps: Number(data.clicks_per_second) || 0,
-      upgrades: data.upgrades || {},
-      specialItems: data.special_items || {},
-      unlockedAchievements: Array.isArray(data.achievements) ? data.achievements : [],
-      lastSaveTime: Number(data.last_save_time) || Date.now(),
-      prestigeLevel: Math.min(data.prestige_level || 0, 50), // Cap at 50
-      resourcesPerSecond: Number(data.clicks_per_second) || 0,
-      currentResources: Number(data.current_power) || 0,
-      comboCount: 0,
-      comboActive: data.combo_active || false,
-      lastClickTime: Number(data.last_save_time) || Date.now(),
-      timeBoostActive: false,
-      timeBoostEndTime: 0,
-      timeBoostMultiplier: 1
+    } catch (error) {
+      console.error('Error loading game state:', error)
+      throw error
     }
   }
 
   /**
-   * Save user game state to database
+   * Save user game state to new database structure
    */
   static async saveUserGameState(userId: string, gameState: GameState): Promise<void> {
-    const saveData = {
-      current_power: gameState.currentPower,
-      total_power: gameState.totalPower,
-      total_clicks: gameState.totalClicks,
-      clicks_per_second: gameState.pps,
-      prestige_level: Math.min(gameState.prestigeLevel, 50),
-      upgrades: gameState.upgrades,
-      special_items: gameState.specialItems,
-      achievements: gameState.unlockedAchievements,
-      last_save_time: gameState.lastSaveTime,
-      combo_active: gameState.comboActive,
-      updated_at: new Date().toISOString()
-    }
+    try {
+      // Start transaction
+      const { error: beginError } = await supabaseAdmin.rpc('begin_transaction')
+      if (beginError) {
+        console.warn('Transaction begin failed, continuing without transaction')
+      }
 
-    const { error } = await supabaseAdmin
-      .from("clicker_saves")
-      .upsert({
-        user_id: userId,
-        ...saveData
-      })
+      try {
+        // 1. Save main progression
+        const { error: progError } = await supabaseAdmin
+          .from("game_progression")
+          .upsert({
+            user_id: userId,
+            total_clicks: gameState.totalClicks,
+            total_power: gameState.totalPower,
+            current_power: gameState.currentPower,
+            power_per_second: gameState.pps,
+            click_power: gameState.clickPower,
+            prestige_level: Math.min(gameState.prestigeLevel, 50),
+            combo_count: gameState.comboCount,
+            combo_active: gameState.comboActive,
+            last_click_time: new Date(gameState.lastClickTime).toISOString(),
+            last_save_time: new Date(gameState.lastSaveTime).toISOString(),
+            updated_at: new Date().toISOString()
+          })
 
-    if (error) {
-      throw new Error(`Failed to save game state: ${error.message}`)
+        if (progError) {
+          throw new Error(`Failed to save progression: ${progError.message}`)
+        }
+
+        // 2. Save upgrades (only non-zero quantities)
+        const upgradeData = Object.entries(gameState.upgrades)
+          .filter(([_, quantity]) => quantity > 0)
+          .map(([upgradeId, quantity]) => ({
+            user_id: userId,
+            upgrade_id: parseInt(upgradeId),
+            quantity: quantity,
+            last_purchased_at: new Date().toISOString()
+          }))
+
+        if (upgradeData.length > 0) {
+          const { error: upgradeError } = await supabaseAdmin
+            .from("user_upgrades")
+            .upsert(upgradeData, {
+              onConflict: 'user_id,upgrade_id'
+            })
+
+          if (upgradeError) {
+            throw new Error(`Failed to save upgrades: ${upgradeError.message}`)
+          }
+        }
+
+        // 3. Save special items (only non-zero quantities)
+        const specialItemData = Object.entries(gameState.specialItems)
+          .filter(([_, quantity]) => quantity > 0)
+          .map(([specialItemId, quantity]) => ({
+            user_id: userId,
+            special_item_id: parseInt(specialItemId),
+            quantity: quantity,
+            last_purchased_at: new Date().toISOString()
+          }))
+
+        if (specialItemData.length > 0) {
+          const { error: specialError } = await supabaseAdmin
+            .from("user_special_items")
+            .upsert(specialItemData, {
+              onConflict: 'user_id,special_item_id'
+            })
+
+          if (specialError) {
+            throw new Error(`Failed to save special items: ${specialError.message}`)
+          }
+        }
+
+        // 4. Save achievements (insert only new ones)
+        const existingAchievements = await supabaseAdmin
+          .from("user_achievements")
+          .select("achievement_id")
+          .eq("user_id", userId)
+
+        const existingIds = new Set(existingAchievements.data?.map(a => a.achievement_id) || [])
+        const newAchievements = gameState.unlockedAchievements
+          .filter(id => !existingIds.has(id))
+          .map(achievementId => ({
+            user_id: userId,
+            achievement_id: achievementId,
+            unlocked_at: new Date().toISOString()
+          }))
+
+        if (newAchievements.length > 0) {
+          const { error: achError } = await supabaseAdmin
+            .from("user_achievements")
+            .insert(newAchievements)
+
+          if (achError) {
+            throw new Error(`Failed to save achievements: ${achError.message}`)
+          }
+        }
+
+        // 5. Update leaderboard entry
+        const { error: leaderboardError } = await supabaseAdmin
+          .rpc('update_leaderboard_entry', { p_user_id: userId })
+
+        if (leaderboardError) {
+          console.warn('Failed to update leaderboard:', leaderboardError.message)
+          // Don't throw error for leaderboard update failure
+        }
+
+        // Commit transaction
+        const { error: commitError } = await supabaseAdmin.rpc('commit_transaction')
+        if (commitError) {
+          console.warn('Transaction commit failed')
+        }
+
+      } catch (error) {
+        // Rollback transaction
+        const { error: rollbackError } = await supabaseAdmin.rpc('rollback_transaction')
+        if (rollbackError) {
+          console.warn('Transaction rollback failed')
+        }
+        throw error
+      }
+
+    } catch (error) {
+      console.error('Error saving game state:', error)
+      throw error
     }
   }
 

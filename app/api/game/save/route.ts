@@ -1,31 +1,11 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { GameEngine } from "@/lib/game-engine"
-import { withGameSecurity, GameSecurityMiddleware, SecurityValidationResult, PayloadSchemas } from "@/lib/middleware/security"
-import { GameStateManager } from "@/lib/game-core"
 import { SaveGameRequestSchema } from "@/lib/validation/game-schemas"
-
-// Create admin client with service role key for secure operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { createClient as createServerClient } from "@/lib/supabase/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const now = Date.now()
-    const origin = request.headers.get("origin")
-    const referer = request.headers.get("referer")
-    const allowedOrigins = GAME_CONFIG.SECURITY.ALLOWED_ORIGINS
-    
-    if (!origin || !(allowedOrigins as readonly string[]).includes(origin)) {
-      return NextResponse.json({ error: "Unauthorized origin" }, { status: 403 })
-    }
-    
-    if (referer && !allowedOrigins.some(allowed => referer.startsWith(allowed))) {
-      return NextResponse.json({ error: "Unauthorized referer" }, { status: 403 })
-    }
-
-    // Verify user authentication using the regular client
+    // Verify user authentication
     const supabase = await createServerClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -33,22 +13,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // REMOVED: Crypto signature validation (replaced with server-side validation)
+    const body = await request.json()
+    const { payload } = body
 
-    const lastSaveTime = userLastSaveTime.get(user.id) || 0
-    const timeSinceLastSave = now - lastSaveTime
-    
-    if (timeSinceLastSave < GAME_CONFIG.SECURITY.SAVE_RATE_LIMIT) {
-      return NextResponse.json({ 
-        error: "Rate limit exceeded. Please wait before saving again." 
-      }, { status: 429 })
-    }
-    
-    userLastSaveTime.set(user.id, now)
-
-    const gameData = signatureValidation.data.payload
-
-    const validationResult = SaveGameRequestSchema.safeParse({ gameData })
+    const validationResult = SaveGameRequestSchema.safeParse({ gameData: payload })
     if (!validationResult.success) {
       console.error("Validation error:", validationResult.error.issues)
       return NextResponse.json({ 
@@ -59,92 +27,14 @@ export async function POST(request: NextRequest) {
 
     const validatedGameData = validationResult.data.gameData
 
+    // Check data size
     const dataSize = JSON.stringify(validatedGameData).length
-    if (dataSize > GAME_CONFIG.SECURITY.MAX_DATA_SIZE) {
+    if (dataSize > 1024 * 1024) { // 1MB limit
       return NextResponse.json({ error: "Game data too large" }, { status: 413 })
     }
 
-    // Get previous save for progression validation
-    const { data: existing, error: checkError } = await supabaseAdmin
-      .from("clicker_saves")
-      .select("id, current_power, total_power, clicks_per_second, prestige_level, updated_at")
-      .eq("user_id", user.id)
-      .maybeSingle()
-
-    if (checkError) {
-      console.error("Database check error for user:", user.id)
-      return NextResponse.json({ error: "Database error" }, { status: 500 })
-    }
-
-    // Convert game data to individual columns
-    const saveData = {
-      current_power: validatedGameData.currentPower,
-      total_power: validatedGameData.totalPower,
-      total_clicks: validatedGameData.totalClicks,
-      clicks_per_second: validatedGameData.pps,
-      prestige_level: validatedGameData.prestigeLevel > 50 ? 50 : validatedGameData.prestigeLevel,
-      upgrades: validatedGameData.upgrades,
-      special_items: validatedGameData.specialItems,
-      achievements: validatedGameData.unlockedAchievements,
-      last_save_time: validatedGameData.lastSaveTime,
-      combo_active: validatedGameData.comboActive,
-      updated_at: new Date().toISOString()
-    };
-
-    // Only log, do not block. If extreme, set suspect flag for admin review.
-    if (existing) {
-      const tolerance = GAME_CONFIG.SECURITY.ANTI_CHEAT.TOLERANCE_MULTIPLIER || 10;
-      const maxAllowedPower = (existing.current_power || 1) * tolerance;
-      const maxAllowedTotalPower = (existing.total_power || 1) * tolerance;
-      const maxAllowedPPS = (existing.clicks_per_second || 1) * (GAME_CONFIG.SECURITY.ANTI_CHEAT.PPS_INCREASE_THRESHOLD || 5);
-      const maxAllowedPrestige = (existing.prestige_level || 1) + 2;
-
-      let suspect = false;
-      if (validatedGameData.currentPower > maxAllowedPower) {
-        console.warn(`[ANTI-CHEAT] user ${user.id} - currentPower very high: ${validatedGameData.currentPower} > ${maxAllowedPower}`);
-        suspect = true;
-      }
-      if (validatedGameData.totalPower > maxAllowedTotalPower) {
-        console.warn(`[ANTI-CHEAT] user ${user.id} - totalPower very high: ${validatedGameData.totalPower} > ${maxAllowedTotalPower}`);
-        suspect = true;
-      }
-      if (validatedGameData.pps > maxAllowedPPS) {
-        console.warn(`[ANTI-CHEAT] user ${user.id} - pps very high: ${validatedGameData.pps} > ${maxAllowedPPS}`);
-        suspect = true;
-      }
-      if (validatedGameData.prestigeLevel > maxAllowedPrestige) {
-        console.warn(`[ANTI-CHEAT] user ${user.id} - prestigeLevel very high: ${validatedGameData.prestigeLevel} > ${maxAllowedPrestige}`);
-        suspect = true;
-      }
-      if (suspect) {
-        // Attach suspect flag to saveData for admin review
-        (saveData as { suspect?: boolean }).suspect = true;
-      }
-    }
-
-    let result
-    if (existing) {
-      result = await supabaseAdmin
-        .from("clicker_saves")
-        .update(saveData)
-        .eq("user_id", user.id)
-    } else {
-      result = await supabaseAdmin
-        .from("clicker_saves")
-        .insert({
-          user_id: user.id,
-          ...saveData,
-          created_at: new Date().toISOString()
-        })
-    }
-
-    if (result.error) {
-      console.error("Save operation failed for user:", user.id, "Database error:", result.error)
-      return NextResponse.json({ 
-        error: "Failed to save game data", 
-        details: result.error 
-      }, { status: 500 })
-    }
+    // Save using GameEngine (handles all validation and security)
+    await GameEngine.saveUserGameState(user.id, validatedGameData)
 
     return NextResponse.json({ success: true })
   } catch (error) {
