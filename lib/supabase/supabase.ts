@@ -41,59 +41,116 @@ export type Database = {
     Tables: {
       game_progression: {
         Row: {
+          achievements_unlocked_session: number | null
           active_boosts: Json | null
+          chat_messages_sent: number | null
           click_power: number | null
           combo_active: boolean | null
           combo_count: number | null
           created_at: string | null
           current_power: number | null
+          duck_streak_days: number | null
+          duck_types_collected: number | null
+          ducks_collected: number | null
+          first_to_unlock_upgrade: boolean | null
+          golden_duck_streak: number | null
+          golden_ducks_found: number | null
           id: string
           last_click_time: string | null
           last_save_time: string | null
+          leaderboard_rank: number | null
+          new_upgrade_types_unlocked: number | null
           power_per_second: number | null
           prestige_level: number | null
           prestige_points: number | null
+          resets_session: number | null
+          resources_session: number | null
+          resources_spent_on_upgrades: number | null
+          secret_achievements_found: number | null
           total_clicks: number | null
+          total_duck_types: number | null
           total_power: number | null
+          total_prestige_points: number | null
           total_prestige_power: number | null
+          total_prestiges: number | null
+          total_resets: number | null
+          total_upgrades_bought: number | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          achievements_unlocked_session?: number | null
           active_boosts?: Json | null
+          chat_messages_sent?: number | null
           click_power?: number | null
           combo_active?: boolean | null
           combo_count?: number | null
           created_at?: string | null
           current_power?: number | null
+          duck_streak_days?: number | null
+          duck_types_collected?: number | null
+          ducks_collected?: number | null
+          first_to_unlock_upgrade?: boolean | null
+          golden_duck_streak?: number | null
+          golden_ducks_found?: number | null
           id?: string
           last_click_time?: string | null
           last_save_time?: string | null
+          leaderboard_rank?: number | null
+          new_upgrade_types_unlocked?: number | null
           power_per_second?: number | null
           prestige_level?: number | null
           prestige_points?: number | null
+          resets_session?: number | null
+          resources_session?: number | null
+          resources_spent_on_upgrades?: number | null
+          secret_achievements_found?: number | null
           total_clicks?: number | null
+          total_duck_types?: number | null
           total_power?: number | null
+          total_prestige_points?: number | null
           total_prestige_power?: number | null
+          total_prestiges?: number | null
+          total_resets?: number | null
+          total_upgrades_bought?: number | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          achievements_unlocked_session?: number | null
           active_boosts?: Json | null
+          chat_messages_sent?: number | null
           click_power?: number | null
           combo_active?: boolean | null
           combo_count?: number | null
           created_at?: string | null
           current_power?: number | null
+          duck_streak_days?: number | null
+          duck_types_collected?: number | null
+          ducks_collected?: number | null
+          first_to_unlock_upgrade?: boolean | null
+          golden_duck_streak?: number | null
+          golden_ducks_found?: number | null
           id?: string
           last_click_time?: string | null
           last_save_time?: string | null
+          leaderboard_rank?: number | null
+          new_upgrade_types_unlocked?: number | null
           power_per_second?: number | null
           prestige_level?: number | null
           prestige_points?: number | null
+          resets_session?: number | null
+          resources_session?: number | null
+          resources_spent_on_upgrades?: number | null
+          secret_achievements_found?: number | null
           total_clicks?: number | null
+          total_duck_types?: number | null
           total_power?: number | null
+          total_prestige_points?: number | null
           total_prestige_power?: number | null
+          total_prestiges?: number | null
+          total_resets?: number | null
+          total_upgrades_bought?: number | null
           updated_at?: string | null
           user_id?: string
         }
@@ -134,6 +191,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prestige_stats: {
         Row: {
@@ -381,6 +474,18 @@ export type Database = {
           check_name: string
           status: string
           details: string
+        }[]
+      }
+      get_leaderboard: {
+        Args: { p_type: string; p_limit?: number }
+        Returns: {
+          user_id: string
+          username: string
+          display_name: string
+          avatar_url: string
+          total_power: number
+          total_clicks: number
+          prestige_level: number
         }[]
       }
       get_user_profile_by_username: {

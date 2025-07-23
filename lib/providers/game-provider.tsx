@@ -46,6 +46,9 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
           resourcesPerSecond: gameData.gameState.pps,
           lastSaveTime: gameData.gameState.lastSaveTime,
           prestigeLevel: gameData.gameState.prestigeLevel,
+          upgradesBoughtSession: gameData.gameState.upgradesBoughtSession ?? 0,
+          clicksSession: gameData.gameState.clicksSession ?? 0,
+          powerSession: gameData.gameState.powerSession ?? 0,
         };
 
         const upgrades: UserUpgrade[] = Object.entries(gameData.gameState.upgrades).map(([id, quantity]) => ({

@@ -273,7 +273,6 @@ export function withGameSecurity(
 
       // Call the actual handler
       return await handler(request, validation)
-
     } catch (error) {
       console.error("Security middleware error:", error)
       return GameSecurityMiddleware.createErrorResponse(

@@ -67,6 +67,7 @@ export const uploadProfileIcon = async(formData: FormData) => {
       return { error: "Please select an image file" }
     }
 
+
     const fileExt = file.name.split(".").pop()
     const fileName = `${user.id}_${Date.now()}.${fileExt}`
     const filePath = `profile-icons/${fileName}`

@@ -31,7 +31,7 @@ const DUCK_VARIANTS = [
 ];
 
 export const DuckWalker: Component<DuckWalkerProps> = ({ maxX }) => {
-  const { specialItemsState, addPower } = useGame();
+  const { specialItemsState, handleClick } = useGame();
   const [ducks, setDucks] = useState<Duck[]>([]);
 
   const rubberDuckLevel = specialItemsState[SPECIAL_ITEM_IDS.DUCK_WALKER] || 0;
@@ -90,9 +90,13 @@ export const DuckWalker: Component<DuckWalkerProps> = ({ maxX }) => {
   }, [rubberDuckLevel, getDuckSpawnConfig, getRandomDuckVariant]);
 
   const handleDuckClick = useCallback((duck: Duck) => {
-    addPower(duck.reward);
+    // Simuler le nombre de clicks équivalent au reward arrondi à la valeur du clickPower
+    const clickPower = Math.max(1, Math.round(duck.reward));
+    for (let i = 0; i < Math.ceil(duck.reward / clickPower); i++) {
+      handleClick();
+    }
     setDucks(prev => prev.filter(d => d.id !== duck.id));
-  }, [addPower]);
+  }, [handleClick]);
 
   // Spawn ducks every second
   useEffect(() => {
