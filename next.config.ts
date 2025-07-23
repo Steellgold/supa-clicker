@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       new URL("https://s7yh4pytyr.ufs.sh/f/**"),
       new URL("https://ludyyxcyrqfzlwhexilp.supabase.co/storage/v1/object/public/profile-assets/profile-icons/**"),
+      new URL("https://mqprkiimfocfotgljvbp.supabase.co/storage/v1/object/public/profile-assets/profile-icons/**"),
     ],
   }
 };
