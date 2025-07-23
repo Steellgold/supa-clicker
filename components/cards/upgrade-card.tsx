@@ -49,6 +49,7 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
     actualBuyAmount = getBulkBuyAmount();
     cost = staticCost * actualBuyAmount;
   }
+
   const canAfford = staticCost !== undefined && gameState.currentPower >= cost;
 
   const unlockThreshold = getUnlockThreshold(index);
@@ -100,11 +101,16 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
             <div className="flex-1">
               <div className="flex items-center gap-1.5 mb-1">
                 {currentLevel > 0 && (
-                  <span className={cn("text-xs px-1 py-0 border", {
+                  <span className={cn("text-xs px-1 py-0 border flex items-center gap-1", {
                     "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-600": gameState.prestigeLevel === 0,
                     "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-600": gameState.prestigeLevel > 0,
                   })}>
                     x{currentLevel}
+                    {bulkBuyOption === "MAX" && (
+                      <span className="text-blue-600 bg-blue-100 dark:bg-blue-900/30 px-1 rounded">
+                        +{actualBuyAmount}
+                      </span>
+                    )}
                   </span>
                 )}
                 <h3 className="font-semibold text-neutral-800 dark:text-neutral-200">{upgrade.name}</h3>
