@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 import { Tables } from "@/lib/supabase/supabase";
 import type { User } from "@supabase/supabase-js";
+import { User as UserIcon } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -10,7 +12,7 @@ const supabase = createClient();
 type Message = Tables<"messages">;
 
 type UserProfile = {
-  username: string;
+  username: string | null;
   display_name: string | null;
   avatar_url: string | null;
 };
@@ -20,7 +22,7 @@ export const ChatPanel = () => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profiles, setProfiles] = useState<Record<string, UserProfile>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,32 +30,44 @@ export const ChatPanel = () => {
   }, [messages]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }: { data: { user: User | null } }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: User | null } }) => {
       setUser(data.user);
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from("user_profiles")
-          .select("username, display_name, avatar_url")
-          .eq("user_id", data.user.id)
-          .single();
-        setProfile(profile as UserProfile);
-      }
     });
   }, []);
 
+  // Fetch messages and user profiles
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchMessagesAndProfiles = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: msgs, error } = await supabase
         .from("messages")
         .select("*")
         .order("created_at", { ascending: true });
-      if (!error && data) {
-        setMessages(data as Message[]);
+      if (!error && msgs) {
+        setMessages(msgs as Message[]);
+        // Get unique user_ids
+        const userIds = Array.from(new Set((msgs as Message[]).map((m) => m.user_id)));
+        if (userIds.length > 0) {
+          const { data: profilesData } = await supabase
+            .from("user_profiles")
+            .select("id, username, display_name, avatar_url")
+            .in("id", userIds);
+          if (profilesData) {
+            const profileMap: Record<string, UserProfile> = {};
+            for (const p of profilesData) {
+              profileMap[p.id] = {
+                username: p.username,
+                display_name: p.display_name,
+                avatar_url: p.avatar_url,
+              };
+            }
+            setProfiles(profileMap);
+          }
+        }
       }
       setLoading(false);
     };
-    fetchMessages();
+    fetchMessagesAndProfiles();
     const subscription = supabase
       .channel("public:messages")
       .on(
@@ -61,6 +75,27 @@ export const ChatPanel = () => {
         { event: "INSERT", schema: "public", table: "messages" },
         (payload: { new: Message }) => {
           setMessages((msgs) => [...msgs, payload.new]);
+          // Fetch profile for new user if not already present
+          const userId = payload.new.user_id;
+          if (!profiles[userId]) {
+            supabase
+              .from("user_profiles")
+              .select("id, username, display_name, avatar_url")
+              .eq("id", userId)
+              .single()
+              .then(({ data }) => {
+                if (data) {
+                  setProfiles((prev) => ({
+                    ...prev,
+                    [userId]: {
+                      username: data.username,
+                      display_name: data.display_name,
+                      avatar_url: data.avatar_url,
+                    },
+                  }));
+                }
+              });
+          }
         }
       )
       .subscribe();
@@ -69,15 +104,25 @@ export const ChatPanel = () => {
     };
   }, []);
 
+  // Envoi via API
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newMessage.trim() || !user) return;
-    await supabase.from("messages").insert({
-      user_id: user.id,
-      username: profile?.display_name || profile?.username || "Anonyme",
-      content: newMessage.trim(),
-    });
-    setNewMessage("");
+    try {
+      const res = await fetch("http://localhost:3000/api/chat/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newMessage.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to send message");
+        return;
+      }
+      setNewMessage("");
+    } catch (err) {
+      alert("Failed to send message");
+    }
   };
 
   return (
@@ -88,17 +133,32 @@ export const ChatPanel = () => {
         ) : messages.length === 0 ? (
           <div className="text-neutral-400">No messages yet.</div>
         ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className="flex flex-col text-sm">
-              <span className="font-semibold text-neutral-700 dark:text-neutral-200">
-                {msg.username || "Anonyme"}
-                <span className="ml-2 text-xs text-neutral-400">
-                  {msg.created_at && new Date(msg.created_at).toLocaleTimeString()}
-                </span>
-              </span>
-              <span className="text-neutral-800 dark:text-neutral-100 break-words">{msg.content}</span>
-            </div>
-          ))
+          messages.map((msg) => {
+            const profile = profiles[msg.user_id];
+            const displayName = profile?.display_name || profile?.username || "Anonymous";
+            return (
+              <div key={msg.id} className="flex items-center gap-2.5 text-sm">
+                <Avatar>
+                  {profile?.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt={displayName} />
+                  ) : (
+                    <AvatarFallback>
+                      <UserIcon className="w-4 h-4 text-neutral-400" />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-neutral-700 dark:text-neutral-200">
+                    {displayName}
+                    <span className="ml-2 text-xs text-neutral-400">
+                      {msg.created_at && new Date(msg.created_at).toLocaleTimeString()}
+                    </span>
+                  </span>
+                  <span className="text-neutral-800 dark:text-neutral-100 break-words">{msg.content}</span>
+                </div>
+              </div>
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>
