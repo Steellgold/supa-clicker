@@ -1,4 +1,4 @@
-import { TablesInsert } from "@/lib/supabase/supabase"
+import { Database, TablesInsert } from "@/lib/supabase/supabase"
 import { createClient } from "@supabase/supabase-js"
 import { GAME_CONFIG } from "./config/game-config"
 import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items"
@@ -13,7 +13,7 @@ import { getAllUpgrades } from "./upgrades"
 import { SPECIAL_ITEMS, canPurchaseSpecialItem } from "./upgrades-specials"
 
 // Admin client for secure database operations
-const supabaseAdmin = createClient(
+const supabaseAdmin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -69,7 +69,7 @@ export class GameEngine {
   
   /**
    * Load user game state from new database structure
-   */
+  */
   static async loadUserGameState(userId: string): Promise<GameState> {
     try {
       // Load main progression data
@@ -140,12 +140,12 @@ export class GameEngine {
       // Convert arrays to objects
       const upgradesObj: Record<number, number> = {}
       upgrades?.forEach(u => {
-        upgradesObj[u.upgrade_id] = u.quantity
+        upgradesObj[u.upgrade_id] = u.quantity ?? 0
       })
 
       const specialItemsObj: Record<number, number> = {}
       specialItems?.forEach(si => {
-        specialItemsObj[si.special_item_id] = si.quantity
+        specialItemsObj[si.special_item_id] = si.quantity ?? 0
       })
 
       const achievementIds = achievements?.map(a => a.achievement_id) || []
@@ -276,12 +276,24 @@ export class GameEngine {
         // 3. Save special items (only non-zero quantities)
         const specialItemData = Object.entries(gameState.specialItems)
           .filter(([, quantity]) => quantity > 0)
-          .map(([specialItemId, quantity]) => ({
-            user_id: userId,
-            special_item_id: parseInt(specialItemId),
-            quantity: quantity,
-            last_purchased_at: new Date().toISOString()
-          }))
+          .map(([specialItemId, quantity]) => {
+            const item = SPECIAL_ITEMS.find(i => i.id === parseInt(specialItemId));
+            let effect_multiplier = 1.0;
+            if (item) {
+              effect_multiplier = calculateSpecialItemMultiplier(
+                item.multiplier || 1.0,
+                gameState.prestigeLevel,
+                gameState.totalPower
+              );
+            }
+            return {
+              user_id: userId,
+              special_item_id: parseInt(specialItemId),
+              quantity: quantity,
+              last_purchased_at: new Date().toISOString(),
+              effect_multiplier: effect_multiplier
+            };
+          });
 
         if (specialItemData.length > 0) {
           const { error: specialError } = await supabaseAdmin
@@ -510,172 +522,191 @@ export class GameEngine {
     }
   }
 
-     /**
-    * Process upgrade purchase with strict validation
-    */
-   static async purchaseUpgrade(userId: string, upgradeId: number, quantity: number = 1): Promise<PurchaseResult> {
-     const gameState = await this.loadUserGameState(userId)
-     
-     const upgrade = getAllUpgrades().find(u => u.id === upgradeId)
-     if (!upgrade) {
-       return { success: false, purchased: 0, error: "Invalid upgrade ID" }
-     }
+  /**
+  * Process upgrade purchase with strict validation
+  */
+  static async purchaseUpgrade(userId: string, upgradeId: number, quantity: number = 1): Promise<PurchaseResult> {
+    const gameState = await this.loadUserGameState(userId)
+    
+    const upgrade = getAllUpgrades().find(u => u.id === upgradeId)
+    if (!upgrade) {
+      return { success: false, purchased: 0, error: "Invalid upgrade ID" }
+    }
 
-     const currentLevel = gameState.upgrades[upgradeId] || 0
-     let totalCost = 0
-     let actualQuantity = 0
+    const currentLevel = gameState.upgrades[upgradeId] || 0
+    let totalCost = 0
+    let actualQuantity = 0
 
-     // Calculate total cost using centralized formula
-     for (let i = 0; i < quantity; i++) {
-       const cost = calculateUpgradeCost(
-         upgrade.baseCost, 
-         upgrade.costGrowth, 
-         currentLevel + i, 
-         gameState.prestigeLevel
-       )
+    // Calculate total cost using centralized formula
+    for (let i = 0; i < quantity; i++) {
+      const cost = calculateUpgradeCost(
+        upgrade.baseCost, 
+        upgrade.costGrowth, 
+        currentLevel + i, 
+        gameState.prestigeLevel
+      )
 
-       if (gameState.currentPower >= totalCost + cost) {
-         totalCost += cost
-         actualQuantity++
-       } else {
-         break
-       }
-     }
+      if (gameState.currentPower >= totalCost + cost) {
+        totalCost += cost
+        actualQuantity++
+      } else {
+        break
+      }
+    }
 
      // Validate purchase using centralized validation
-     const validationResult = validateUpgradePurchase(
-       actualQuantity,
-       gameState.currentPower,
-       currentLevel,
-       totalCost
-     )
+    const validationResult = validateUpgradePurchase(
+      actualQuantity,
+      gameState.currentPower,
+      currentLevel,
+      totalCost
+    )
 
-     if (!validationResult.isValid) {
-       return { 
-         success: false, 
-         purchased: 0, 
-         error: "Purchase validation failed",
-         reason: validationResult.reason
-       }
-     }
+    if (!validationResult.isValid) {
+      return { 
+        success: false, 
+        purchased: 0, 
+        error: "Purchase validation failed",
+        reason: validationResult.reason
+      }
+    }
 
-     if (actualQuantity === 0) {
-       const nextCost = calculateUpgradeCost(
-         upgrade.baseCost, 
-         upgrade.costGrowth, 
-         currentLevel, 
-         gameState.prestigeLevel
-       )
-       return { 
-         success: false, 
-         purchased: 0, 
-         error: "Insufficient funds",
-         reason: `Need ${nextCost} but have ${gameState.currentPower}`
-       }
-     }
+    if (actualQuantity === 0) {
+      const nextCost = calculateUpgradeCost(
+        upgrade.baseCost, 
+        upgrade.costGrowth, 
+        currentLevel, 
+        gameState.prestigeLevel
+      )
+      
+      return { 
+        success: false, 
+        purchased: 0, 
+        error: "Insufficient funds",
+        reason: `Need ${nextCost} but have ${gameState.currentPower}`
+      }
+    }
 
-     // Apply purchase
-     gameState.currentPower -= totalCost
-     gameState.currentResources = gameState.currentPower
-     gameState.upgrades[upgradeId] = currentLevel + actualQuantity
-     gameState.lastSaveTime = Date.now()
+    // Apply purchase
+    gameState.currentPower -= totalCost
+    gameState.currentResources = gameState.currentPower
+    gameState.upgrades[upgradeId] = currentLevel + actualQuantity
+    gameState.lastSaveTime = Date.now()
 
-     await supabaseAdmin.rpc("increment_total_spent", {
-       user_id: userId,
-       upgrade_id: upgradeId,
-       amount: totalCost
-     });
+    const { data, error } = await supabaseAdmin.rpc("increment_total_spent", {
+      p_user_id: userId,
+      p_upgrade_id: upgradeId,
+      p_amount: totalCost,
+      p_special: false
+    });
 
-     // Recalculate stats using centralized system
-     const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)
-     gameState.pps = totalPps
-     gameState.clickPower = totalClickMultiplier
-     gameState.resourcesPerSecond = totalPps
+    if (error || !data) {
+      console.error("Error incrementing total spent:", error)
+    }
 
-     // Save updated state
-     await this.saveUserGameState(userId, gameState)
+    if (data) {
+     console.log("Total spent incremented:", data)
+    }
 
-     return {
-       success: true,
-       purchased: actualQuantity,
-       newState: gameState,
-       cost: totalCost
-     }
-   }
+    // Recalculate stats using centralized system
+    const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)
+    gameState.pps = totalPps
+    gameState.clickPower = totalClickMultiplier
+    gameState.resourcesPerSecond = totalPps
 
-     /**
-    * Process special item purchase with strict validation
-    */
-   static async purchaseSpecialItem(userId: string, specialItemId: number): Promise<PurchaseResult> {
-     const gameState = await this.loadUserGameState(userId)
+    // Save updated state
+    await this.saveUserGameState(userId, gameState)
+
+    return {
+      success: true,
+      purchased: actualQuantity,
+      newState: gameState,
+      cost: totalCost
+    }
+  }
+
+  /**
+   * Process special item purchase with strict validation
+  */
+  static async purchaseSpecialItem(userId: string, specialItemId: number): Promise<PurchaseResult> {
+    const gameState = await this.loadUserGameState(userId)
      
-     const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId)
-     if (!specialItem) {
-       return { success: false, purchased: 0, error: "Invalid special item ID" }
-     }
+    const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId)
+    if (!specialItem) {
+      return { success: false, purchased: 0, error: "Invalid special item ID" }
+    }
 
-     const currentLevel = gameState.specialItems[specialItemId] || 0
+    const currentLevel = gameState.specialItems[specialItemId] || 0
      
-     // Calculate cost using centralized formula
-     const cost = calculateSpecialItemCost(
-       specialItem.baseCost,
-       currentLevel,
-       specialItem.costGrowth || 2.5,
-       gameState.prestigeLevel
-     )
+    // Calculate cost using centralized formula
+    const cost = calculateSpecialItemCost(
+      specialItem.baseCost,
+      currentLevel,
+      specialItem.costGrowth || 2.5,
+      gameState.prestigeLevel
+    )
 
-     // Validate purchase requirements
-     if (!canPurchaseSpecialItem(
-       specialItem, 
-       currentLevel, 
-       gameState.currentPower, 
-       gameState.totalPower, 
-       gameState.prestigeLevel, 
-       gameState.upgrades
-     )) {
-       return { 
-         success: false, 
-         purchased: 0, 
-         error: "Purchase requirements not met",
-         reason: "Check power and upgrade requirements"
-       }
-     }
+    // Validate purchase requirements
+    if (!canPurchaseSpecialItem(
+      specialItem, 
+      currentLevel, 
+      gameState.currentPower, 
+      gameState.totalPower, 
+      gameState.prestigeLevel, 
+      gameState.upgrades
+    )) {
+      return { 
+        success: false, 
+        purchased: 0, 
+        error: "Purchase requirements not met",
+        reason: "Check power and upgrade requirements"
+      }
+    }
 
-     if (gameState.currentPower < cost) {
-       return { 
-         success: false, 
-         purchased: 0, 
-         error: "Insufficient funds",
-         reason: `Need ${cost} but have ${gameState.currentPower}`
-       }
-     }
+    if (gameState.currentPower < cost) {
+      return { 
+        success: false, 
+        purchased: 0, 
+        error: "Insufficient funds",
+        reason: `Need ${cost} but have ${gameState.currentPower}`
+      }
+    }
 
-     // Apply purchase
-     gameState.currentPower -= cost
-     gameState.currentResources = gameState.currentPower
-     gameState.specialItems[specialItemId] = currentLevel + 1
-     gameState.lastSaveTime = Date.now()
+    // Apply purchase
+    gameState.currentPower -= cost
+    gameState.currentResources = gameState.currentPower
+    gameState.specialItems[specialItemId] = currentLevel + 1
+    gameState.lastSaveTime = Date.now()
 
-     await supabaseAdmin.rpc("increment_total_spent", {
-       user_id: userId,
-       upgrade_id: specialItemId,
-       amount: cost
-     });
+    const { data, error } = await supabaseAdmin.rpc("increment_total_spent", {
+      p_user_id: userId,
+      p_upgrade_id: specialItemId,
+      p_amount: cost,
+      p_special: true
+    });
 
-     // Recalculate stats using centralized system
-     const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)
-     gameState.pps = totalPps
-     gameState.clickPower = totalClickMultiplier
-     gameState.resourcesPerSecond = totalPps
+    if (error || !data) {
+      console.error("Error incrementing total spent:", error)
+    }
 
-     // Save updated state
-     await this.saveUserGameState(userId, gameState)
+    if (data) {
+     console.log("Total spent incremented:", data)
+    }
 
-     return {
-       success: true,
-       purchased: 1,
-       newState: gameState,
-       cost
-     }
-   }
+    // Recalculate stats using centralized system
+    const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)
+    gameState.pps = totalPps
+    gameState.clickPower = totalClickMultiplier
+    gameState.resourcesPerSecond = totalPps
+
+    // Save updated state
+    await this.saveUserGameState(userId, gameState)
+
+    return {
+      success: true,
+      purchased: 1,
+      newState: gameState,
+      cost
+    }
+  }
 }

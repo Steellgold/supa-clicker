@@ -61,6 +61,7 @@ export type GameState = {
   timeBoostActive: boolean;
   timeBoostEndTime: number;
   timeBoostMultiplier: number;
+  total_spent?: number;
 }
 
 export type UserUpgrade = {

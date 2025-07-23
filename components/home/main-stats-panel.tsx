@@ -1,7 +1,7 @@
 import { Achievement as AchievementCard } from "@/components/achievement";
 import { Clicker } from "@/components/clicker";
 import { DuckWalker } from "@/components/duck-walker";
-import { cn, formatCookieClickerNumber } from "@/lib/utils";
+import { cn, formatCookieClickerNumber, formatDecimal } from "@/lib/utils";
 import { Component } from "@/type/component";
 import type { Achievement, GameState } from "@/type/game";
 import { AnimatePresence, motion } from "framer-motion";
@@ -46,7 +46,7 @@ export const MainStatsPanel: Component<MainStatsPanelProps> = ({ gameState, hand
         )}>
           <span>
             <PowerTag imageProps={{ className: "w-4 h-4" }}>
-              {formatCookieClickerNumber(gameState.pps)}
+              {formatDecimal(gameState.pps)}
             </PowerTag>
             <span className="text-sm">/s</span>
           </span>
@@ -55,7 +55,7 @@ export const MainStatsPanel: Component<MainStatsPanelProps> = ({ gameState, hand
 
           <span>
             <PowerTag imageProps={{ className: "w-4 h-4" }}>
-              {formatCookieClickerNumber(gameState.clickPower)}
+              {formatDecimal(gameState.clickPower)}
             </PowerTag>
             <span className="text-sm">/click</span>
           </span>

@@ -173,6 +173,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
         [upgradeId]: (prev.upgrades[upgradeId] || 0) + cappedQuantity
       },
       lastSaveTime: Date.now(),
+      total_spent: (prev.total_spent || 0) + cost,
     }));
 
     // Send request in background
@@ -194,7 +195,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
         if (result.success) {
           setGameState(prev => ({
             ...prev,
-            ...result.gameState
+            ...result.gameState,
+            total_spent: (result.gameState.total_spent ?? prev.total_spent ?? 0) + cost,
           }));
           return result.purchased;
         } else {
