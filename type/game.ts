@@ -75,6 +75,10 @@ export type GameStats = {
   resourcesPerSecond: number;
   lastSaveTime: number;
   prestigeLevel: number;
+  // Session stats for achievements
+  upgradesBoughtSession?: number;
+  clicksSession?: number;
+  powerSession?: number;
 }
 
 export type Achievement = {

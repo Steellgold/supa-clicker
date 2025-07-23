@@ -44,6 +44,14 @@ export const useClickerGame = (options: GameOptions = {}) => {
   
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [sessionStats, setSessionStats] = useState({
+    clicksSession: 0,
+    powerSession: 0,
+    upgradesBoughtSession: 0,
+  });
+
+  useEffect(() => setSessionStats({ clicksSession: 0, powerSession: 0, upgradesBoughtSession: 0 }), []);
+
   // ===============================
   // CLICK BATCHING LOGIC (server + local)
   // ===============================
@@ -62,6 +70,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       lastClickTime: Date.now(),
       lastSaveTime: Date.now(),
     }));
+    setSessionStats(prev => ({ ...prev, clicksSession: prev.clicksSession + 1 }));
     clickBatchRef.current.count += 1;
     if (clickBatchRef.current.count >= 10) {
       sendClickBatch();
@@ -71,6 +80,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
       }, 2000);
     }
     return { gained: gameState.clickPower };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.clickPower]);
 
   // Send the click batch to the server
@@ -175,6 +186,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       lastSaveTime: Date.now(),
       total_spent: (prev.total_spent || 0) + cost,
     }));
+    setSessionStats(prev => ({ ...prev, upgradesBoughtSession: prev.upgradesBoughtSession + cappedQuantity }));
 
     // Send request in background
     try {
@@ -279,7 +291,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
   // ===============================
   // LOCAL STORAGE MANAGEMENT
   // ===============================
-
   const saveToLocal = useCallback((data: GameState) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(data));
@@ -426,7 +437,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
   // ===============================
   // PRESTIGE SYSTEM
   // ===============================
-
   const canPrestige = useCallback(() => {
     return gameState.totalPower >= GAME_CONFIG.PRESTIGE.MINIMUM_POWER;
   }, [gameState.totalPower]);
@@ -527,6 +537,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       setGameState(prev => {
         if (prev.pps > 0) {
           const gain = prev.pps / 10; // 10 times per second for smoothness
+          setSessionStats(s => ({ ...s, powerSession: s.powerSession + gain }));
           return {
             ...prev,
             currentPower: prev.currentPower + gain,
@@ -539,10 +550,17 @@ export const useClickerGame = (options: GameOptions = {}) => {
     return () => clearInterval(interval);
   }, [isLoading]);
 
+  // Inject session stats into mergedGameState for achievements
+  const mergedGameStateWithSession = useMemo(() => ({
+    ...mergedGameState,
+    clicksSession: sessionStats.clicksSession,
+    powerSession: sessionStats.powerSession,
+    upgradesBoughtSession: sessionStats.upgradesBoughtSession,
+  }), [mergedGameState, sessionStats]);
+
   // ===============================
   // COMPUTED VALUES
   // ===============================
-
   const upgradesInfo = getAllUpgrades().map(upgrade => {
     const currentLevel = gameState.upgrades[upgrade.id] || 0;
     const cost = getUpgradeCost(upgrade, currentLevel);
@@ -559,7 +577,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
   });
 
   return {
-    gameState: mergedGameState,
+    gameState: mergedGameStateWithSession,
     setGameState: (state: GameState) => {
       setGameState(state);
       saveGame();

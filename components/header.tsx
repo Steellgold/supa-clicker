@@ -6,8 +6,8 @@ import { Check, Loader2, Menu, Moon, Save, Star, Sun, Trophy, X } from "lucide-r
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { ReactElement, useEffect, useState } from "react";
-import { AchievementsDialog } from "./achievements-dialog";
 import { AuthButton } from "./auth/auth-button";
+import { AchievementsDialog } from "./dialogs/achievements-dialog";
 import { Button, buttonVariants } from "./ui/button";
 
 export const Header = (): ReactElement => {

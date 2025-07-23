@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { getAchievementProgress } from "@/lib/achievements"
 import { useGame } from "@/lib/providers/game-provider"
 import { Achievement } from "@/type/game"
 import { Check, Lock, Trophy } from "lucide-react"
@@ -13,6 +14,26 @@ interface AchievementItemProps {
 }
 
 const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
+  const { gameState } = useGame();
+
+  const stats = {
+    totalClicks: gameState.totalClicks,
+    currentResources: gameState.currentPower,
+    resourcesPerSecond: gameState.pps,
+    lastSaveTime: gameState.lastSaveTime,
+    prestigeLevel: gameState.prestigeLevel,
+    upgradesBoughtSession: gameState.upgradesBoughtSession,
+    clicksSession: gameState.clicksSession,
+    powerSession: gameState.powerSession,
+  };
+
+  const upgrades = Object.entries(gameState.upgrades).map(([upgradeId, quantity]) => ({
+    upgradeId: parseInt(upgradeId),
+    quantity,
+  }));
+
+  const progress = getAchievementProgress(achievement.id, stats, upgrades);
+
   return (
     <div className={`
       flex items-center gap-3 p-4 border-2 transition-all
@@ -44,6 +65,13 @@ const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
           {achievement.description}
         </p>
       </div>
+
+      {!isUnlocked && progress > 0 && progress < 100 && (
+        <div className="mt-2">
+          <progress value={progress} max={100} className="w-full h-2 align-middle rounded bg-neutral-200 dark:bg-neutral-700" />
+          <span className="text-xs ml-2">{progress}%</span>
+        </div>
+      )}
     </div>
   )
 }

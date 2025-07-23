@@ -1001,7 +1001,37 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2000,
     clickMultiplier: 0,
     category: "future",
-  }
+  },
+  {
+    id: 101,
+    name: "Finger Training",
+    description: "Your fingers are getting stronger!",
+    baseCost: 5,
+    costGrowth: 1.1,
+    ppsGain: 0,
+    clickMultiplier: 0.2,
+    category: "click",
+  },
+  {
+    id: 102,
+    name: "Ergonomic Mouse",
+    description: "A better mouse for more powerful clicks.",
+    baseCost: 20,
+    costGrowth: 1.12,
+    ppsGain: 0,
+    clickMultiplier: 0.5,
+    category: "click",
+  },
+  {
+    id: 103,
+    name: "Clicking Gloves",
+    description: "Special gloves to maximize your click force!",
+    baseCost: 50,
+    costGrowth: 1.13,
+    ppsGain: 0,
+    clickMultiplier: 1,
+    category: "click",
+  },
 ]
 
 export const getUpgradeById = (id: number): Upgrade | undefined => {
