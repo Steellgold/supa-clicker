@@ -1,8 +1,9 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client"
+import { Component } from "@/type/component"
 import { User } from "@supabase/supabase-js"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 
 type Profile = {
   username?: string
@@ -29,7 +30,7 @@ export type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   const supabase = createClient()
 
   const [user, setUser] = useState<User | null>(null)
@@ -37,14 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const fetchUser = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
     setUser(user ?? null)
   }
 
   const fetchProfile = async () => {
     if (!user) {
+      console.log("fetchProfile", "no user")
       setUserProfile(null)
       return
     }
@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data, error } = await supabase
       .from("user_profiles")
-      .select("username, display_name, bio, avatar_url")
+      .select("username, display_name, avatar_url")
       .eq("id", user.id)
       .single()
 
@@ -141,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider")

@@ -1,20 +1,15 @@
 import { createClient } from "@supabase/supabase-js"
+import { GAME_CONFIG } from "./config/game-config"
+import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items"
+import {
+  calculatePrestigeMultiplier, calculateSpecialItemCost,
+  calculateSpecialItemMultiplier,
+  calculateUpgradeClickMultiplier,
+  calculateUpgradeCost,
+  calculateUpgradePPSGain, validateUpgradePurchase
+} from "./game-progression"
 import { getAllUpgrades } from "./upgrades"
 import { SPECIAL_ITEMS, canPurchaseSpecialItem } from "./upgrades-specials"
-import { GAME_CONFIG } from "./config/game-config"
-import { SPECIAL_ITEM_IDS, SPECIAL_ITEM_EFFECTS } from "./constants/special-items"
-import { 
-  calculateUpgradeCost,
-  calculateUpgradePPSGain, 
-  calculateUpgradeClickMultiplier,
-  calculateSpecialItemCost,
-  calculateSpecialItemMultiplier,
-  calculatePrestigeMultiplier,
-  calculateClickGain,
-  validateProgressionIncrease,
-  calculateReasonableMaxIncrease,
-  validateUpgradePurchase
-} from "./game-progression"
 
 // Admin client for secure database operations
 const supabaseAdmin = createClient(
@@ -240,6 +235,8 @@ export class GameEngine {
           last_click_time: new Date(gameState.lastClickTime).toISOString(),
           last_save_time: new Date(gameState.lastSaveTime).toISOString(),
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         })
 
       if (progError) {
@@ -248,7 +245,7 @@ export class GameEngine {
 
         // 2. Save upgrades (only non-zero quantities)
         const upgradeData = Object.entries(gameState.upgrades)
-          .filter(([_, quantity]) => quantity > 0)
+          .filter(([, quantity]) => quantity > 0)
           .map(([upgradeId, quantity]) => ({
             user_id: userId,
             upgrade_id: parseInt(upgradeId),
@@ -270,7 +267,7 @@ export class GameEngine {
 
         // 3. Save special items (only non-zero quantities)
         const specialItemData = Object.entries(gameState.specialItems)
-          .filter(([_, quantity]) => quantity > 0)
+          .filter(([, quantity]) => quantity > 0)
           .map(([specialItemId, quantity]) => ({
             user_id: userId,
             special_item_id: parseInt(specialItemId),
@@ -376,7 +373,7 @@ export class GameEngine {
            case SPECIAL_ITEM_EFFECTS.GLOBAL_10X:
            case SPECIAL_ITEM_EFFECTS.CAFFEINE_BOOST:
              const itemMultiplier = calculateSpecialItemMultiplier(
-               specialItem.baseMultiplier || 1.5, 
+               specialItem.multiplier || 1.5, 
                gameState.prestigeLevel, 
                gameState.totalPower
              )
@@ -409,7 +406,8 @@ export class GameEngine {
     let gained = gameState.clickPower
     let isSpecialClick = false
     let comboActive = false
-    let timeBoostActivated = false
+
+    const timeBoostActivated = false
 
     // Special click effects
     const goldenClickLevel = gameState.specialItems[SPECIAL_ITEM_IDS.GOLDEN_CLICK] || 0
@@ -502,7 +500,6 @@ export class GameEngine {
 
      // Validate purchase using centralized validation
      const validationResult = validateUpgradePurchase(
-       upgradeId,
        actualQuantity,
        gameState.currentPower,
        currentLevel,

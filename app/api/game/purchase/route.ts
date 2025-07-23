@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server"
 import { GameEngine } from "@/lib/game-engine"
-import { withGameSecurity, GameSecurityMiddleware, SecurityValidationResult, PayloadSchemas } from "@/lib/middleware/security"
+import { GameSecurityMiddleware, PayloadSchemas, SecurityValidationResult, withGameSecurity } from "@/lib/middleware/security"
+import { NextRequest } from "next/server"
 
 async function purchaseHandler(request: NextRequest, validation: SecurityValidationResult) {
   try {
@@ -12,14 +12,17 @@ async function purchaseHandler(request: NextRequest, validation: SecurityValidat
       return GameSecurityMiddleware.createErrorResponse(payloadValidation.error!)
     }
 
-    const { type, upgradeId, specialItemId, quantity } = body
+    // Use purchaseType instead of type in the payload
+    const { purchaseType, upgradeId, specialItemId, quantity } = body;
+    const purchaseQuantity = quantity && Number.isInteger(Number(quantity)) && Number(quantity) > 0 ? Number(quantity) : 1;
+    const upgradeIdNum = typeof upgradeId === 'number' ? upgradeId : Number(upgradeId);
+    const specialItemIdNum = typeof specialItemId === 'number' ? specialItemId : Number(specialItemId);
 
-    let result
-    if (type === 'upgrade') {
-      const purchaseQuantity = quantity && Number.isInteger(quantity) && quantity > 0 ? quantity : 1
-      result = await GameEngine.purchaseUpgrade(validation.user.id, upgradeId, purchaseQuantity)
+    let result;
+    if (purchaseType === 'upgrade') {
+      result = await GameEngine.purchaseUpgrade(validation.user!.id, upgradeIdNum, purchaseQuantity);
     } else {
-      result = await GameEngine.purchaseSpecialItem(validation.user.id, specialItemId)
+      result = await GameEngine.purchaseSpecialItem(validation.user!.id, specialItemIdNum);
     }
 
     if (!result.success) {

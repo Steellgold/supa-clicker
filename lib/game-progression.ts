@@ -239,7 +239,6 @@ export function calculateReasonableMaxIncrease(
  * Check if upgrade purchase would break game balance
  */
 export function validateUpgradePurchase(
-  upgradeId: number,
   quantity: number,
   currentPower: number,
   currentLevel: number,

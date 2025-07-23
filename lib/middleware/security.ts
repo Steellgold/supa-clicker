@@ -9,13 +9,14 @@
  * - Origin verification
  */
 
-import { NextRequest, NextResponse } from "next/server"
+import { GAME_RULES, GameAction, GameValidator, RateLimiter } from "@/lib/game-core"
 import { createClient as createServerClient } from "@/lib/supabase/server"
-import { GameValidator, RateLimiter, GAME_RULES, GameAction } from "@/lib/game-core"
+import type { User } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from "next/server"
 
 export interface SecurityValidationResult {
   isValid: boolean
-  user: any
+  user: User | null
   action?: GameAction
   error?: string
   statusCode?: number
@@ -40,7 +41,7 @@ export class GameSecurityMiddleware {
       }
 
       // 2. Authentication
-      const authResult = await this.validateAuthentication(request)
+      const authResult = await this.validateAuthentication()
       if (!authResult.isValid) {
         return {
           isValid: false,
@@ -76,6 +77,7 @@ export class GameSecurityMiddleware {
       try {
         body = await request.json()
       } catch (error) {
+        console.error("Invalid JSON payload:", error)
         return {
           isValid: false,
           user: authResult.user,
@@ -88,7 +90,7 @@ export class GameSecurityMiddleware {
       const action: GameAction = {
         type: body.type || this.inferActionType(request.url),
         payload: body,
-        userId: authResult.user.id,
+        userId: authResult.user!.id,
         timestamp: body.timestamp || Date.now()
       }
 
@@ -177,9 +179,9 @@ export class GameSecurityMiddleware {
   /**
    * Validate user authentication
    */
-  private static async validateAuthentication(request: NextRequest): Promise<{
+  private static async validateAuthentication(): Promise<{
     isValid: boolean
-    user: any
+    user: User | null
   }> {
     try {
       const supabase = await createServerClient()
@@ -222,7 +224,7 @@ export class GameSecurityMiddleware {
   /**
    * Create standardized success response
    */
-  static createSuccessResponse(data: any): NextResponse {
+  static createSuccessResponse(data: Record<string, unknown>): NextResponse {
     return NextResponse.json({
       success: true,
       ...data,
@@ -257,7 +259,7 @@ export function withGameSecurity(
       // Apply rate limiting
       if (validation.action) {
         const rateLimit = GameSecurityMiddleware.validateRateLimit(
-          validation.user.id,
+          validation.user!.id,
           validation.action.type
         )
         
@@ -289,8 +291,12 @@ export const PayloadSchemas = {
   click: {
     required: ['timestamp'],
     optional: ['sessionId', 'clientTime'],
-    validate: (payload: any) => {
-      if (!payload.timestamp || typeof payload.timestamp !== 'number') {
+    validate: (payload: unknown) => {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return { isValid: false, error: 'Invalid payload' }
+      }
+      const p = payload as Record<string, unknown>;
+      if (!p.timestamp || typeof p.timestamp !== 'number') {
         return { isValid: false, error: 'Invalid timestamp' }
       }
       return { isValid: true }
@@ -298,25 +304,25 @@ export const PayloadSchemas = {
   },
 
   purchase: {
-    required: ['type', 'timestamp'],
+    required: ['purchaseType', 'timestamp'],
     optional: ['upgradeId', 'specialItemId', 'quantity'],
-    validate: (payload: any) => {
-      if (!payload.type || !['upgrade', 'specialItem'].includes(payload.type)) {
+    validate: (payload: unknown) => {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return { isValid: false, error: 'Invalid payload' }
+      }
+      const p = payload as Record<string, unknown>;
+      if (!p.purchaseType || !['upgrade', 'specialItem'].includes(p.purchaseType as string)) {
         return { isValid: false, error: 'Invalid purchase type' }
       }
-      
-      if (payload.type === 'upgrade' && (!payload.upgradeId || !Number.isInteger(payload.upgradeId))) {
+      if (p.purchaseType === 'upgrade' && (!p.upgradeId || !Number.isInteger(p.upgradeId))) {
         return { isValid: false, error: 'Invalid upgrade ID' }
       }
-      
-      if (payload.type === 'specialItem' && (!payload.specialItemId || !Number.isInteger(payload.specialItemId))) {
+      if (p.purchaseType === 'specialItem' && (!p.specialItemId || !Number.isInteger(p.specialItemId))) {
         return { isValid: false, error: 'Invalid special item ID' }
       }
-      
-      if (payload.quantity && (!Number.isInteger(payload.quantity) || payload.quantity <= 0)) {
+      if (p.quantity && (!Number.isInteger(p.quantity) || (p.quantity as number) <= 0)) {
         return { isValid: false, error: 'Invalid quantity' }
       }
-      
       return { isValid: true }
     }
   },
@@ -324,15 +330,17 @@ export const PayloadSchemas = {
   save: {
     required: ['type', 'payload'],
     optional: [],
-    validate: (payload: any) => {
-      if (payload.type !== 'save') {
+    validate: (payload: unknown) => {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return { isValid: false, error: 'Invalid payload' }
+      }
+      const p = payload as Record<string, unknown>;
+      if (p.type !== 'save') {
         return { isValid: false, error: 'Invalid save type' }
       }
-      
-      if (!payload.payload || typeof payload.payload !== 'object') {
+      if (!p.payload || typeof p.payload !== 'object') {
         return { isValid: false, error: 'Invalid game data payload' }
       }
-      
       return { isValid: true }
     }
   }
