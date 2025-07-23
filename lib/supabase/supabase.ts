@@ -135,6 +135,75 @@ export type Database = {
         }
         Relationships: []
       }
+      prestige_stats: {
+        Row: {
+          achievements: Json
+          duration_seconds: number
+          end_time: string
+          id: string
+          pps: number
+          prestige_level: number
+          special_items: Json
+          start_time: string
+          total_clicks: number
+          total_power: number
+          total_ppc: number | null
+          total_pps: number | null
+          upgrades: Json
+          upgrades_breakdown: Json | null
+          user_id: string
+        }
+        Insert: {
+          achievements: Json
+          duration_seconds: number
+          end_time: string
+          id?: string
+          pps: number
+          prestige_level: number
+          special_items: Json
+          start_time: string
+          total_clicks: number
+          total_power: number
+          total_ppc?: number | null
+          total_pps?: number | null
+          upgrades: Json
+          upgrades_breakdown?: Json | null
+          user_id: string
+        }
+        Update: {
+          achievements?: Json
+          duration_seconds?: number
+          end_time?: string
+          id?: string
+          pps?: number
+          prestige_level?: number
+          special_items?: Json
+          start_time?: string
+          total_clicks?: number
+          total_power?: number
+          total_ppc?: number | null
+          total_pps?: number | null
+          upgrades?: Json
+          upgrades_breakdown?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prestige_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prestige_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_stats_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: number
@@ -324,6 +393,10 @@ export type Database = {
           prestige_level: number
           achievements_count: number
         }[]
+      }
+      increment_total_spent: {
+        Args: { user_id: string; upgrade_id: number; amount: number }
+        Returns: undefined
       }
       validate_progression_increase: {
         Args: {
