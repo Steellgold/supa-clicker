@@ -1,7 +1,7 @@
 "use client"
 
 import { AuthModal } from "@/components/auth/auth-modal"
-import { ProfileEditModal } from "@/components/auth/profile-edit-modal"
+import { ProfileEditModal } from "@/components/dialogs/profile-edit-dialog"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth/auth-context"
 import type { Component } from "@/type/component"

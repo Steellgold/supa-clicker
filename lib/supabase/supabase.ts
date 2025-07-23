@@ -398,7 +398,12 @@ export type Database = {
         }[]
       }
       increment_total_spent: {
-        Args: { user_id: string; upgrade_id: number; amount: number }
+        Args: {
+          p_user_id: string
+          p_upgrade_id: number
+          p_amount: number
+          p_special?: boolean
+        }
         Returns: undefined
       }
       update_user_profile: {

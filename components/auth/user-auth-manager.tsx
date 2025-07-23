@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useAuth } from "@/lib/auth/auth-context"
-import { AuthModal } from "./auth-modal"
-import { ProfileEditModal } from "./profile-edit-modal"
 import { Button } from "@/components/ui/button"
-import { User, Settings } from "lucide-react"
+import { useAuth } from "@/lib/auth/auth-context"
+import { Settings, User } from "lucide-react"
+import { useEffect, useState } from "react"
+import { ProfileEditModal } from "../dialogs/profile-edit-dialog"
+import { AuthModal } from "./auth-modal"
 
 export const UserAuthManager = () => {
   const { user, userProfile } = useAuth()
