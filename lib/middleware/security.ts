@@ -11,7 +11,7 @@
 
 import { GAME_RULES, GameAction, GameValidator, RateLimiter } from "@/lib/game-core"
 import { createClient as createServerClient } from "@/lib/supabase/server"
-import type { User } from '@supabase/supabase-js'
+import type { User } from "@supabase/supabase-js"
 import { NextRequest, NextResponse } from "next/server"
 
 export interface SecurityValidationResult {
@@ -52,7 +52,7 @@ export class GameSecurityMiddleware {
       }
 
       // 3. Request method validation
-      if (request.method !== 'POST') {
+      if (request.method !== "POST") {
         return {
           isValid: false,
           user: authResult.user,
@@ -62,8 +62,8 @@ export class GameSecurityMiddleware {
       }
 
       // 4. Content type validation
-      const contentType = request.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
+      const contentType = request.headers.get("content-type")
+      if (!contentType || !contentType.includes("application/json")) {
         return {
           isValid: false,
           user: authResult.user,
@@ -156,13 +156,13 @@ export class GameSecurityMiddleware {
     const referer = request.headers.get("referer")
     
     // In development, allow localhost
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       return { isValid: true }
     }
 
     const allowedOrigins = [
-      'https://supaclicker.vercel.app',
-      'https://supa-clicker.vercel.app'
+      "https://supaclicker.vercel.app",
+      "https://supa-clicker.vercel.app"
     ]
 
     if (!origin || !allowedOrigins.includes(origin)) {
@@ -202,12 +202,12 @@ export class GameSecurityMiddleware {
    * Infer action type from URL
    */
   private static inferActionType(url: string): string {
-    if (url.includes('/click')) return 'click'
-    if (url.includes('/purchase')) return 'purchase'
-    if (url.includes('/save')) return 'save'
-    if (url.includes('/load')) return 'load'
-    if (url.includes('/reset')) return 'reset'
-    return 'unknown'
+    if (url.includes("/click")) return "click"
+    if (url.includes("/purchase")) return "purchase"
+    if (url.includes("/save")) return "save"
+    if (url.includes("/load")) return "load"
+    if (url.includes("/reset")) return "reset"
+    return "unknown"
   }
 
   /**
@@ -289,57 +289,57 @@ export function withGameSecurity(
  */
 export const PayloadSchemas = {
   click: {
-    required: ['timestamp'],
-    optional: ['sessionId', 'clientTime'],
+    required: ["timestamp"],
+    optional: ["sessionId", "clientTime"],
     validate: (payload: unknown) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return { isValid: false, error: 'Invalid payload' }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+        return { isValid: false, error: "Invalid payload" }
       }
       const p = payload as Record<string, unknown>;
-      if (!p.timestamp || typeof p.timestamp !== 'number') {
-        return { isValid: false, error: 'Invalid timestamp' }
+      if (!p.timestamp || typeof p.timestamp !== "number") {
+        return { isValid: false, error: "Invalid timestamp" }
       }
       return { isValid: true }
     }
   },
 
   purchase: {
-    required: ['purchaseType', 'timestamp'],
-    optional: ['upgradeId', 'specialItemId', 'quantity'],
+    required: ["purchaseType", "timestamp"],
+    optional: ["upgradeId", "specialItemId", "quantity"],
     validate: (payload: unknown) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return { isValid: false, error: 'Invalid payload' }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+        return { isValid: false, error: "Invalid payload" }
       }
       const p = payload as Record<string, unknown>;
-      if (!p.purchaseType || !['upgrade', 'specialItem'].includes(p.purchaseType as string)) {
-        return { isValid: false, error: 'Invalid purchase type' }
+      if (!p.purchaseType || !["upgrade", "specialItem"].includes(p.purchaseType as string)) {
+        return { isValid: false, error: "Invalid purchase type" }
       }
-      if (p.purchaseType === 'upgrade' && (!p.upgradeId || !Number.isInteger(p.upgradeId))) {
-        return { isValid: false, error: 'Invalid upgrade ID' }
+      if (p.purchaseType === "upgrade" && (!p.upgradeId || !Number.isInteger(p.upgradeId))) {
+        return { isValid: false, error: "Invalid upgrade ID" }
       }
-      if (p.purchaseType === 'specialItem' && (!p.specialItemId || !Number.isInteger(p.specialItemId))) {
-        return { isValid: false, error: 'Invalid special item ID' }
+      if (p.purchaseType === "specialItem" && (!p.specialItemId || !Number.isInteger(p.specialItemId))) {
+        return { isValid: false, error: "Invalid special item ID" }
       }
       if (p.quantity && (!Number.isInteger(p.quantity) || (p.quantity as number) <= 0)) {
-        return { isValid: false, error: 'Invalid quantity' }
+        return { isValid: false, error: "Invalid quantity" }
       }
       return { isValid: true }
     }
   },
 
   save: {
-    required: ['type', 'payload'],
+    required: ["type", "payload"],
     optional: [],
     validate: (payload: unknown) => {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-        return { isValid: false, error: 'Invalid payload' }
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+        return { isValid: false, error: "Invalid payload" }
       }
       const p = payload as Record<string, unknown>;
-      if (p.type !== 'save') {
-        return { isValid: false, error: 'Invalid save type' }
+      if (p.type !== "save") {
+        return { isValid: false, error: "Invalid save type" }
       }
-      if (!p.payload || typeof p.payload !== 'object') {
-        return { isValid: false, error: 'Invalid game data payload' }
+      if (!p.payload || typeof p.payload !== "object") {
+        return { isValid: false, error: "Invalid game data payload" }
       }
       return { isValid: true }
     }

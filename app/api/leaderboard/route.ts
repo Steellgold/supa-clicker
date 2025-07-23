@@ -1,72 +1,99 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/lib/supabase/supabase';
+import { NextResponse } from "next/server";
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// const supabase = createClient<Database>(
+//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//   process.env.SUPABASE_SERVICE_ROLE_KEY!
+// );
 
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'total_power'; // 'total_clicks', 'total_power', 'prestige_level'
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const userId = searchParams.get('userId');
+export async function GET() {
+  // This route returns fake data for now
+  return NextResponse.json({
+    leaderboard: [
+      {
+        id: "1",
+        username: "John Doe",
+        total_power: 1000,
+        total_clicks: 1000,
+        prestige_level: 1,
+      },
+      {
+        id: "2",
+        username: "Jane Smith",
+        total_power: 900,
+        total_clicks: 900,
+        prestige_level: 0,
+      },
+      {
+        id: "3",
+        username: "Jim Beam",
+        total_power: 800,
+        total_clicks: 800,
+        prestige_level: 0,
+      },
+    ],
+    userPosition: null,
+    userData: null,
+  });
 
-    // Validate leaderboard type
-    const validTypes = ['total_clicks', 'total_power', 'prestige_level'];
-    if (!validTypes.includes(type)) {
-      return NextResponse.json(
-        { error: 'Invalid leaderboard type' },
-        { status: 400 }
-      );
-    }
+  // try {
+  //   const { searchParams } = new URL(request.url);
+  //   const type = searchParams.get("type") || "total_power"; // "total_clicks", "total_power", "prestige_level"
+  //   const limit = parseInt(searchParams.get("limit") || "50");
+  //   const userId = searchParams.get("userId");
 
-    // Get leaderboard data using the SQL function
-    const { data: leaderboardData, error: leaderboardError } = await supabase
-      .rpc('get_leaderboard', {
-        order_by: type,
-        limit_count: limit
-      });
+  //   // Validate leaderboard type
+  //   const validTypes = ["total_clicks", "total_power", "prestige_level"];
+  //   if (!validTypes.includes(type)) {
+  //     return NextResponse.json(
+  //       { error: "Invalid leaderboard type" },
+  //       { status: 400 }
+  //     );
+  //   }
 
-    if (leaderboardError) {
-      console.error('Error fetching leaderboard:', leaderboardError);
-      return NextResponse.json(
-        { error: 'Failed to fetch leaderboard' },
-        { status: 500 }
-      );
-    }
+  //   // Get leaderboard data using the SQL function
+  //   const { data: leaderboardData, error: leaderboardError } = await supabase
+  //     .rpc("get_leaderboard", {
+  //       order_by: type,
+  //       limit_count: limit
+  //     });
 
-    let userPosition = null;
-    let userData = null;
+  //   if (leaderboardError) {
+  //     console.error("Error fetching leaderboard:", leaderboardError);
+  //     return NextResponse.json(
+  //       { error: "Failed to fetch leaderboard" },
+  //       { status: 500 }
+  //     );
+  //   }
 
-    // If userId is provided, get user's position and data
-    if (userId) {
-      const { data: userRankData, error: userRankError } = await supabase
-        .rpc('get_user_rank', {
-          target_user_id: userId,
-          order_by: type
-        });
+  //   let userPosition = null;
+  //   let userData = null;
 
-      if (!userRankError && userRankData && userRankData.length > 0) {
-        userPosition = Number(userRankData[0].rank_position);
-        userData = userRankData[0].user_data;
-      }
-    }
+  //   // If userId is provided, get user"s position and data
+  //   if (userId) {
+  //     const { data: userRankData, error: userRankError } = await supabase
+  //       .rpc("get_user_rank", {
+  //         target_user_id: userId,
+  //         order_by: type
+  //       });
 
-    return NextResponse.json({
-      leaderboard: leaderboardData || [],
-      userPosition,
-      userData,
-      type
-    });
+  //     if (!userRankError && userRankData && userRankData.length > 0) {
+  //       userPosition = Number(userRankData[0].rank_position);
+  //       userData = userRankData[0].user_data;
+  //     }
+  //   }
 
-  } catch (error) {
-    console.error('Leaderboard API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  //   return NextResponse.json({
+  //     leaderboard: leaderboardData || [],
+  //     userPosition,
+  //     userData,
+  //     type
+  //   });
+
+  // } catch (error) {
+  //   console.error("Leaderboard API error:", error);
+  //   return NextResponse.json(
+  //     { error: "Internal server error" },
+  //     { status: 500 }
+  //   );
+  // }
 }

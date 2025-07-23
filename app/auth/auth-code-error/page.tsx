@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import Link from 'next/link'
-import { ReactElement } from 'react'
+import Link from "next/link"
+import { ReactElement } from "react"
 
 const AuthCodeErrorPage = (): ReactElement => {
   

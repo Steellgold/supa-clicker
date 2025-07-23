@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server'
-import { GameEngine } from '@/lib/game-engine'
-import { GameSecurityMiddleware } from '@/lib/middleware/security'
+import { GameEngine } from "@/lib/game-engine"
+import { GameSecurityMiddleware } from "@/lib/middleware/security"
 import { createClient as createServerClient } from "@/lib/supabase/server"
+import { NextRequest } from "next/server"
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -20,10 +20,10 @@ export const GET = async (request: NextRequest) => {
       gameData: gameState
     })
   } catch (error) {
-    console.error('Load processing error:', error)
+    console.error("Load processing error:", error)
     
-    // If it's a "user not found" type error, return null gameData
-    if (error instanceof Error && error.message.includes('not found')) {
+    // If it"s a "user not found" type error, return null gameData
+    if (error instanceof Error && error.message.includes("not found")) {
       return GameSecurityMiddleware.createSuccessResponse({
         gameData: null
       })

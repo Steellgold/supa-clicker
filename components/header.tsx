@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/providers/game-provider";
-import { Check, Menu, Moon, Save, Star, Sun, Trophy, X } from "lucide-react";
+import { Check, Loader2, Menu, Moon, Save, Star, Sun, Trophy, X } from "lucide-react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { ReactElement, useEffect, useState } from "react";
@@ -14,7 +14,7 @@ export const Header = (): ReactElement => {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const { saveGame } = useGame();
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [githubStars, setGithubStars] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -30,17 +30,17 @@ export const Header = (): ReactElement => {
   }, []);
 
   const handleManualSave = async () => {
-    if (saveState === 'saving') return;
+    if (saveState === "saving") return;
     
-    setSaveState('saving');
+    setSaveState("saving");
     try {
       const success = await saveGame();
-      setSaveState(success ? 'success' : 'error');
-      setTimeout(() => setSaveState('idle'), 2000);
+      setSaveState(success ? "success" : "error");
+      setTimeout(() => setSaveState("idle"), 2000);
     } catch (error) {
-      console.error('Manual save failed:', error);
-      setSaveState('error');
-      setTimeout(() => setSaveState('idle'), 2000);
+      console.error("Manual save failed:", error);
+      setSaveState("error");
+      setTimeout(() => setSaveState("idle"), 2000);
     }
   };
 
@@ -50,6 +50,7 @@ export const Header = (): ReactElement => {
         <div className="border-1 rounded-none border-neutral-800 dark:border-neutral-200 px-2 py-1 bg-white dark:bg-neutral-900 transition-colors">
           <span className="font-mono font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase">SupaClicker</span>
         </div>
+
         {/* Desktop actions */}
         <div className="hidden md:flex items-center gap-2">
           <Button
@@ -67,22 +68,25 @@ export const Header = (): ReactElement => {
               <Trophy />
             </Button>
           </AchievementsDialog>
+
           {user && (
             <Button
               variant="retro"
               size="sm"
               className="font-mono font-bold"
               onClick={handleManualSave}
-              disabled={saveState === 'saving'}
+              disabled={saveState === "saving"}
             >
-              {saveState === 'saving' && <div className="h-[1.2rem] w-[1.2rem] animate-spin rounded-full border-2 border-transparent border-t-current" />}
-              {saveState === 'success' && <Check className="h-[1.2rem] w-[1.2rem] text-green-600" />}
-              {saveState === 'error' && <X className="h-[1.2rem] w-[1.2rem] text-red-600" />}
-              {saveState === 'idle' && <Save className="h-[1.2rem] w-[1.2rem]" />}
+              {saveState === "saving" && <Loader2 className="animate-spin" />}
+              {saveState === "success" && <Check className="text-green-600" />}
+              {saveState === "error" && <X className="text-red-600" />}
+              {saveState === "idle" && <Save />}
               <span className="sr-only">Manual save</span>
             </Button>
           )}
+
           <AuthButton />
+
           <Link
             href="https://github.com/Steellgold/supa-clicker"
             target="_blank"
@@ -112,6 +116,7 @@ export const Header = (): ReactElement => {
         </Button>
       </div>
 
+      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-2 flex flex-col gap-2 bg-neutral-100 dark:bg-neutral-800 p-3 rounded shadow z-50">
           <Button
@@ -135,16 +140,18 @@ export const Header = (): ReactElement => {
               size="sm"
               className="font-mono font-bold w-full justify-start"
               onClick={() => { handleManualSave(); setMobileMenuOpen(false); }}
-              disabled={saveState === 'saving'}
+              disabled={saveState === "saving"}
             >
-              {saveState === 'saving' && <div className="h-[1.2rem] w-[1.2rem] animate-spin rounded-full border-2 border-transparent border-t-current" />}
-              {saveState === 'success' && <Check className="h-[1.2rem] w-[1.2rem] text-green-600" />}
-              {saveState === 'error' && <X className="h-[1.2rem] w-[1.2rem] text-red-600" />}
-              {saveState === 'idle' && <Save className="h-[1.2rem] w-[1.2rem]" />}
+              {saveState === "saving" && <div className="h-[1.2rem] w-[1.2rem] animate-spin rounded-full border-2 border-transparent border-t-current" />}
+              {saveState === "success" && <Check className="h-[1.2rem] w-[1.2rem] text-green-600" />}
+              {saveState === "error" && <X className="h-[1.2rem] w-[1.2rem] text-red-600" />}
+              {saveState === "idle" && <Save className="h-[1.2rem] w-[1.2rem]" />}
               <span className="ml-2">Manual save</span>
             </Button>
           )}
+
           <AuthButton className="w-full justify-start" />
+
           <Link
             href="https://github.com/Steellgold/supa-clicker"
             target="_blank"

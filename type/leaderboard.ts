@@ -1,4 +1,4 @@
-export type LeaderboardType = 'total_clicks' | 'total_power' | 'prestige_level';
+export type LeaderboardType = "total_clicks" | "total_power" | "prestige_level";
 
 export type LeaderboardEntry = {
   user_id: string;

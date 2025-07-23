@@ -1,5 +1,5 @@
-import { getAllUpgrades } from '@/lib/upgrades';
-import { Achievement, GameStats, UserUpgrade } from '@/type/game';
+import { getAllUpgrades } from "@/lib/upgrades";
+import { Achievement, GameStats, UserUpgrade } from "@/type/game";
 
 const ALL_UPGRADES = getAllUpgrades();
 

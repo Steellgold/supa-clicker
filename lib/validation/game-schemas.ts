@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const RecordNumberNumberSchema = z.record(z.string(), z.number()).transform(
   (val) => {

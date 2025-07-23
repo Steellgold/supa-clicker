@@ -27,10 +27,10 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
   const generateUsername = (displayName: string): string => {
     return displayName
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]/g, '')
-      .replace(/\s+/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "")
+      .replace(/\s+/g, "")
       .trim()
       .substring(0, 20)
   }
@@ -72,7 +72,7 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
         setError("Image must be less than 2MB")
         return
       }
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         setError("Please select an image file")
         return
       }
@@ -90,7 +90,7 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
     setProfileIcon(null)
     setIconPreview(null)
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = ""
     }
   }
 
@@ -98,7 +98,7 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
     if (!profileIcon || !user) return null
 
     const formData = new FormData()
-    formData.append('file', profileIcon)
+    formData.append("file", profileIcon)
 
     const result = await uploadProfileIcon(formData)
     

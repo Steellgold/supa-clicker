@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-import { createClient as createServerClient } from '@/lib/supabase/server'
+import { createClient as createServerClient } from "@/lib/supabase/server"
+import { createClient } from "@supabase/supabase-js"
+import { NextResponse } from "next/server"
 
 // Create admin client with service role key for secure operations
 const supabaseAdmin = createClient(
@@ -15,23 +15,23 @@ export async function DELETE() {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Use admin client to delete the user's save data securely
+    // Use admin client to delete the user"s save data securely
     const { error } = await supabaseAdmin
-      .from('clicker_saves')
+      .from("clicker_saves")
       .delete()
-      .eq('user_id', user.id)
+      .eq("user_id", user.id)
     
     if (error) {
-      console.error('Reset operation failed for user:', user.id)
-      return NextResponse.json({ error: 'Failed to reset game data' }, { status: 500 })
+      console.error("Reset operation failed for user:", user.id)
+      return NextResponse.json({ error: "Failed to reset game data" }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error("API error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -17,16 +17,16 @@ const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
     <div className={`
       flex items-center gap-3 p-4 border-2 transition-all
       ${isUnlocked 
-        ? 'border-green-400 bg-green-50 dark:bg-green-900/20' 
-        : 'border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800/50'
+        ? "border-green-400 bg-green-50 dark:bg-green-900/20" 
+        : "border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800/50"
       }
     `}>
       <div className="flex-shrink-0">
         <div className={`
           w-12 h-12 rounded-none flex items-center justify-center text-2xl border-2
           ${isUnlocked 
-            ? 'border-green-400 bg-green-100 dark:bg-green-800' 
-            : 'border-neutral-400 bg-neutral-100 dark:bg-neutral-700'
+            ? "border-green-400 bg-green-100 dark:bg-green-800" 
+            : "border-neutral-400 bg-neutral-100 dark:bg-neutral-700"
           }
         `}>
           {isUnlocked ? achievement.icon : <Lock className="w-6 h-6 text-neutral-500" />}
@@ -35,12 +35,12 @@ const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h3 className={`font-bold text-sm ${isUnlocked ? 'text-green-800 dark:text-green-200' : 'text-neutral-600 dark:text-neutral-400'}`}>
+          <h3 className={`font-bold text-sm ${isUnlocked ? "text-green-800 dark:text-green-200" : "text-neutral-600 dark:text-neutral-400"}`}>
             {achievement.name}
           </h3>
           {isUnlocked && <Check className="w-4 h-4 text-green-600" />}
         </div>
-        <p className={`text-xs ${isUnlocked ? 'text-green-700 dark:text-green-300' : 'text-neutral-500 dark:text-neutral-500'}`}>
+        <p className={`text-xs ${isUnlocked ? "text-green-700 dark:text-green-300" : "text-neutral-500 dark:text-neutral-500"}`}>
           {achievement.description}
         </p>
       </div>

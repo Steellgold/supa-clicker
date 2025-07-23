@@ -1,13 +1,13 @@
-import { buttonVariants } from '@/components/ui/button';
-import { getAllAchievements } from '@/lib/achievements';
-import { PRESTIGE_IMAGES } from '@/lib/config/prestige-images';
-import { createAdminClient } from '@/lib/supabase/client';
-import { getAllUpgrades } from '@/lib/upgrades';
-import { formatNumber } from '@/lib/utils';
-import type { Upgrade } from '@/type/game';
-import { ArrowLeft, MousePointer, Trophy, Zap } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { buttonVariants } from "@/components/ui/button";
+import { getAllAchievements } from "@/lib/achievements";
+import { PRESTIGE_IMAGES } from "@/lib/config/prestige-images";
+import { createAdminClient } from "@/lib/supabase/client";
+import { getAllUpgrades } from "@/lib/upgrades";
+import { formatNumber } from "@/lib/utils";
+import type { Upgrade } from "@/type/game";
+import { ArrowLeft, MousePointer, Trophy, Zap } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 type UserProfile = {
   username: string;
@@ -48,12 +48,12 @@ type UserProfileResult = {
 const getUserProfile = async (username: string): Promise<UserProfileResult | null> => {
   const adminClient = createAdminClient();
 
-  const { data, error } = await adminClient.rpc('get_user_profile_by_username', {
+  const { data, error } = await adminClient.rpc("get_user_profile_by_username", {
     p_username: username
   });
 
   if (error) {
-    console.error('Profile error:', error);
+    console.error("Profile error:", error);
     throw new Error(`Error loading profile: ${error.message}`);
   }
 
@@ -61,7 +61,11 @@ const getUserProfile = async (username: string): Promise<UserProfileResult | nul
     return null;
   }
 
-  const { profile: profileData, stats: statsData, gameData: gameDataResult } = data as UserProfileResult;
+  const {
+    profile: profileData,
+    stats: statsData,
+    gameData: gameDataResult
+  } = data as unknown as UserProfileResult;
 
   const profile: UserProfile = {
     username: profileData.username,
@@ -129,7 +133,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
             url: `https://supaclicker.vercel.app/${username}/opengraph-image`,
             width: 1200,
             height: 630,
-            alt: `${displayName}'s Supa Clicker Profile`,
+            alt: `${displayName}"s Supa Clicker Profile`,
           },
         ],
       },
@@ -164,11 +168,11 @@ const UserProfilePage = async ({ params }: Props) => {
       stats = result.stats;
       gameData = result.gameData;
     } else {
-      error = 'User not found';
+      error = "User not found";
     }
   } catch (err) {
-    console.error('Unexpected error loading profile:', err);
-    error = 'Failed to load profile';
+    console.error("Unexpected error loading profile:", err);
+    error = "Failed to load profile";
   }
 
   const allUpgrades = getAllUpgrades();
@@ -181,9 +185,9 @@ const UserProfilePage = async ({ params }: Props) => {
         <div className="max-w-4xl mx-auto">
           <div className="border-2 border-neutral-800 dark:border-neutral-200 bg-neutral-100 dark:bg-neutral-800 p-8 text-center">
             <div className="font-mono text-lg text-red-700 dark:text-red-300 mb-4">
-              {error || 'PROFILE NOT FOUND'}
+              {error || "PROFILE NOT FOUND"}
             </div>
-            <Link className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })} href="/">
+            <Link className={buttonVariants({ variant: "retro", className: "uppercase font-mono font-bold" })} href="/">
               <ArrowLeft className="w-4 h-4" />
               Go Back
             </Link>
@@ -221,7 +225,7 @@ const UserProfilePage = async ({ params }: Props) => {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Link href="/" className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })}>
+          <Link href="/" className={buttonVariants({ variant: "retro", className: "uppercase font-mono font-bold" })}>
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <h1 className="font-mono text-2xl font-bold text-neutral-900 dark:text-neutral-100">
@@ -238,7 +242,7 @@ const UserProfilePage = async ({ params }: Props) => {
                 {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
-                    alt={`${profile.username}'s avatar`}
+                    alt={`${profile.username}"s avatar`}
                     width={96}
                     height={96}
                     className="w-24 h-24 border-2 border-neutral-800 dark:border-neutral-200 object-cover"
@@ -483,7 +487,7 @@ const UserProfilePage = async ({ params }: Props) => {
 
         {/* Back to Game */}
         <div className="text-center">
-          <Link href="/" className={buttonVariants({ variant: 'retro', className: "uppercase font-mono font-bold" })}>
+          <Link href="/" className={buttonVariants({ variant: "retro", className: "uppercase font-mono font-bold" })}>
             <ArrowLeft className="w-4 h-4" />
             BACK TO GAME
           </Link>

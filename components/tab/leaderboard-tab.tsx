@@ -1,21 +1,21 @@
 "use client";
 
-import { useAuth } from '@/lib/auth/auth-context';
-import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
-import { cn } from '@/lib/utils';
-import { LeaderboardEntry, LeaderboardType } from '@/type/leaderboard';
-import { ReactElement, useState } from 'react';
-import { Button } from '../ui/button';
-import { UserProfileLink } from '../user-profile-link';
+import { useAuth } from "@/lib/auth/auth-context";
+import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
+import { cn } from "@/lib/utils";
+import { LeaderboardEntry, LeaderboardType } from "@/type/leaderboard";
+import { ReactElement, useState } from "react";
+import { Button } from "../ui/button";
+import { UserProfileLink } from "../user-profile-link";
 
 const LEADERBOARD_TYPES: { key: LeaderboardType; label: string; symbol: string }[] = [
-  { key: 'total_power', label: 'Power', symbol: '⚡' },
-  { key: 'total_clicks', label: 'Clicks', symbol: '👆' },
-  { key: 'prestige_level', label: 'Prestige', symbol: '👑' },
+  { key: "total_power", label: "Power", symbol: "⚡" },
+  { key: "total_clicks", label: "Clicks", symbol: "👆" },
+  { key: "prestige_level", label: "Prestige", symbol: "👑" },
 ];
 
 export const LeaderboardTab = (): ReactElement => {
-  const [activeType, setActiveType] = useState<LeaderboardType>('total_power');
+  const [activeType, setActiveType] = useState<LeaderboardType>("total_power");
   const { user } = useAuth();
   
   const { leaderboard, isLoading, error, fetchLeaderboard } = useLeaderboard(activeType, 20);
@@ -29,17 +29,17 @@ export const LeaderboardTab = (): ReactElement => {
 
   const getValueForType = (entry: LeaderboardEntry, type: LeaderboardType): number => {
     switch (type) {
-      case 'total_clicks': return entry.total_clicks || 0;
-      case 'total_power': return entry.total_power || 0;
-      case 'prestige_level': return entry.prestige_level || 0;
+      case "total_clicks": return entry.total_clicks || 0;
+      case "total_power": return entry.total_power || 0;
+      case "prestige_level": return entry.prestige_level || 0;
       default: return 0;
     }
   };
 
   const getRankDisplay = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
     return `#${rank}`;
   };
 
@@ -154,7 +154,7 @@ export const LeaderboardTab = (): ReactElement => {
                       </div>
                       
                       <div className="text-right font-bold">
-                        {activeType === 'prestige_level' 
+                        {activeType === "prestige_level" 
                           ? `LV.${value}` 
                           : formatNumber(value)
                         }

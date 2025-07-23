@@ -19,12 +19,12 @@ export async function updateUserProfile(profileData: ProfileUpdateData) {
       return { error: "Unauthorized - please login again" }
     }
 
-    const { data, error } = await adminClient.rpc('update_user_profile', {
+    const { data, error } = await adminClient.rpc("update_user_profile", {
       p_user_id: user.id,
       p_username: profileData.username,
-      p_display_name: profileData.display_name || undefined,
-      p_bio: profileData.bio || undefined,
-      p_avatar_url: profileData.avatar_url || undefined
+      p_display_name: profileData.display_name ?? profileData.username,
+      p_bio: profileData.bio ?? "",
+      p_avatar_url: profileData.avatar_url ?? ""
     })
 
     if (error) {
@@ -54,7 +54,7 @@ export const uploadProfileIcon = async(formData: FormData) => {
       return { error: "Unauthorized - please login again" }
     }
 
-    const file = formData.get('file') as File
+    const file = formData.get("file") as File
     if (!file) {
       return { error: "No file provided" }
     }
@@ -63,25 +63,25 @@ export const uploadProfileIcon = async(formData: FormData) => {
       return { error: "Image must be less than 2MB" }
     }
 
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       return { error: "Please select an image file" }
     }
 
-    const fileExt = file.name.split('.').pop()
+    const fileExt = file.name.split(".").pop()
     const fileName = `${user.id}_${Date.now()}.${fileExt}`
     const filePath = `profile-icons/${fileName}`
 
     const { error: uploadError } = await adminClient.storage
-      .from('profile-assets')
+      .from("profile-assets")
       .upload(filePath, file)
 
     if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return { error: 'Failed to upload icon' }
+      console.error("Upload error:", uploadError)
+      return { error: "Failed to upload icon" }
     }
 
     const { data: { publicUrl } } = adminClient.storage
-      .from('profile-assets')
+      .from("profile-assets")
       .getPublicUrl(filePath)
 
     return { success: true, publicUrl }

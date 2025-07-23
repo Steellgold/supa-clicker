@@ -1,7 +1,7 @@
-import { LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from '@/type/leaderboard';
-import { useCallback, useEffect, useState } from 'react';
+import { LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from "@/type/leaderboard";
+import { useCallback, useEffect, useState } from "react";
 
-export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: number = 50) => {
+export const useLeaderboard = (type: LeaderboardType = "total_power", limit: number = 50) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,13 +17,13 @@ export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: num
       });
 
       if (userId) {
-        params.append('userId', userId);
+        params.append("userId", userId);
       }
 
       const response = await fetch(`/api/leaderboard?${params}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch leaderboard');
+        throw new Error("Failed to fetch leaderboard");
       }
 
       const data: LeaderboardResponse = await response.json();
@@ -31,9 +31,9 @@ export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: num
       
       return data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
       setError(errorMessage);
-      console.error('Error fetching leaderboard:', err);
+      console.error("Error fetching leaderboard:", err);
       return null;
     } finally {
       setIsLoading(false);
@@ -42,21 +42,21 @@ export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: num
 
   const updateLeaderboard = useCallback(async (stats: UserLeaderboardStats) => {
     try {
-      const response = await fetch('/api/leaderboard', {
-        method: 'POST',
+      const response = await fetch("/api/leaderboard", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(stats),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update leaderboard');
+        throw new Error("Failed to update leaderboard");
       }
 
       return await response.json();
     } catch (err) {
-      console.error('Error updating leaderboard:', err);
+      console.error("Error updating leaderboard:", err);
       throw err;
     }
   }, []);
@@ -75,7 +75,7 @@ export const useLeaderboard = (type: LeaderboardType = 'total_power', limit: num
   };
 };
 
-export const useUserLeaderboardPosition = (userId: string | null, type: LeaderboardType = 'total_power') => {
+export const useUserLeaderboardPosition = (userId: string | null, type: LeaderboardType = "total_power") => {
   const [position, setPosition] = useState<number | null>(null);
   const [userData, setUserData] = useState<LeaderboardEntry | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,21 +92,21 @@ export const useUserLeaderboardPosition = (userId: string | null, type: Leaderbo
     try {
       const params = new URLSearchParams({
         type,
-        limit: '1',
+        limit: "1",
         userId,
       });
 
       const response = await fetch(`/api/leaderboard?${params}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch user position');
+        throw new Error("Failed to fetch user position");
       }
 
       const data: LeaderboardResponse = await response.json();
       setPosition(data.userPosition);
       setUserData(data.userData);
     } catch (err) {
-      console.error('Error fetching user position:', err);
+      console.error("Error fetching user position:", err);
       setPosition(null);
       setUserData(null);
     } finally {

@@ -39,8 +39,8 @@ export const UnlockBlurWrapper: Component<UnlockBlurWrapperProps> = ({ children,
       style={{ 
         opacity,
         filter: `blur(${blur}px)`,
-        transform: blur > 5 ? 'scale(0.95)' : 'scale(1)',
-        transition: 'all 0.3s ease'
+        transform: blur > 5 ? "scale(0.95)" : "scale(1)",
+        transition: "all 0.3s ease"
       }}
     >
       {children}

@@ -142,6 +142,16 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const buyUpgrade = useCallback(async (upgradeId: number, quantity: number = 1) => {
     if (!userId) return 0;
 
+    await fetch("/api/game/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "save",
+        payload: gameState,
+        timestamp: Date.now()
+      })
+    });
+
     // Cap the quantity to avoid backend validation errors
     const cappedQuantity = Math.min(quantity, 100); // Cap at 100 upgrades per request
 
@@ -206,6 +216,16 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   const buySpecialItem = useCallback(async (specialItemId: number) => {
     if (!userId) return false;
+
+    await fetch("/api/game/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "save",
+        payload: gameState,
+        timestamp: Date.now()
+      })
+    });
 
     const prevState = { ...gameState };
     setGameState(prev => ({

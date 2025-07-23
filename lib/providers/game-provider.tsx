@@ -1,13 +1,13 @@
 "use client";
 
-import { useAuth } from '@/lib/auth/auth-context';
-import { useAchievements } from '@/lib/hooks/use-achievements';
-import { useClickerGame } from '@/lib/hooks/use-game-data';
-import { getAllUpgrades } from '@/lib/upgrades';
-import { Component } from '@/type/component';
-import { GameStats, UserUpgrade } from '@/type/game';
-import { createContext, PropsWithChildren, useContext, useEffect } from 'react';
-import { GAME_CONFIG } from '../config/game-config';
+import { useAuth } from "@/lib/auth/auth-context";
+import { useAchievements } from "@/lib/hooks/use-achievements";
+import { useClickerGame } from "@/lib/hooks/use-game-data";
+import { getAllUpgrades } from "@/lib/upgrades";
+import { Component } from "@/type/component";
+import { GameStats, UserUpgrade } from "@/type/game";
+import { createContext, PropsWithChildren, useContext, useEffect } from "react";
+import { GAME_CONFIG } from "../config/game-config";
 
 type GameContextType = ReturnType<typeof useClickerGame> & ReturnType<typeof useAchievements>;
 
@@ -86,7 +86,7 @@ export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
   
   if (!context) {
-    throw new Error('useGame must be used within a GameProvider');
+    throw new Error("useGame must be used within a GameProvider");
   }
   
   return context;

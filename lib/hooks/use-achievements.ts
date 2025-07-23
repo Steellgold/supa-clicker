@@ -1,8 +1,8 @@
 
-import { checkAchievements, getAllAchievements } from '@/lib/achievements';
-import { useAuth } from '@/lib/auth/auth-context';
-import { Achievement, GameStats, UserUpgrade } from '@/type/game';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { checkAchievements, getAllAchievements } from "@/lib/achievements";
+import { useAuth } from "@/lib/auth/auth-context";
+import { Achievement, GameStats, UserUpgrade } from "@/type/game";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export interface UseAchievementsReturn {
   // Achievement states
@@ -24,7 +24,7 @@ export interface UseAchievementsReturn {
 
 export const useAchievements = (initialUnlockedIds: number[] = []): UseAchievementsReturn => {
   const { user } = useAuth();
-  const storageKey = user ? `achievements_viewed_${user.id}` : 'achievements_viewed_local';
+  const storageKey = user ? `achievements_viewed_${user.id}` : "achievements_viewed_local";
   const [unlockedIds, setUnlockedIds] = useState<number[]>(initialUnlockedIds);
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   const [viewedIds, setViewedIds] = useState<number[]>([]);

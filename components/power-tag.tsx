@@ -6,7 +6,7 @@ import { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren & {
   power?: number | string;
-  imageProps?: Partial<Omit<ImageProps, 'src' | 'alt'>>;
+  imageProps?: Partial<Omit<ImageProps, "src" | "alt">>;
 };
 
 export const PowerTag: Component<Props> = ({ power, children, imageProps }) => {

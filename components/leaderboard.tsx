@@ -1,11 +1,11 @@
 "use client";
 
-import { useAuth } from '@/lib/auth/auth-context';
-import { useLeaderboard } from '@/lib/hooks/use-leaderboard';
-import { cn } from '@/lib/utils';
-import { LeaderboardType } from '@/type/leaderboard';
-import React, { useState } from 'react';
-import { Button } from './ui/button';
+import { useAuth } from "@/lib/auth/auth-context";
+import { useLeaderboard } from "@/lib/hooks/use-leaderboard";
+import { cn } from "@/lib/utils";
+import { LeaderboardType } from "@/type/leaderboard";
+import React, { useState } from "react";
+import { Button } from "./ui/button";
 
 type LeaderboardEntry = {
   user_id: string;
@@ -16,14 +16,14 @@ type LeaderboardEntry = {
 };
 
 const LEADERBOARD_TYPES: { key: LeaderboardType; label: string; symbol: string }[] = [
-  { key: 'total_power', label: 'Power', symbol: '⚡' },
-  { key: 'total_clicks', label: 'Clicks', symbol: '👆' },
-  { key: 'prestige_level', label: 'Prestige', symbol: '👑' },
+  { key: "total_power", label: "Power", symbol: "⚡" },
+  { key: "total_clicks", label: "Clicks", symbol: "👆" },
+  { key: "prestige_level", label: "Prestige", symbol: "👑" },
 ];
 
 export const Leaderboard: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeType, setActiveType] = useState<LeaderboardType>('total_power');
+  const [activeType, setActiveType] = useState<LeaderboardType>("total_power");
   const { user } = useAuth();
   
   const { leaderboard, isLoading, error, fetchLeaderboard } = useLeaderboard(activeType, 20);
@@ -41,17 +41,17 @@ export const Leaderboard: React.FC = () => {
 
   const getValueForType = (entry: LeaderboardEntry, type: LeaderboardType): number => {
     switch (type) {
-      case 'total_clicks': return entry.total_clicks || 0;
-      case 'total_power': return entry.total_power || 0;
-      case 'prestige_level': return entry.prestige_level || 0;
+      case "total_clicks": return entry.total_clicks || 0;
+      case "total_power": return entry.total_power || 0;
+      case "prestige_level": return entry.prestige_level || 0;
       default: return 0;
     }
   };
 
   const getRankDisplay = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
     return `#${rank}`;
   };
 
@@ -59,7 +59,7 @@ export const Leaderboard: React.FC = () => {
     <div className={cn(
       "fixed top-0 left-0 h-full transition-transform duration-300 z-40",
       "bg-neutral-200 dark:bg-neutral-800 border-r-2 border-neutral-800 dark:border-neutral-200",
-      isOpen ? 'translate-x-0' : '-translate-x-full'
+      isOpen ? "translate-x-0" : "-translate-x-full"
     )}>
       {/* Toggle Button */}
       <Button
@@ -72,7 +72,7 @@ export const Leaderboard: React.FC = () => {
         )}
       >
         <span className="font-mono text-xs">
-          {isOpen ? '◀' : '▶'}
+          {isOpen ? "◀" : "▶"}
         </span>
       </Button>
 
@@ -162,7 +162,7 @@ export const Leaderboard: React.FC = () => {
                           </span>
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-bold">
-                              {entry.username || 'Anonymous'}
+                              {entry.username || "Anonymous"}
                               {isCurrentUser && <span className="ml-1">(YOU)</span>}
                             </div>
                             {entry.prestige_level > 0 && (
@@ -174,7 +174,7 @@ export const Leaderboard: React.FC = () => {
                         </div>
                         
                         <div className="text-right font-bold">
-                          {activeType === 'prestige_level' ? `LV.${value}` : formatNumber(value)}
+                          {activeType === "prestige_level" ? `LV.${value}` : formatNumber(value)}
                         </div>
                       </div>
                     </div>

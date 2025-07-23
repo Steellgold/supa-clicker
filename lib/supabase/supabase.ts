@@ -232,6 +232,7 @@ export type Database = {
         Row: {
           achievements_count: number | null
           avatar_url: string | null
+          bio: string | null
           created_at: string | null
           display_name: string | null
           id: string
@@ -245,6 +246,7 @@ export type Database = {
         Insert: {
           achievements_count?: number | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           display_name?: string | null
           id: string
@@ -258,6 +260,7 @@ export type Database = {
         Update: {
           achievements_count?: number | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           display_name?: string | null
           id?: string
@@ -397,6 +400,21 @@ export type Database = {
       increment_total_spent: {
         Args: { user_id: string; upgrade_id: number; amount: number }
         Returns: undefined
+      }
+      update_user_profile: {
+        Args: {
+          p_user_id: string
+          p_username: string
+          p_display_name: string
+          p_bio: string
+          p_avatar_url: string
+        }
+        Returns: {
+          username: string
+          display_name: string
+          bio: string
+          avatar_url: string
+        }[]
       }
       validate_progression_increase: {
         Args: {

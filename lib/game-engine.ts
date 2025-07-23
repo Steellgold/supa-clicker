@@ -1,3 +1,4 @@
+import { TablesInsert } from "@/lib/supabase/supabase"
 import { createClient } from "@supabase/supabase-js"
 import { GAME_CONFIG } from "./config/game-config"
 import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items"
@@ -57,6 +58,13 @@ interface PurchaseResult {
   reason?: string
 }
 
+type UpgradeBreakdown = {
+  quantity: number;
+  total_spent: number | null;
+  pps: number;
+  ppc: number;
+};
+
 export class GameEngine {
   
   /**
@@ -71,7 +79,7 @@ export class GameEngine {
         .eq("user_id", userId)
         .maybeSingle()
 
-      if (progError && progError.code !== 'PGRST116') {
+      if (progError && progError.code !== "PGRST116") {
         throw new Error(`Failed to load progression: ${progError.message}`)
       }
 
@@ -164,7 +172,7 @@ export class GameEngine {
         timeBoostMultiplier: 1
       }
     } catch (error) {
-      console.error('Error loading game state:', error)
+      console.error("Error loading game state:", error)
       throw error
     }
   }
@@ -181,7 +189,7 @@ export class GameEngine {
         .eq("id", userId)
         .maybeSingle()
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError && checkError.code !== "PGRST116") {
         throw new Error(`Failed to check profile: ${checkError.message}`)
       }
 
@@ -206,7 +214,7 @@ export class GameEngine {
         }
       }
     } catch (error) {
-      console.error('Error ensuring user profile:', error)
+      console.error("Error ensuring user profile:", error)
       throw error
     }
   }
@@ -236,28 +244,28 @@ export class GameEngine {
           last_save_time: new Date(gameState.lastSaveTime).toISOString(),
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id'
+          onConflict: "user_id"
         })
 
       if (progError) {
         throw new Error(`Failed to save progression: ${progError.message}`)
       }
 
-        // 2. Save upgrades (only non-zero quantities)
-        const upgradeData = Object.entries(gameState.upgrades)
-          .filter(([, quantity]) => quantity > 0)
-          .map(([upgradeId, quantity]) => ({
-            user_id: userId,
-            upgrade_id: parseInt(upgradeId),
-            quantity: quantity,
-            last_purchased_at: new Date().toISOString()
-          }))
+      // 2. Save upgrades (only non-zero quantities)
+      const upgradeData = Object.entries(gameState.upgrades)
+        .filter(([, quantity]) => quantity > 0)
+        .map(([upgradeId, quantity]) => ({
+          user_id: userId,
+          upgrade_id: parseInt(upgradeId),
+          quantity: quantity,
+          last_purchased_at: new Date().toISOString()
+        }))
 
         if (upgradeData.length > 0) {
           const { error: upgradeError } = await supabaseAdmin
             .from("user_upgrades")
             .upsert(upgradeData, {
-              onConflict: 'user_id,upgrade_id'
+              onConflict: "user_id,upgrade_id"
             })
 
           if (upgradeError) {
@@ -279,7 +287,7 @@ export class GameEngine {
           const { error: specialError } = await supabaseAdmin
             .from("user_special_items")
             .upsert(specialItemData, {
-              onConflict: 'user_id,special_item_id'
+              onConflict: "user_id,special_item_id"
             })
 
           if (specialError) {
@@ -314,29 +322,64 @@ export class GameEngine {
 
         // 5. Update leaderboard entry (simplified version without RPC)
         try {
-          await supabaseAdmin
-            .from("leaderboard_entries")
-            .upsert({
-              user_id: userId,
-              total_power: gameState.totalPower,
-              total_clicks: gameState.totalClicks,
-              prestige_level: gameState.prestigeLevel,
-              achievements_count: gameState.unlockedAchievements.length,
-              playtime_seconds: 0, // Will be calculated later
-              last_updated: new Date().toISOString(),
-              season: 'global'
-            }, {
-              onConflict: 'user_id,season'
-            })
+          await supabaseAdmin.from("leaderboard_entries").upsert({
+            user_id: userId,
+            total_power: gameState.totalPower,
+            total_clicks: gameState.totalClicks,
+            prestige_level: gameState.prestigeLevel,
+            achievements_count: gameState.unlockedAchievements.length,
+            playtime_seconds: 0, // Will be calculated later
+            last_updated: new Date().toISOString(),
+            season: "global"
+          }, {
+            onConflict: "user_id,season"
+          })
         } catch (leaderboardError) {
-          console.warn('Failed to update leaderboard:', leaderboardError)
-          // Don't throw error for leaderboard update failure
+          console.warn("Failed to update leaderboard:", leaderboardError)
         }
-
     } catch (error) {
-      console.error('Error saving game state:', error)
+      console.error("Error saving game state:", error)
       throw error
     }
+  }
+
+  static async savePrestigeStats(userId: string, gameState: GameState, startTime: number, endTime: number) {
+    const allUpgrades = getAllUpgrades();
+
+    const upgrades_breakdown: Record<number, UpgradeBreakdown> = {};
+
+    let total_pps = 0;
+    let total_ppc = 0;
+    for (const upgrade of allUpgrades) {
+      const qty = gameState.upgrades[upgrade.id] || 0;
+      if (qty > 0) {
+        upgrades_breakdown[upgrade.id] = {
+          quantity: qty,
+          total_spent: null,
+          pps: upgrade.ppsGain * qty,
+          ppc: upgrade.clickMultiplier * qty
+        };
+        total_pps += upgrade.ppsGain * qty;
+        total_ppc += upgrade.clickMultiplier * qty;
+      }
+    }
+    const row: TablesInsert<"prestige_stats"> = {
+      user_id: userId,
+      prestige_level: gameState.prestigeLevel,
+      start_time: new Date(startTime).toISOString(),
+      end_time: new Date(endTime).toISOString(),
+      total_power: gameState.totalPower,
+      total_clicks: gameState.totalClicks,
+      pps: gameState.pps,
+      upgrades: gameState.upgrades,
+      special_items: gameState.specialItems,
+      achievements: gameState.unlockedAchievements,
+      duration_seconds: Math.floor((endTime - startTime) / 1000),
+      upgrades_breakdown,
+      total_pps,
+      total_ppc,
+    };
+    await supabaseAdmin.from("prestige_stats").insert(row);
   }
 
   /**
@@ -490,6 +533,7 @@ export class GameEngine {
          currentLevel + i, 
          gameState.prestigeLevel
        )
+
        if (gameState.currentPower >= totalCost + cost) {
          totalCost += cost
          actualQuantity++
@@ -535,6 +579,12 @@ export class GameEngine {
      gameState.currentResources = gameState.currentPower
      gameState.upgrades[upgradeId] = currentLevel + actualQuantity
      gameState.lastSaveTime = Date.now()
+
+     await supabaseAdmin.rpc("increment_total_spent", {
+       user_id: userId,
+       upgrade_id: upgradeId,
+       amount: totalCost
+     });
 
      // Recalculate stats using centralized system
      const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)
@@ -605,6 +655,12 @@ export class GameEngine {
      gameState.currentResources = gameState.currentPower
      gameState.specialItems[specialItemId] = currentLevel + 1
      gameState.lastSaveTime = Date.now()
+
+     await supabaseAdmin.rpc("increment_total_spent", {
+       user_id: userId,
+       upgrade_id: specialItemId,
+       amount: cost
+     });
 
      // Recalculate stats using centralized system
      const { totalPps, totalClickMultiplier } = this.calculateStats(gameState)

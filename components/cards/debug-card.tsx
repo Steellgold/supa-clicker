@@ -16,7 +16,7 @@ import { useCallback, useState } from "react";
 
 export const DebugCard = (): ReactElement => {
   const { gameState, setGameState } = useGame();
-  const [selectedTab, setSelectedTab] = useState<'basic' | 'upgrades' | 'specials' | 'advanced'>('basic');
+  const [selectedTab, setSelectedTab] = useState<"basic" | "upgrades" | "specials" | "advanced">("basic");
 
   const updateGameState = useCallback((updates: Partial<GameState>) => {
     setGameState({ ...gameState, ...updates });
@@ -78,7 +78,7 @@ export const DebugCard = (): ReactElement => {
     });
   };
 
-  if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== "development") {
     return <></>;
   }
 
@@ -95,14 +95,14 @@ export const DebugCard = (): ReactElement => {
 
       <div className="flex flex-col mb-2 border-b border-red-300 flex-shrink-0">
         {[
-          { key: 'basic', label: 'Basic Stats', icon: Settings },
-          { key: 'upgrades', label: 'Upgrades', icon: Zap },
-          { key: 'specials', label: 'Specials', icon: Crown },
-          { key: 'advanced', label: 'Advanced', icon: Target }
+          { key: "basic", label: "Basic Stats", icon: Settings },
+          { key: "upgrades", label: "Upgrades", icon: Zap },
+          { key: "specials", label: "Specials", icon: Crown },
+          { key: "advanced", label: "Advanced", icon: Target }
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
-            onClick={() => setSelectedTab(key as 'basic' | 'upgrades' | 'specials' | 'advanced')}
+            onClick={() => setSelectedTab(key as "basic" | "upgrades" | "specials" | "advanced")}
             className={cn(
               "px-3 py-2 text-xs font-medium transition-colors flex items-center gap-1",
               selectedTab === key
@@ -124,7 +124,7 @@ export const DebugCard = (): ReactElement => {
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full p-4">
-          {selectedTab === 'basic' && (
+          {selectedTab === "basic" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -134,7 +134,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.currentPower}
-                    onChange={(e) => updateBasicStat('currentPower', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("currentPower", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -145,7 +145,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.totalPower}
-                    onChange={(e) => updateBasicStat('totalPower', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("totalPower", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -156,7 +156,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.clickPower}
-                    onChange={(e) => updateBasicStat('clickPower', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("clickPower", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -167,7 +167,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.pps}
-                    onChange={(e) => updateBasicStat('pps', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("pps", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -178,7 +178,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.totalClicks}
-                    onChange={(e) => updateBasicStat('totalClicks', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("totalClicks", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -189,7 +189,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.prestigeLevel}
-                    onChange={(e) => updateBasicStat('prestigeLevel', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("prestigeLevel", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -206,7 +206,7 @@ export const DebugCard = (): ReactElement => {
             </div>
           )}
 
-          {selectedTab === 'upgrades' && (
+          {selectedTab === "upgrades" && (
             <div className="h-full flex flex-col">
               <div className="flex gap-2 mb-3 flex-shrink-0">
                 <Button size="sm" variant="destructive" onClick={maxAllUpgrades} className="text-xs">
@@ -247,7 +247,7 @@ export const DebugCard = (): ReactElement => {
             </div>
           )}
 
-          {selectedTab === 'specials' && (
+          {selectedTab === "specials" && (
             <div className="h-full flex flex-col">
               <div className="flex gap-2 mb-3 flex-shrink-0">
                 <Button 
@@ -277,7 +277,7 @@ export const DebugCard = (): ReactElement => {
                     <div key={item.id} className="flex items-center gap-2 bg-white dark:bg-neutral-800 p-2 rounded border">
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium truncate">{item.name}</div>
-                        <div className="text-xs text-neutral-500">ID: {item.id} | Max: {item.maxPurchases || '∞'}</div>
+                        <div className="text-xs text-neutral-500">ID: {item.id} | Max: {item.maxPurchases || "∞"}</div>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-1 rounded">
@@ -299,7 +299,7 @@ export const DebugCard = (): ReactElement => {
             </div>
           )}
 
-          {selectedTab === 'advanced' && (
+          {selectedTab === "advanced" && (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -309,7 +309,7 @@ export const DebugCard = (): ReactElement => {
                   <Input
                     type="number"
                     value={gameState.comboCount}
-                    onChange={(e) => updateBasicStat('comboCount', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("comboCount", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>
@@ -321,7 +321,7 @@ export const DebugCard = (): ReactElement => {
                     type="number"
                     step="0.1"
                     value={gameState.timeBoostMultiplier}
-                    onChange={(e) => updateBasicStat('timeBoostMultiplier', Number(e.target.value))}
+                    onChange={(e) => updateBasicStat("timeBoostMultiplier", Number(e.target.value))}
                     className="text-xs h-8 border-red-300"
                   />
                 </div>

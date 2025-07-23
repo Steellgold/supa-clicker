@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, PropsWithChildren } from 'react';
-import { Component } from '@/type/component';
+import { Component } from "@/type/component";
+import { createContext, PropsWithChildren, useContext, useState } from "react";
 
 export type BulkBuyOption = 1 | 3 | 5 | 10 | 20 | "MAX";
 
@@ -31,7 +31,7 @@ export const useBulkBuy = (): BulkBuyContextType => {
   const context = useContext(BulkBuyContext);
   
   if (!context) {
-    throw new Error('useBulkBuy must be used within a BulkBuyProvider');
+    throw new Error("useBulkBuy must be used within a BulkBuyProvider");
   }
   
   return context;

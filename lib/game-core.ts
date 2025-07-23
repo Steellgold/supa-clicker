@@ -65,7 +65,7 @@ export interface SpecialItemDefinition {
 }
 
 export interface GameAction {
-  type: 'click' | 'purchase' | 'save' | 'load' | 'reset'
+  type: "click" | "purchase" | "save" | "load" | "reset"
   payload: Record<string, unknown>
   userId: string
   timestamp: number
@@ -75,7 +75,7 @@ export interface ValidationResult {
   isValid: boolean
   adjustedValue?: number
   reason?: string
-  severity?: 'info' | 'warning' | 'error'
+  severity?: "info" | "warning" | "error"
 }
 
 // ===============================
@@ -149,26 +149,26 @@ export class GameValidator {
       return {
         isValid: false,
         reason: `Timestamp too old: ${timeDiff}ms`,
-        severity: 'error'
+        severity: "error"
       }
     }
 
     // User ID validation
-    if (!action.userId || typeof action.userId !== 'string') {
+    if (!action.userId || typeof action.userId !== "string") {
       return {
         isValid: false,
-        reason: 'Invalid user ID',
-        severity: 'error'
+        reason: "Invalid user ID",
+        severity: "error"
       }
     }
 
     // Action type validation
-    const validTypes = ['click', 'purchase', 'save', 'load', 'reset']
+    const validTypes = ["click", "purchase", "save", "load", "reset"]
     if (!validTypes.includes(action.type)) {
       return {
         isValid: false,
         reason: `Invalid action type: ${action.type}`,
-        severity: 'error'
+        severity: "error"
       }
     }
 
@@ -188,8 +188,8 @@ export class GameValidator {
     if (increase < 0) {
       return {
         isValid: false,
-        reason: 'Negative power increase',
-        severity: 'error'
+        reason: "Negative power increase",
+        severity: "error"
       }
     }
 
@@ -201,13 +201,13 @@ export class GameValidator {
           isValid: false,
           adjustedValue: oldPower + allowedIncrease,
           reason: `Power increase too large: ${increase} > ${allowedIncrease}`,
-          severity: 'error'
+          severity: "error"
         }
       } else {
         return {
           isValid: true,
           reason: `Power increase within buffer: ${increase}`,
-          severity: 'warning'
+          severity: "warning"
         }
       }
     }
@@ -230,7 +230,7 @@ export class GameValidator {
       return {
         isValid: false,
         reason: `Invalid quantity: ${quantity}`,
-        severity: 'error'
+        severity: "error"
       }
     }
 
@@ -239,7 +239,7 @@ export class GameValidator {
       return {
         isValid: false,
         reason: `Level limit exceeded: ${currentLevel + quantity}`,
-        severity: 'error'
+        severity: "error"
       }
     }
 
@@ -248,7 +248,7 @@ export class GameValidator {
       return {
         isValid: false,
         reason: `Insufficient funds: ${cost} > ${availablePower}`,
-        severity: 'error'
+        severity: "error"
       }
     }
 
@@ -291,8 +291,6 @@ export class GameStateManager {
    * Validate and sanitize game state
    */
   static sanitizeGameState(state: Partial<GameState>): GameState {
-    const defaultState = this.createDefaultState()
-    
     return {
       totalClicks: Math.max(0, Math.floor(state.totalClicks || 0)),
       totalPower: Math.max(0, Math.floor(state.totalPower || 0)),
@@ -332,33 +330,33 @@ export class GameStateManager {
   static detectSuspiciousActivity(state: GameState): {
     isSuspicious: boolean
     reasons: string[]
-    severity: 'low' | 'medium' | 'high'
+    severity: "low" | "medium" | "high"
   } {
     const reasons: string[] = []
-    let severity: 'low' | 'medium' | 'high' = 'low'
+    let severity: "low" | "medium" | "high" = "low"
 
     // Check for unreasonable power levels
     if (state.totalPower > GAME_RULES.ANTI_CHEAT.SUSPICIOUS_POWER_THRESHOLD) {
       reasons.push(`Extremely high total power: ${state.totalPower}`)
-      severity = 'medium'
+      severity = "medium"
     }
 
     // Check for impossible click power
     if (state.clickPower > state.totalPower * 10) {
       reasons.push(`Click power too high relative to total power`)
-      severity = 'high'
+      severity = "high"
     }
 
     // Check for impossible PPS
     if (state.pps > state.totalPower) {
       reasons.push(`PPS exceeds total power`)
-      severity = 'high'
+      severity = "high"
     }
 
     // Check prestige level
     if (state.prestigeLevel > GAME_RULES.PROGRESSION.MAX_PRESTIGE_LEVEL) {
       reasons.push(`Prestige level exceeds maximum`)
-      severity = 'high'
+      severity = "high"
     }
 
     return {

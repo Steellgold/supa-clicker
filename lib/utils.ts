@@ -55,7 +55,7 @@ export const formatWithSpacesAndSuffix = (num: number) => {
       const main6 = main.slice(0, 6);
       let formatted = main6;
       if (main6.length > 3) {
-        formatted = main6.slice(0, main6.length - 3) + ' ' + main6.slice(main6.length - 3);
+        formatted = main6.slice(0, main6.length - 3) + " " + main6.slice(main6.length - 3);
       }
       return `${formatted} ${suffix}`;
     }

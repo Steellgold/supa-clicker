@@ -23,7 +23,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   const purchasedSpecials = (gameState.purchasedSpecialItems || []).filter(s => s.specialItemId === item.id);
   const currentLevel = purchasedSpecials.length > 0 ? purchasedSpecials.length : (gameState.specialItems[item.id] || 0);
 
-  // Static cost: take the cost of the next purchase from the state, otherwise '???'
+  // Static cost: take the cost of the next purchase from the state, otherwise "???"
   const staticCost =
     typeof gameState.nextSpecialItemCosts?.[item.id] === "number"
       ? gameState.nextSpecialItemCosts[item.id]
@@ -104,7 +104,7 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
   };
 
   const shouldShowPowerTag = (effect: string) => {
-    return effect.includes('x') || effect.includes('/s') || effect.includes('Clicks');
+    return effect.includes("x") || effect.includes("/s") || effect.includes("Clicks");
   };
 
   const getDynamicEffectText = (item: SpecialItem, currentLevel: number) => {

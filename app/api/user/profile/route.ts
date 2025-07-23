@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
-import { createClient as createServerClient } from "@/lib/supabase/server"
 import { GameEngine } from "@/lib/game-engine"
+import { createClient as createServerClient } from "@/lib/supabase/server"
+import { NextResponse } from "next/server"
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Verify user authentication
     const supabase = await createServerClient()
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Ensure user profile exists (this will create it if it doesn't exist)
+    // Ensure user profile exists (this will create it if it doesn"t exist)
     await GameEngine.ensureUserProfile(user.id)
 
     // Load initial game state to ensure everything is set up
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       gameState
     })
   } catch (error) {
-    console.error('Profile initialization error:', error)
+    console.error("Profile initialization error:", error)
     return NextResponse.json({ 
       error: "Failed to initialize profile",
       details: error instanceof Error ? error.message : String(error)
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Verify user authentication
     const supabase = await createServerClient()
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle()
 
-    if (profileError && profileError.code !== 'PGRST116') {
+    if (profileError && profileError.code !== "PGRST116") {
       throw new Error(`Failed to fetch profile: ${profileError.message}`)
     }
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Profile fetch error:', error)
+    console.error("Profile fetch error:", error)
     return NextResponse.json({ 
       error: "Failed to fetch profile",
       details: error instanceof Error ? error.message : String(error)

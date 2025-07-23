@@ -66,9 +66,9 @@ export const GAME_CONFIG = {
 
     /** Allowed origins for API requests */
     ALLOWED_ORIGINS: [
-      'https://supaclicker.vercel.app',
-      'http://localhost:3000',
-      'https://localhost:3000'
+      "https://supaclicker.vercel.app",
+      "http://localhost:3000",
+      "https://localhost:3000"
     ],
   },
 
@@ -181,13 +181,13 @@ export const GAME_CONFIG = {
   // ===============================
   STORAGE: {
     /** Local storage key for game save data */
-    GAME_SAVE_KEY: 'clicker_game_save',
+    GAME_SAVE_KEY: "clicker_game_save",
     
     /** Prefix for achievement storage keys */
-    ACHIEVEMENTS_KEY_PREFIX: 'achievements_viewed_',
+    ACHIEVEMENTS_KEY_PREFIX: "achievements_viewed_",
     
     /** Database table name for saves */
-    DB_TABLE: 'clicker_saves',
+    DB_TABLE: "clicker_saves",
   },
 
   // ===============================
@@ -195,10 +195,10 @@ export const GAME_CONFIG = {
   // ===============================
   ASSETS: {
     /** Clicker button image URL */
-    CLICKER_IMAGE: 'https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcBNW5dZLiLn2WUYjB5ursFGVI4PJSbHf0K8p7',
+    CLICKER_IMAGE: "https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcBNW5dZLiLn2WUYjB5ursFGVI4PJSbHf0K8p7",
     
     /** Power/resource icon image URL */
-    POWER_IMAGE: 'https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcaZbCWfRtnFV2sdUP3CpEvxLX6hT07JoGkQRK',
+    POWER_IMAGE: "https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcaZbCWfRtnFV2sdUP3CpEvxLX6hT07JoGkQRK",
   },
 
   // ===============================
@@ -234,22 +234,22 @@ export const GAME_CONFIG = {
   // ===============================
   ENDPOINTS: {
     /** CSRF token endpoint (deprecated - use crypto signatures) */
-    // CSRF: '/api/csrf', // Deprecated - using crypto signatures instead
+    // CSRF: "/api/csrf", // Deprecated - using crypto signatures instead
 
     /** Game save endpoint */
-    GAME_SAVE: '/api/game/save',
+    GAME_SAVE: "/api/game/save",
     
     /** Game load endpoint */
-    GAME_LOAD: '/api/game/load',
+    GAME_LOAD: "/api/game/load",
     
     /** Game reset endpoint */
-    GAME_RESET: '/api/game/reset',
+    GAME_RESET: "/api/game/reset",
     
     /** Crypto security key endpoint */
-    SECURITY_KEY: '/api/security/key',
+    SECURITY_KEY: "/api/security/key",
     
     /** Leaderboard endpoint */
-    LEADERBOARD: '/api/leaderboard',
+    LEADERBOARD: "/api/leaderboard",
   },
 } as const;
 
