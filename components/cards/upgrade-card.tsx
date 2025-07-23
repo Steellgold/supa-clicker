@@ -107,7 +107,10 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
                   })}>
                     x{currentLevel}
                     {bulkBuyOption === "MAX" && (
-                      <span className="text-blue-600 bg-blue-100 dark:bg-blue-900/30 px-1 rounded">
+                      <span className={cn("px-1 text-xs -py-2.5", {
+                        "text-blue-600 bg-blue-100 dark:bg-blue-900/30": gameState.prestigeLevel === 0,
+                        "text-amber-600 bg-amber-100 dark:bg-amber-900/30": gameState.prestigeLevel > 0,
+                      })}>
                         +{actualBuyAmount}
                       </span>
                     )}
