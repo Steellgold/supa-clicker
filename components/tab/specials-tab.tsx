@@ -5,7 +5,9 @@ import { useGame } from "@/lib/providers/game-provider";
 import { getAllSpecialItems } from "@/lib/upgrades-specials";
 import { formatNumber } from "@/lib/utils";
 import { ReactElement } from "react";
+import { AuthModal } from "../auth/auth-modal";
 import { PowerTag } from "../power-tag";
+import { Button } from "../ui/button";
 
 export const SpecialsTab = (): ReactElement => {
   const { gameState } = useGame();
@@ -13,6 +15,26 @@ export const SpecialsTab = (): ReactElement => {
 
   const allSpecialItems = getAllSpecialItems()
     .sort((a, b) => (a.unlockRequirement || 0) - (b.unlockRequirement || 0));
+
+  if (!user) {
+    return (
+      <div className="p-3 bg-neutral-100 dark:bg-neutral-900">
+        <div className="flex flex-col gap-2 mb-4">
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">Oh, you want to see the special items?</span>
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">Well, I could let you see them if you sign in</span>
+          <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            You could even have your name in the leaderboard? Let&apos;s see if you can <b>beat</b> the <b>best!</b>
+          </span>
+        </div>
+
+        <AuthModal>
+          <Button size="sm" variant="retro" className="w-full mb-2">
+            Join the community
+          </Button>
+        </AuthModal>
+      </div>
+    );
+  }
 
   return (
     <>

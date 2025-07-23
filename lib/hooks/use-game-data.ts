@@ -3,6 +3,7 @@
 import { GameOptions, GameState, Upgrade } from "@/type/game";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GAME_CONFIG } from "../config/game-config";
+import { getPrestigeMultiplier } from "../prestige";
 import { getAllUpgrades } from "../upgrades";
 
 const DEFAULT_GAME_STATE: GameState = {
@@ -39,17 +40,18 @@ function recalculateStats(state: GameState): { pps: number; clickPower: number; 
   upgrades.forEach(upgrade => {
     const level = state.upgrades[upgrade.id] || 0;
     if (level > 0) {
-      const upgradePps = upgrade.ppsGain * (1 + (state.prestigeLevel * 0.1)) * level;
-      const upgradeClick = upgrade.clickMultiplier * (1 + (state.prestigeLevel * 0.05)) * level;
+      const upgradePps = upgrade.ppsGain * level;
+      const upgradeClick = upgrade.clickMultiplier * level;
       totalPps += upgradePps;
       totalClickMultiplier += upgradeClick;
     }
   });
-
+  // Appliquer le vrai multiplicateur de prestige (exponentiel)
+  const prestigeMultiplier = getPrestigeMultiplier(state.prestigeLevel);
   return {
-    pps: totalPps * globalMultiplier,
-    clickPower: totalClickMultiplier * globalMultiplier,
-    resourcesPerSecond: totalPps * globalMultiplier,
+    pps: totalPps * globalMultiplier * prestigeMultiplier,
+    clickPower: totalClickMultiplier * globalMultiplier * prestigeMultiplier,
+    resourcesPerSecond: totalPps * globalMultiplier * prestigeMultiplier,
   };
 }
 
@@ -169,11 +171,9 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
   // Client-side helper functions for display purposes only
   const getUpgradeCost = useCallback((upgrade: Upgrade, currentLevel: number = 0) => {
-    // Simple client-side calculation for display
-    // Real calculation happens server-side
-    const cost = upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel);
-    const prestigeReduction = Math.max(0.8, 1 - (gameState.prestigeLevel * 0.02));
-    return Math.floor(cost * prestigeReduction);
+    const baseCost = upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel);
+    const prestigeMultiplier = getPrestigeMultiplier(gameState.prestigeLevel);
+    return Math.floor(baseCost * prestigeMultiplier);
   }, [gameState.prestigeLevel]);
 
   const saveToLocal = useCallback((data: GameState) => {
@@ -522,15 +522,13 @@ export const useClickerGame = (options: GameOptions = {}) => {
   }, []);
 
   const getUpgradePPSGain = useCallback((upgrade: Upgrade) => {
-    // Simple client-side calculation for display
-    const prestigeMultiplier = 1 + (gameState.prestigeLevel * 0.1);
+    const prestigeMultiplier = getPrestigeMultiplier(gameState.prestigeLevel);
     return upgrade.ppsGain * prestigeMultiplier;
   }, [gameState.prestigeLevel]);
 
   const getUpgradeClickMultiplier = useCallback((upgrade: Upgrade) => {
-    // Simple client-side calculation for display
-    const prestigeBonus = 1 + (gameState.prestigeLevel * 0.05);
-    return upgrade.clickMultiplier * prestigeBonus;
+    const prestigeMultiplier = getPrestigeMultiplier(gameState.prestigeLevel);
+    return upgrade.clickMultiplier * prestigeMultiplier;
   }, [gameState.prestigeLevel]);
 
   // ===============================

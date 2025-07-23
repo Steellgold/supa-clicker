@@ -28,7 +28,7 @@ export const SideTabPanel: Component<SideTabPanelProps> = ({ tab, setTab, user }
     <div className={cn("p-3 md:p-3 space-y-2",
       tab === "CHAT" ? "flex-1 overflow-hidden flex flex-col" : ""
     )}>
-      {!user && (
+      {!user && tab !== "SPECIALS" && (
         <div className="p-3 bg-[#f0faff] dark:bg-[#1a2e40] border-4 border-[#507199] dark:border-[#6aa7d1] text-center font-mono text-sm text-[#1a2e40] dark:text-[#cde8ff] rounded-none shadow-[4px_4px_0_#507199]">
           <div className="mb-2">💡 Sign in to save your progress in the cloud</div>
           <AuthModal>
