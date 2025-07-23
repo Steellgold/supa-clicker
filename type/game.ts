@@ -76,9 +76,9 @@ export type GameStats = {
   lastSaveTime: number;
   prestigeLevel: number;
   // Session stats for achievements
-  upgradesBoughtSession?: number;
-  clicksSession?: number;
-  powerSession?: number;
+  upgradesBoughtSession: number;
+  clicksSession: number;
+  powerSession: number;
 }
 
 export type Achievement = {
