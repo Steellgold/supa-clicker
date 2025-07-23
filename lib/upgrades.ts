@@ -64,6 +64,16 @@ const UPGRADES_DATA: Upgrade[] = [
   },
   {
     id: 7,
+    name: "Finger Training",
+    description: "Your fingers are getting stronger!",
+    baseCost: 5,
+    costGrowth: 1.1,
+    ppsGain: 0,
+    clickMultiplier: 0.2,
+    category: "click",
+  },
+  {
+    id: 8,
     name: "Architect",
     description: "Designs complex systems",
     baseCost: 800,
@@ -73,7 +83,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 8,
+    id: 9,
     name: "Junior DevOps",
     description: "Automates deployment",
     baseCost: 1100,
@@ -83,7 +93,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 9,
+    id: 10,
     name: "Senior DevOps",
     description: "Optimizes your pipeline",
     baseCost: 2000,
@@ -93,7 +103,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 10,
+    id: 11,
     name: "SRE",
     description: "Site Reliability Engineer",
     baseCost: 3500,
@@ -103,7 +113,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 11,
+    id: 12,
     name: "Platform Engineer",
     description: "Builds infrastructure",
     baseCost: 6000,
@@ -113,7 +123,17 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 12,
+    id: 13,
+    name: "Ergonomic Mouse",
+    description: "A better mouse for more powerful clicks.",
+    baseCost: 20,
+    costGrowth: 1.12,
+    ppsGain: 0,
+    clickMultiplier: 0.5,
+    category: "click",
+  },
+  {
+    id: 14,
     name: "Lambda Function",
     description: "Serverless computing",
     baseCost: 12000,
@@ -123,7 +143,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 13,
+    id: 15,
     name: "Edge Function",
     description: "Globally distributed clicks",
     baseCost: 20000,
@@ -133,7 +153,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 14,
+    id: 16,
     name: "Kubernetes Cluster",
     description: "Container orchestration",
     baseCost: 35000,
@@ -143,7 +163,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 15,
+    id: 17,
     name: "Microservices",
     description: "Distributed architecture",
     baseCost: 60000,
@@ -153,7 +173,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 16,
+    id: 18,
     name: "ML Model",
     description: "Artificial intelligence",
     baseCost: 100000,
@@ -163,7 +183,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 17,
+    id: 19,
     name: "Neural Network",
     description: "Neural network",
     baseCost: 180000,
@@ -173,7 +193,17 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "auto",
   },
   {
-    id: 18,
+    id: 20,
+    name: "Clicking Gloves",
+    description: "Special gloves to maximize your click force!",
+    baseCost: 50,
+    costGrowth: 1.13,
+    ppsGain: 0,
+    clickMultiplier: 1,
+    category: "click",
+  },
+  {
+    id: 21,
     name: "Deep Learning",
     description: "Deep learning",
     baseCost: 300000,
@@ -193,7 +223,7 @@ const UPGRADES_DATA: Upgrade[] = [
   //   category: "auto",
   // },
   {
-    id: 20,
+    id: 22,
     name: "L1 Cache",
     description: "Processor cache",
     baseCost: 50,
@@ -203,7 +233,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 21,
+    id: 23,
     name: "L2 Cache",
     description: "Larger cache",
     baseCost: 100,
@@ -213,7 +243,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click"
   },
   {
-    id: 22,
+    id: 24,
     name: "Redis Cache",
     description: "In-memory cache",
     baseCost: 200,
@@ -223,7 +253,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 23,
+    id: 25,
     name: "CDN",
     description: "Content Delivery Network",
     baseCost: 400,
@@ -233,7 +263,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 24,
+    id: 26,
     name: "Connection Pool",
     description: "Optimizes connections",
     baseCost: 1000,
@@ -243,7 +273,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 25,
+    id: 27,
     name: "Load Balancer",
     description: "Distributes load",
     baseCost: 2000,
@@ -253,7 +283,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 26,
+    id: 28,
     name: "Database Index",
     description: "Speeds up queries",
     baseCost: 4000,
@@ -263,7 +293,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 27,
+    id: 29,
     name: "Query Optimizer",
     description: "Optimizes automatically",
     baseCost: 8000,
@@ -273,7 +303,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 28,
+    id: 30,
     name: "PostgREST Turbo",
     description: "Ultra-fast API",
     baseCost: 15000,
@@ -283,7 +313,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 29,
+    id: 31,
     name: "GraphQL",
     description: "Optimized queries",
     baseCost: 25000,
@@ -293,7 +323,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 30,
+    id: 32,
     name: "gRPC",
     description: "High performance communication",
     baseCost: 40000,
@@ -303,7 +333,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 31,
+    id: 33,
     name: "RLS Bypass",
     description: "Bypasses policies",
     baseCost: 75000,
@@ -313,7 +343,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 32,
+    id: 34,
     name: "Postgres Superuser",
     description: "Full root access",
     baseCost: 150000,
@@ -323,7 +353,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 33,
+    id: 35,
     name: "Database Sharding",
     description: "Horizontal distribution",
     baseCost: 300000,
@@ -333,7 +363,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "click",
   },
   {
-    id: 34,
+    id: 36,
     name: "VPS",
     description: "Virtual private server",
     baseCost: 500,
@@ -343,7 +373,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 35,
+    id: 37,
     name: "Dedicated Server",
     description: "Dedicated server",
     baseCost: 1500,
@@ -353,7 +383,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 36,
+    id: 38,
     name: "Data Center",
     description: "Data center",
     baseCost: 5000,
@@ -363,7 +393,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 37,
+    id: 39,
     name: "Cloud Region",
     description: "Complete cloud region",
     baseCost: 15000,
@@ -373,7 +403,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 38,
+    id: 40,
     name: "Multi-Cloud",
     description: "Multiple cloud providers",
     baseCost: 50000,
@@ -383,7 +413,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 39,
+    id: 41,
     name: "Edge Computing",
     description: "Edge computing",
     baseCost: 100000,
@@ -393,7 +423,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 40,
+    id: 42,
     name: "Quantum Computer",
     description: "Quantum computer",
     baseCost: 500000,
@@ -403,7 +433,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "infra",
   },
   {
-    id: 41,
+    id: 43,
     name: "SQLite",
     description: "Lightweight database",
     baseCost: 300,
@@ -413,7 +443,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 42,
+    id: 44,
     name: "MySQL",
     description: "Relational database",
     baseCost: 800,
@@ -423,7 +453,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 43,
+    id: 45,
     name: "PostgreSQL",
     description: "Advanced database",
     baseCost: 2000,
@@ -433,7 +463,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 44,
+    id: 46,
     name: "MongoDB",
     description: "NoSQL database",
     baseCost: 5000,
@@ -443,7 +473,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 45,
+    id: 47,
     name: "Elasticsearch",
     description: "Search engine",
     baseCost: 12000,
@@ -453,7 +483,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 46,
+    id: 48,
     name: "ClickHouse",
     description: "Analytics database",
     baseCost: 25000,
@@ -463,7 +493,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 47,
+    id: 49,
     name: "BigQuery",
     description: "Data warehouse",
     baseCost: 60000,
@@ -473,7 +503,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 48,
+    id: 50,
     name: "Snowflake",
     description: "Cloud data platform",
     baseCost: 150000,
@@ -483,7 +513,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "database",
   },
   {
-    id: 49,
+    id: 51,
     name: "SSL Certificate",
     description: "HTTPS encryption",
     baseCost: 100,
@@ -493,7 +523,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 50,
+    id: 52,
     name: "Firewall",
     description: "Network protection",
     baseCost: 500,
@@ -503,7 +533,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 51,
+    id: 53,
     name: "WAF",
     description: "Web Application Firewall",
     baseCost: 2000,
@@ -513,7 +543,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 52,
+    id: 54,
     name: "DDoS Protection",
     description: "Attack protection",
     baseCost: 8000,
@@ -523,7 +553,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 53,
+    id: 55,
     name: "Zero Trust",
     description: "Security architecture",
     baseCost: 30000,
@@ -533,7 +563,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 54,
+    id: 56,
     name: "HSM",
     description: "Hardware Security Module",
     baseCost: 100000,
@@ -543,7 +573,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 55,
+    id: 57,
     name: "Quantum Encryption",
     description: "Quantum encryption",
     baseCost: 500000,
@@ -553,7 +583,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "security",
   },
   {
-    id: 56,
+    id: 58,
     name: "Logs",
     description: "Basic logging",
     baseCost: 200,
@@ -563,7 +593,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 57,
+    id: 59,
     name: "Metrics",
     description: "System metrics",
     baseCost: 600,
@@ -573,7 +603,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 58,
+    id: 60,
     name: "Alerting",
     description: "Alert system",
     baseCost: 1500,
@@ -583,7 +613,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 59,
+    id: 61,
     name: "APM",
     description: "Application Performance Monitoring",
     baseCost: 4000,
@@ -593,7 +623,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 60,
+    id: 62,
     name: "Distributed Tracing",
     description: "Distributed tracing",
     baseCost: 12000,
@@ -603,7 +633,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 61,
+    id: 63,
     name: "Observability",
     description: "Complete observability",
     baseCost: 35000,
@@ -613,7 +643,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 62,
+    id: 64,
     name: "AIOps",
     description: "AI for operations",
     baseCost: 100000,
@@ -623,7 +653,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "monitoring",
   },
   {
-    id: 63,
+    id: 65,
     name: "HTML/CSS",
     description: "Basic technologies",
     baseCost: 50,
@@ -633,7 +663,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 64,
+    id: 66,
     name: "JavaScript",
     description: "Dynamic language",
     baseCost: 150,
@@ -643,7 +673,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 65,
+    id: 67,
     name: "React",
     description: "UI library",
     baseCost: 500,
@@ -653,7 +683,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 66,
+    id: 68,
     name: "Next.js",
     description: "React framework",
     baseCost: 1500,
@@ -663,7 +693,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 67,
+    id: 69,
     name: "TypeScript",
     description: "Typed JavaScript",
     baseCost: 4000,
@@ -673,7 +703,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 68,
+    id: 70,
     name: "Webpack",
     description: "Module bundler",
     baseCost: 10000,
@@ -683,7 +713,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 69,
+    id: 71,
     name: "Vite",
     description: "Fast build tool",
     baseCost: 25000,
@@ -693,7 +723,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 70,
+    id: 72,
     name: "Micro-frontends",
     description: "Modular architecture",
     baseCost: 75000,
@@ -703,7 +733,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "frontend",
   },
   {
-    id: 71,
+    id: 73,
     name: "Node.js",
     description: "JavaScript runtime",
     baseCost: 300,
@@ -713,7 +743,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 72,
+    id: 74,
     name: "Express.js",
     description: "Web framework",
     baseCost: 800,
@@ -723,7 +753,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 73,
+    id: 75,
     name: "FastAPI",
     description: "Fast Python API",
     baseCost: 2000,
@@ -733,7 +763,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 74,
+    id: 76,
     name: "Go Fiber",
     description: "Performant Go framework",
     baseCost: 5000,
@@ -743,7 +773,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 75,
+    id: 77,
     name: "Rust Actix",
     description: "Ultra-fast Rust framework",
     baseCost: 15000,
@@ -753,7 +783,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 76,
+    id: 78,
     name: "Serverless Functions",
     description: "Serverless computing",
     baseCost: 40000,
@@ -763,7 +793,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 77,
+    id: 79,
     name: "Event-Driven Architecture",
     description: "Event-driven architecture",
     baseCost: 100000,
@@ -773,7 +803,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "backend",
   },
   {
-    id: 78,
+    id: 80,
     name: "React Native",
     description: "Cross-platform mobile apps",
     baseCost: 1000,
@@ -783,7 +813,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 79,
+    id: 81,
     name: "Flutter",
     description: "Google mobile framework",
     baseCost: 3000,
@@ -793,7 +823,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 80,
+    id: 82,
     name: "Swift/Kotlin",
     description: "Native development",
     baseCost: 8000,
@@ -803,7 +833,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 81,
+    id: 83,
     name: "PWA",
     description: "Progressive Web App",
     baseCost: 20000,
@@ -813,7 +843,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 82,
+    id: 84,
     name: "AR/VR",
     description: "Augmented/Virtual Reality",
     baseCost: 60000,
@@ -823,7 +853,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 83,
+    id: 85,
     name: "IoT Integration",
     description: "Internet of Things",
     baseCost: 150000,
@@ -833,7 +863,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "mobile",
   },
   {
-    id: 84,
+    id: 86,
     name: "Unit Tests",
     description: "Unit tests",
     baseCost: 400,
@@ -843,7 +873,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 85,
+    id: 87,
     name: "Integration Tests",
     description: "Integration tests",
     baseCost: 1200,
@@ -853,7 +883,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 86,
+    id: 88,
     name: "E2E Tests",
     description: "End-to-end tests",
     baseCost: 3500,
@@ -863,7 +893,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 87,
+    id: 89,
     name: "Load Testing",
     description: "Load testing",
     baseCost: 10000,
@@ -873,7 +903,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 88,
+    id: 90,
     name: "Chaos Engineering",
     description: "Resilience testing",
     baseCost: 30000,
@@ -883,7 +913,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 89,
+    id: 91,
     name: "AI Testing",
     description: "AI-automated testing",
     baseCost: 100000,
@@ -893,7 +923,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "testing",
   },
   {
-    id: 90,
+    id: 92,
     name: "Google Analytics",
     description: "Basic web analytics",
     baseCost: 100,
@@ -903,7 +933,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 91,
+    id: 93,
     name: "Mixpanel",
     description: "Product analytics",
     baseCost: 800,
@@ -913,7 +943,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 92,
+    id: 94,
     name: "Amplitude",
     description: "Behavioral analytics",
     baseCost: 3000,
@@ -923,7 +953,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 93,
+    id: 95,
     name: "Data Pipeline",
     description: "Data pipeline",
     baseCost: 12000,
@@ -933,7 +963,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 94,
+    id: 96,
     name: "Real-time Analytics",
     description: "Real-time analytics",
     baseCost: 40000,
@@ -943,7 +973,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 95,
+    id: 97,
     name: "Predictive Analytics",
     description: "Predictive analytics",
     baseCost: 120000,
@@ -953,7 +983,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "analytics",
   },
   {
-    id: 96,
+    id: 98,
     name: "Smart Contracts",
     description: "Smart contracts",
     baseCost: 25000,
@@ -963,7 +993,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "blockchain",
   },
   {
-    id: 97,
+    id: 99,
     name: "DeFi Protocol",
     description: "Decentralized finance",
     baseCost: 80000,
@@ -973,7 +1003,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "blockchain",
   },
   {
-    id: 98,
+    id: 100,
     name: "NFT Marketplace",
     description: "Non-fungible tokens marketplace",
     baseCost: 200000,
@@ -983,7 +1013,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "blockchain",
   },
   {
-    id: 99,
+    id: 101,
     name: "Metaverse",
     description: "Virtual universe",
     baseCost: 500000,
@@ -993,7 +1023,7 @@ const UPGRADES_DATA: Upgrade[] = [
     category: "future",
   },
   {
-    id: 100,
+    id: 102,
     name: "Brain-Computer Interface",
     description: "Brain-computer interface",
     baseCost: 1000000,
@@ -1001,37 +1031,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2000,
     clickMultiplier: 0,
     category: "future",
-  },
-  {
-    id: 101,
-    name: "Finger Training",
-    description: "Your fingers are getting stronger!",
-    baseCost: 5,
-    costGrowth: 1.1,
-    ppsGain: 0,
-    clickMultiplier: 0.2,
-    category: "click",
-  },
-  {
-    id: 102,
-    name: "Ergonomic Mouse",
-    description: "A better mouse for more powerful clicks.",
-    baseCost: 20,
-    costGrowth: 1.12,
-    ppsGain: 0,
-    clickMultiplier: 0.5,
-    category: "click",
-  },
-  {
-    id: 103,
-    name: "Clicking Gloves",
-    description: "Special gloves to maximize your click force!",
-    baseCost: 50,
-    costGrowth: 1.13,
-    ppsGain: 0,
-    clickMultiplier: 1,
-    category: "click",
-  },
+  }
 ]
 
 export const getUpgradeById = (id: number): Upgrade | undefined => {

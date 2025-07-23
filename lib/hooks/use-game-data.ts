@@ -30,6 +30,29 @@ const DEFAULT_GAME_STATE: GameState = {
   nextSpecialItemCosts: {},
 };
 
+function recalculateStats(state: GameState): { pps: number; clickPower: number; resourcesPerSecond: number } {
+  let totalPps = 0;
+  let totalClickMultiplier = 1;
+  const globalMultiplier = 1;
+  const upgrades = getAllUpgrades();
+  // Upgrades
+  upgrades.forEach(upgrade => {
+    const level = state.upgrades[upgrade.id] || 0;
+    if (level > 0) {
+      const upgradePps = upgrade.ppsGain * (1 + (state.prestigeLevel * 0.1)) * level;
+      const upgradeClick = upgrade.clickMultiplier * (1 + (state.prestigeLevel * 0.05)) * level;
+      totalPps += upgradePps;
+      totalClickMultiplier += upgradeClick;
+    }
+  });
+
+  return {
+    pps: totalPps * globalMultiplier,
+    clickPower: totalClickMultiplier * globalMultiplier,
+    resourcesPerSecond: totalPps * globalMultiplier,
+  };
+}
+
 export const useClickerGame = (options: GameOptions = {}) => {
   const {
     saveToSupabase = false,
@@ -59,6 +82,11 @@ export const useClickerGame = (options: GameOptions = {}) => {
   const [pendingClicks, setPendingClicks] = useState(0);
   const [serverState, setServerState] = useState<GameState | null>(null);
 
+  const clickPowerRef = useRef(gameState.clickPower);
+  useEffect(() => {
+    clickPowerRef.current = gameState.clickPower;
+  }, [gameState.clickPower]);
+
   // Batched and merged
   const handleClick = useCallback(() => {
     setPendingClicks((prev) => prev + 1);
@@ -79,10 +107,8 @@ export const useClickerGame = (options: GameOptions = {}) => {
         sendClickBatch();
       }, 2000);
     }
-    return { gained: gameState.clickPower };
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState.clickPower]);
+    return { gained: clickPowerRef.current };
+  }, []);
 
   // Send the click batch to the server
   const sendClickBatch = useCallback(async () => {
@@ -150,8 +176,45 @@ export const useClickerGame = (options: GameOptions = {}) => {
     return Math.floor(cost * prestigeReduction);
   }, [gameState.prestigeLevel]);
 
+  const saveToLocal = useCallback((data: GameState) => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.error("Error saving to local storage:", error);
+      return false;
+    }
+  }, [storageKey]);
+
   const buyUpgrade = useCallback(async (upgradeId: number, quantity: number = 1) => {
-    if (!userId) return 0;
+    const upgrade = getAllUpgrades().find(u => u.id === upgradeId);
+    if (!upgrade) return 0;
+    const currentLevel = mergedGameState.upgrades[upgradeId] || 0;
+    const cost = getUpgradeCost(upgrade, currentLevel) * quantity;
+    if (mergedGameState.currentPower < cost) return 0;
+
+    if (!userId) {
+      const nextUpgrades = {
+        ...gameState.upgrades,
+        [upgradeId]: (gameState.upgrades[upgradeId] || 0) + quantity
+      };
+      const nextState = {
+        ...gameState,
+        currentPower: gameState.currentPower - cost,
+        upgrades: nextUpgrades,
+        lastSaveTime: Date.now(),
+        total_spent: (gameState.total_spent || 0) + cost,
+      };
+
+      const { pps, clickPower, resourcesPerSecond } = recalculateStats(nextState);
+      nextState.pps = pps;
+      nextState.clickPower = clickPower;
+      nextState.resourcesPerSecond = resourcesPerSecond;
+      setGameState(nextState);
+      setSessionStats(prev => ({ ...prev, upgradesBoughtSession: prev.upgradesBoughtSession + quantity }));
+      saveToLocal(nextState);
+      return quantity;
+    }
 
     await fetch("/api/game/save", {
       method: "POST",
@@ -165,13 +228,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
 
     // Cap the quantity to avoid backend validation errors
     const cappedQuantity = Math.min(quantity, 100); // Cap at 100 upgrades per request
-
-    // Optimistic update: apply upgrade locally
-    const upgrade = getAllUpgrades().find(u => u.id === upgradeId);
-    if (!upgrade) return 0;
-    const currentLevel = mergedGameState.upgrades[upgradeId] || 0;
-    const cost = getUpgradeCost(upgrade, currentLevel) * cappedQuantity;
-    if (mergedGameState.currentPower < cost) return 0;
 
     // Save previous state for rollback
     const prevState = { ...gameState };
@@ -226,7 +282,7 @@ export const useClickerGame = (options: GameOptions = {}) => {
       console.error("Purchase failed:", error);
       return 0;
     }
-  }, [userId, mergedGameState, gameState, getUpgradeCost]);
+  }, [userId, mergedGameState, gameState, getUpgradeCost, saveToLocal]);
 
   const buySpecialItem = useCallback(async (specialItemId: number) => {
     if (!userId) return false;
@@ -291,16 +347,6 @@ export const useClickerGame = (options: GameOptions = {}) => {
   // ===============================
   // LOCAL STORAGE MANAGEMENT
   // ===============================
-  const saveToLocal = useCallback((data: GameState) => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(data));
-      return true;
-    } catch (error) {
-      console.error("Error saving to local storage:", error);
-      return false;
-    }
-  }, [storageKey]);
-
   const loadFromLocal = useCallback(() => {
     try {
       const saved = localStorage.getItem(storageKey);
