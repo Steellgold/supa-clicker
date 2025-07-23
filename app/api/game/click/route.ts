@@ -1,11 +1,11 @@
-import { NextRequest } from "next/server"
 import { GameEngine } from "@/lib/game-engine"
-import { withGameSecurity, GameSecurityMiddleware, SecurityValidationResult } from "@/lib/middleware/security"
+import { GameSecurityMiddleware, SecurityValidationResult, withGameSecurity } from "@/lib/middleware/security"
+import { NextRequest } from "next/server"
 
 async function clickHandler(request: NextRequest, validation: SecurityValidationResult) {
   try {
     // Process click through secure game engine
-    const result = await GameEngine.processClick(validation.user.id)
+    const result = await GameEngine.processClick(validation.user!.id)
 
     return GameSecurityMiddleware.createSuccessResponse({
       gained: result.gained,

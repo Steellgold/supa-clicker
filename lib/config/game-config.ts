@@ -245,9 +245,6 @@ export const GAME_CONFIG = {
     /** Game reset endpoint */
     GAME_RESET: "/api/game/reset",
     
-    /** Crypto security key endpoint */
-    SECURITY_KEY: "/api/security/key",
-    
     /** Leaderboard endpoint */
     LEADERBOARD: "/api/leaderboard",
   },
