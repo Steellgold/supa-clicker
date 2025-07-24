@@ -49,9 +49,12 @@ export type Database = {
           combo_count: number | null
           created_at: string | null
           current_power: number | null
+          data_hash: string | null
           duck_streak_days: number | null
           duck_types_collected: number | null
           ducks_collected: number | null
+          encrypted_game_data: string | null
+          encryption_version: number | null
           first_to_unlock_upgrade: boolean | null
           golden_duck_streak: number | null
           golden_ducks_found: number | null
@@ -87,9 +90,12 @@ export type Database = {
           combo_count?: number | null
           created_at?: string | null
           current_power?: number | null
+          data_hash?: string | null
           duck_streak_days?: number | null
           duck_types_collected?: number | null
           ducks_collected?: number | null
+          encrypted_game_data?: string | null
+          encryption_version?: number | null
           first_to_unlock_upgrade?: boolean | null
           golden_duck_streak?: number | null
           golden_ducks_found?: number | null
@@ -125,9 +131,12 @@ export type Database = {
           combo_count?: number | null
           created_at?: string | null
           current_power?: number | null
+          data_hash?: string | null
           duck_streak_days?: number | null
           duck_types_collected?: number | null
           ducks_collected?: number | null
+          encrypted_game_data?: string | null
+          encryption_version?: number | null
           first_to_unlock_upgrade?: boolean | null
           golden_duck_streak?: number | null
           golden_ducks_found?: number | null
