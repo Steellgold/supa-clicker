@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "date": "2024-07-24",
+  "date": "2025-07-24",
   "title": "Anti-cheat & Security Overhaul",
   "excerpt": "Complete overhaul of anti-cheat validation, enhanced security, new validation schemas, chat API, and backend cleanup.",
   "github_url": "https://github.com/Steellgold/supa-clicker/releases/tag/v0.1.0",
@@ -44,6 +44,14 @@
         {
           "type": "REMOVED",
           "description": "Removed obsolete SQL files and endpoints."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Re-enabled and secured automatic game state autosave every 5-10 seconds, with logic to avoid conflicts during purchases."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Stability improvements for autosave and game state management."
         }
       ]
     },
