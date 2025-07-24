@@ -82,7 +82,6 @@ export class SecurityMiddleware {
       
       // Advanced security validations
       SecurityValidationSchema.parse({
-        totalPowerVsClicks: { totalPower: gameState.totalPower, totalClicks: gameState.totalClicks },
         timestamps: { lastSaveTime: gameState.lastSaveTime, lastClickTime: gameState.lastClickTime },
         maxValues: { totalPower: gameState.totalPower, currentPower: gameState.currentPower },
         progressionLogic: { currentPower: gameState.currentPower, totalPower: gameState.totalPower }

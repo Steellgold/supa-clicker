@@ -327,13 +327,17 @@ export const useClickerGame = (options: GameOptions = {}) => {
         body: JSON.stringify(payload)
       });
       const result = await response.json();
-      if (response.ok && result?.gameState) {
+      if (response.ok && result?.success && result?.gameState) {
         setGameState(result.gameState);
         saveToLocal(result.gameState);
         // Optionally: show success feedback
       } else {
         // Rollback: reload from server or local, show error
         setQueueError(result?.error || "Batch purchase failed");
+
+        if (process.env.NODE_ENV === 'development') {
+          console.error("[BATCH PURCHASE] Rollback triggered. Response:", result);
+        }
         // Optionally: reload last known good state
         const loaded = await loadFromSupabaseDB();
         setGameState(loaded);

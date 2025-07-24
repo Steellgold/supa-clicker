@@ -55,20 +55,6 @@ export type ValidatedGameState = z.infer<typeof GameStateSchema>
  * Zod schema for advanced security controls
  */
 export const SecurityValidationSchema = z.object({
-  // Validation of impossible ratios
-  totalPowerVsClicks: z.custom<{ totalPower: number, totalClicks: number }>((data) => {
-    if (typeof data !== 'object' || data === null) return false
-    const { totalPower, totalClicks } = data as { totalPower: number, totalClicks: number }
-    
-    // If there is power but no clicks, it's suspicious
-    if (totalPower > 0 && totalClicks === 0) return false
-    
-    // Too high ratio (more than 1000 power per click)
-    if (totalClicks > 0 && (totalPower / totalClicks) > 1000) return false
-    
-    return true
-  }, { message: "Impossible power to clicks ratio" }),
-  
   // Validation of timestamps
   timestamps: z.custom<{ lastSaveTime: number, lastClickTime: number }>((data) => {
     if (typeof data !== 'object' || data === null) return false

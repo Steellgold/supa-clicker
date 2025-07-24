@@ -80,10 +80,6 @@ export async function POST(request: NextRequest) {
     // NEW: Advanced security validation with Zod
     try {
       SecurityValidationSchema.parse({
-        totalPowerVsClicks: { 
-          totalPower: validatedGameData.totalPower, 
-          totalClicks: validatedGameData.totalClicks 
-        },
         timestamps: { 
           lastSaveTime: validatedGameData.lastSaveTime, 
           lastClickTime: validatedGameData.lastClickTime 
