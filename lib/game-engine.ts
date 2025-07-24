@@ -613,6 +613,8 @@ export class GameEngine {
       console.log('💾 Loading fresh data from database for purchase validation');
       gameState = await this.loadUserGameState(userId, false);
     }
+
+    await this.saveUserGameState(userId, gameState);
     console.log(`💰 Current power: ${gameState.currentPower}, Current upgrades:`, gameState.upgrades);
     
     const upgrade = getAllUpgrades().find(u => u.id === upgradeId)
@@ -748,6 +750,7 @@ export class GameEngine {
   static async purchaseSpecialItem(userId: string, specialItemId: number): Promise<PurchaseResult> {
     // Ne PAS utiliser le cache pour les achats pour éviter les problèmes de concurrence
     const gameState = await this.loadUserGameState(userId, false)
+    await this.saveUserGameState(userId, gameState);
      
     const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId)
     if (!specialItem) {

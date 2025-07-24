@@ -54,6 +54,7 @@ async function batchPurchaseHandler(request: NextRequest, validation: SecurityVa
 
     // 2. Reload the up-to-date state from DB
     let currentState = await GameEngine.loadUserGameState(userId, false);
+    await GameEngine.saveUserGameState(userId, currentState);
 
     // 3. Apply each purchase in order, collecting results
     const results = [];
