@@ -1,5 +1,6 @@
 "use client"
 
+import { PatchNotesDialog } from "@/components/dialogs/patch-notes-dialog";
 import { Header } from "@/components/header";
 import { DebugPanel } from "@/components/home/debug-panel";
 import { MainStatsPanel } from "@/components/home/main-stats-panel";
@@ -46,6 +47,8 @@ const Home = () => {
 
         <SideTabPanel tab={tab} setTab={setTab} user={user} />
       </div>
+
+      <PatchNotesDialog />
     </>
   )
 }

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { ReactElement, useEffect, useState } from "react";
 import { AuthButton } from "./auth/auth-button";
 import { AchievementsDialog } from "./dialogs/achievements-dialog";
+import { PatchNotesDialog } from "./dialogs/patch-notes-dialog";
 import { Button, buttonVariants } from "./ui/button";
 
 export const Header = (): ReactElement => {
@@ -47,8 +48,13 @@ export const Header = (): ReactElement => {
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
       <div className="flex items-center justify-between">
-        <div className="border-1 rounded-none border-neutral-800 dark:border-neutral-200 px-2 py-1 bg-white dark:bg-neutral-900 transition-colors">
-          <span className="font-mono font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase">SupaClicker</span>
+
+        <div className="flex items-center gap-2">
+          <div className="border-1 rounded-none border-neutral-800 dark:border-neutral-200 px-2 py-1 bg-white dark:bg-neutral-900 transition-colors">
+            <span className="font-mono font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase">SupaClicker</span>
+          </div>
+
+          <PatchNotesDialog showOpenButton />
         </div>
 
         {/* Desktop actions */}
@@ -105,6 +111,8 @@ export const Header = (): ReactElement => {
             )}
           </Link>
         </div>
+
+
         <Button
           variant="retro"
           size="sm"
