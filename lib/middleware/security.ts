@@ -162,7 +162,7 @@ export class GameSecurityMiddleware {
 
     const allowedOrigins = [
       "https://supaclicker.vercel.app",
-      "https://supa-clicker.vercel.app"
+      "https://preview-supaclicker.vercel.app"
     ]
 
     if (!origin || !allowedOrigins.includes(origin)) {
@@ -304,7 +304,7 @@ export const PayloadSchemas = {
 
   purchase: {
     required: ["purchaseType", "timestamp"],
-    optional: ["upgradeId", "specialItemId", "quantity"],
+    optional: ["upgradeId", "specialItemId", "quantity", "currentGameState"],
     validate: (payload: unknown) => {
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return { isValid: false, error: "Invalid payload" }
