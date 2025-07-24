@@ -67,6 +67,7 @@ export const GAME_CONFIG = {
     /** Allowed origins for API requests */
     ALLOWED_ORIGINS: [
       "https://supaclicker.vercel.app",
+      "https://preview-supaclicker.vercel.app",
       "http://localhost:3000",
       "https://localhost:3000"
     ],
