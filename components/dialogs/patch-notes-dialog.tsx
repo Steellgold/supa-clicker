@@ -18,7 +18,7 @@ const changeTypeConfig = {
 }
 
 type DialogProps = {
-  showOpenButton?: boolean
+  showOpenButton?: boolean;
 }
 
 export const PatchNotesDialog: Component<DialogProps> = ({ showOpenButton = false }) => {
@@ -35,7 +35,7 @@ export const PatchNotesDialog: Component<DialogProps> = ({ showOpenButton = fals
     goToVersion,
     hasNext,
     hasPrevious,
-  } = usePatchNotes()
+  } = usePatchNotes();
 
   if (loading || !currentPatchNote) {
     return <></>

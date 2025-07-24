@@ -11,6 +11,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.1,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 2,
@@ -21,6 +22,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.2,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 3,
@@ -31,6 +33,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.5,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 4,
@@ -41,6 +44,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 5,
@@ -51,6 +55,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 6,
@@ -61,6 +66,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 4,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 7,
@@ -71,6 +77,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 0.2,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 8,
@@ -81,6 +88,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 8,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 9,
@@ -91,6 +99,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 12,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 10,
@@ -101,6 +110,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 20,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 11,
@@ -111,6 +121,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 35,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 12,
@@ -121,6 +132,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 60,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 13,
@@ -131,6 +143,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 0.5,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 14,
@@ -141,6 +154,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 100,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 15,
@@ -151,6 +165,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 180,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 16,
@@ -161,6 +176,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 300,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 17,
@@ -171,6 +187,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 500,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 18,
@@ -181,6 +198,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 800,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 19,
@@ -191,6 +209,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 700,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   {
     id: 20,
@@ -201,6 +220,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 1,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 21,
@@ -211,6 +231,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1000,
     clickMultiplier: 0,
     category: "auto",
+    maxPurchases: 1000,
   },
   // {
   //   id: 19,
@@ -231,6 +252,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 0.5,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 23,
@@ -240,7 +262,8 @@ const UPGRADES_DATA: Upgrade[] = [
     costGrowth: 1.2,
     ppsGain: 0,
     clickMultiplier: 1,
-    category: "click"
+    category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 24,
@@ -251,6 +274,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 2,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 25,
@@ -261,6 +285,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 3,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 26,
@@ -271,6 +296,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 5,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 27,
@@ -281,6 +307,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 8,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 28,
@@ -291,6 +318,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 12,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 29,
@@ -301,6 +329,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 20,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 30,
@@ -311,6 +340,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 30,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 31,
@@ -321,6 +351,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 50,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 32,
@@ -331,6 +362,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 80,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 33,
@@ -341,6 +373,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 120,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 34,
@@ -351,6 +384,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 200,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 35,
@@ -361,6 +395,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 350,
     category: "click",
+    maxPurchases: 1000,
   },
   {
     id: 36,
@@ -371,6 +406,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 3,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 37,
@@ -381,6 +417,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 10,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 38,
@@ -391,6 +428,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 35,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 39,
@@ -401,6 +439,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 100,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 40,
@@ -411,6 +450,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 300,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 41,
@@ -421,6 +461,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 600,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 42,
@@ -431,6 +472,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 3000,
     clickMultiplier: 0,
     category: "infra",
+    maxPurchases: 1000,
   },
   {
     id: 43,
@@ -441,6 +483,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1.5,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 44,
@@ -451,6 +494,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 4,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 45,
@@ -461,6 +505,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 12,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 46,
@@ -471,6 +516,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 30,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 47,
@@ -481,6 +527,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 80,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 48,
@@ -491,6 +538,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 180,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 49,
@@ -501,6 +549,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 400,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 50,
@@ -511,6 +560,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1000,
     clickMultiplier: 0,
     category: "database",
+    maxPurchases: 1000,
   },
   {
     id: 51,
@@ -521,6 +571,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0,
     clickMultiplier: 1,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 52,
@@ -531,6 +582,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 53,
@@ -541,6 +593,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 8,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 54,
@@ -551,6 +604,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 35,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 55,
@@ -561,6 +615,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 150,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 56,
@@ -571,6 +626,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 500,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 57,
@@ -581,6 +637,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2500,
     clickMultiplier: 0,
     category: "security",
+    maxPurchases: 1000,
   },
   {
     id: 58,
@@ -591,6 +648,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.8,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 59,
@@ -601,6 +659,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 3,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 60,
@@ -611,6 +670,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 8,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 61,
@@ -621,6 +681,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 22,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 62,
@@ -631,6 +692,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 65,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 63,
@@ -641,6 +703,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 200,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 64,
@@ -651,6 +714,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 600,
     clickMultiplier: 0,
     category: "monitoring",
+    maxPurchases: 1000,
   },
   {
     id: 65,
@@ -661,6 +725,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.3,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 66,
@@ -671,6 +736,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 67,
@@ -681,6 +747,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 3,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 68,
@@ -691,6 +758,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 10,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 69,
@@ -701,6 +769,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 25,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 70,
@@ -711,6 +780,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 65,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 71,
@@ -721,6 +791,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 180,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 72,
@@ -731,6 +802,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 500,
     clickMultiplier: 0,
     category: "frontend",
+    maxPurchases: 1000,
   },
   {
     id: 73,
@@ -741,6 +813,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1.5,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 74,
@@ -751,6 +824,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 4.5,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 75,
@@ -761,6 +835,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 12,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 76,
@@ -771,6 +846,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 35,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 77,
@@ -781,6 +857,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 100,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 78,
@@ -791,6 +868,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 280,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 79,
@@ -801,6 +879,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 700,
     clickMultiplier: 0,
     category: "backend",
+    maxPurchases: 1000,
   },
   {
     id: 80,
@@ -811,6 +890,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 5,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 81,
@@ -821,6 +901,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 18,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 82,
@@ -831,6 +912,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 50,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 83,
@@ -841,6 +923,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 140,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 84,
@@ -851,6 +934,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 400,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 85,
@@ -861,6 +945,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1000,
     clickMultiplier: 0,
     category: "mobile",
+    maxPurchases: 1000,
   },
   {
     id: 86,
@@ -871,6 +956,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 87,
@@ -881,6 +967,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 7,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 88,
@@ -891,6 +978,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 22,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 89,
@@ -901,6 +989,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 70,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 90,
@@ -911,6 +1000,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 200,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 91,
@@ -921,6 +1011,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 700,
     clickMultiplier: 0,
     category: "testing",
+    maxPurchases: 1000,
   },
   {
     id: 92,
@@ -931,6 +1022,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 0.5,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 93,
@@ -941,6 +1033,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 4,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 94,
@@ -951,6 +1044,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 18,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 95,
@@ -961,6 +1055,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 80,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 96,
@@ -971,6 +1066,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 280,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 97,
@@ -981,6 +1077,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 850,
     clickMultiplier: 0,
     category: "analytics",
+    maxPurchases: 1000,
   },
   {
     id: 98,
@@ -991,6 +1088,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 150,
     clickMultiplier: 0,
     category: "blockchain",
+    maxPurchases: 1000,
   },
   {
     id: 99,
@@ -1001,6 +1099,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 500,
     clickMultiplier: 0,
     category: "blockchain",
+    maxPurchases: 1000,
   },
   {
     id: 100,
@@ -1011,6 +1110,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1200,
     clickMultiplier: 0,
     category: "blockchain",
+    maxPurchases: 1000,
   },
   {
     id: 101,
@@ -1021,6 +1121,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 1200,
     clickMultiplier: 0,
     category: "future",
+    maxPurchases: 1000,
   },
   {
     id: 102,
@@ -1031,6 +1132,7 @@ const UPGRADES_DATA: Upgrade[] = [
     ppsGain: 2000,
     clickMultiplier: 0,
     category: "future",
+    maxPurchases: 1000,
   }
 ]
 
