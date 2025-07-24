@@ -438,17 +438,22 @@ export const useClickerGame = (options: GameOptions = {}) => {
     loadGame();
   }, [loadFromSupabaseDB]);
 
-  // Auto-save effect - DISABLED to avoid conflicts
-  // Disabled: auto-save interferes with purchases
-  // We only save when purchases are successful
-  if (process.env.NODE_ENV === 'development') console.log('🚫 Auto-save disabled to avoid conflicts with purchases');
+  // Auto-save effect: periodically save the game state every X seconds if not loading and not processing purchases.
   useEffect(() => {
+    if (isLoading) return;
+    if (autoSaveIntervalRef.current) clearInterval(autoSaveIntervalRef.current);
+    autoSaveIntervalRef.current = setInterval(() => {
+      // Only autosave if not currently processing a purchase batch
+      if (purchaseQueue.length === 0) {
+        saveGame();
+      }
+    }, autoSaveInterval || 7000); // Default to 7 seconds if not provided
     return () => {
       if (autoSaveIntervalRef.current) {
         clearInterval(autoSaveIntervalRef.current);
       }
     };
-  }, [autoSaveInterval, isLoading, saveGame, userId]);
+  }, [autoSaveInterval, isLoading, saveGame, userId, purchaseQueue.length]);
 
   // PPS effect
   useEffect(() => {
