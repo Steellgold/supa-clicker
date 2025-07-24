@@ -15,6 +15,13 @@ export async function POST() {
     // Ensure user profile exists (this will create it if it doesn"t exist)
     await GameEngine.ensureUserProfile(user.id)
 
+    // Ensure initial game state exists (create if missing)
+    const loadedState = await GameEngine.loadUserGameState(user.id, false)
+    if (!loadedState || (loadedState.totalClicks === 0 && loadedState.totalPower === 0 && loadedState.currentPower === 0)) {
+      // Force save of default state if nothing exists
+      await GameEngine.saveUserGameState(user.id, loadedState)
+    }
+
     // Load initial game state to ensure everything is set up
     const gameState = await GameEngine.loadUserGameState(user.id)
 

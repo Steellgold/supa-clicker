@@ -1,5 +1,6 @@
 import { GameEngine } from "@/lib/game-engine"
 import { GameSecurityMiddleware, PayloadSchemas, SecurityValidationResult, withGameSecurity } from "@/lib/middleware/security"
+import { GameState } from "@/type/game"
 import { NextRequest } from "next/server"
 
 async function purchaseHandler(request: NextRequest, validation: SecurityValidationResult) {
@@ -13,16 +14,21 @@ async function purchaseHandler(request: NextRequest, validation: SecurityValidat
     }
 
     // Use purchaseType instead of type in the payload
-    const { purchaseType, upgradeId, specialItemId, quantity } = body;
+    const { purchaseType, upgradeId, specialItemId, quantity, currentGameState } = body;
     const purchaseQuantity = quantity && Number.isInteger(Number(quantity)) && Number(quantity) > 0 ? Number(quantity) : 1;
     const upgradeIdNum = typeof upgradeId === "number" ? upgradeId : Number(upgradeId);
     const specialItemIdNum = typeof specialItemId === "number" ? specialItemId : Number(specialItemId);
+    
+    // Secure cast of gameState - trust the validation middleware
+    const clientGameState = currentGameState && typeof currentGameState === "object" && !Array.isArray(currentGameState) 
+      ? currentGameState as GameState  // Safe cast after validation
+      : undefined;
 
     let result;
 
     switch (purchaseType) {
       case "upgrade":
-        result = await GameEngine.purchaseUpgrade(validation.user!.id, upgradeIdNum, purchaseQuantity);
+        result = await GameEngine.purchaseUpgrade(validation.user!.id, upgradeIdNum, purchaseQuantity, clientGameState);
         break;
       case "specialItem":
         result = await GameEngine.purchaseSpecialItem(validation.user!.id, specialItemIdNum);

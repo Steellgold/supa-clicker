@@ -13,25 +13,17 @@ export const GET = async (request: NextRequest) => {
       return GameSecurityMiddleware.createErrorResponse("Unauthorized", 401)
     }
 
-    // Load game state using the new GameEngine
+    await GameEngine.ensureUserProfile(user.id)
     const gameState = await GameEngine.loadUserGameState(user.id)
 
-    return GameSecurityMiddleware.createSuccessResponse({
-      gameData: gameState
-    })
+    return GameSecurityMiddleware.createSuccessResponse({ gameData: gameState })
   } catch (error) {
     console.error("Load processing error:", error)
-    
-    // If it"s a "user not found" type error, return null gameData
+
     if (error instanceof Error && error.message.includes("not found")) {
-      return GameSecurityMiddleware.createSuccessResponse({
-        gameData: null
-      })
+      return GameSecurityMiddleware.createSuccessResponse({ gameData: null })
     }
     
-    return GameSecurityMiddleware.createErrorResponse(
-      "Failed to load game data",
-      500
-    )
+    return GameSecurityMiddleware.createErrorResponse("Failed to load game data", 500)
   }
 }
