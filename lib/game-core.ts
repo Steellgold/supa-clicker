@@ -1,12 +1,12 @@
 /**
  * CENTRALIZED GAME CORE MODULE
- * 
+ *
  * This module centralizes:
  * - All game constants and configuration
  * - Type definitions
  * - Core game rules and limits
  * - Utility functions
- * 
+ *
  * Single source of truth for all game mechanics
  */
 
@@ -142,7 +142,7 @@ export class GameValidator {
    */
   static validateAction(action: GameAction): ValidationResult {
     const now = Date.now()
-    
+
     // Timestamp validation
     const timeDiff = Math.abs(now - action.timestamp)
     if (timeDiff > GAME_RULES.ANTI_CHEAT.TIMESTAMP_TOLERANCE) {
@@ -163,7 +163,7 @@ export class GameValidator {
     }
 
     // Action type validation
-    const validTypes = ["click", "purchase", "save", "load", "reset"]
+    const validTypes = ["click", "purchase", "save", "load", "reset", "batch-purchase"]
     if (!validTypes.includes(action.type)) {
       return {
         isValid: false,
@@ -195,7 +195,7 @@ export class GameValidator {
 
     if (increase > maxExpectedIncrease) {
       const allowedIncrease = maxExpectedIncrease * GAME_RULES.ECONOMY.POWER_VALIDATION_BUFFER
-      
+
       if (increase > allowedIncrease) {
         return {
           isValid: false,
@@ -299,7 +299,7 @@ export class GameStateManager {
       pps: Math.max(0, Math.floor(state.pps || 0)),
       upgrades: state.upgrades || {},
       specialItems: state.specialItems || {},
-      unlockedAchievements: Array.isArray(state.unlockedAchievements) 
+      unlockedAchievements: Array.isArray(state.unlockedAchievements)
         ? state.unlockedAchievements.filter(id => Number.isInteger(id) && id >= 0)
         : [],
       lastSaveTime: Math.max(0, state.lastSaveTime || Date.now()),
@@ -378,21 +378,21 @@ export class RateLimiter {
    * Check if action is rate limited
    */
   static isRateLimited(
-    userId: string, 
-    actionType: string, 
+    userId: string,
+    actionType: string,
     minInterval: number
   ): boolean {
     const now = Date.now()
-    
+
     if (!this.userActions.has(userId)) {
       this.userActions.set(userId, new Map())
     }
 
     const userActionMap = this.userActions.get(userId)!
     const lastActionTime = userActionMap.get(actionType) || 0
-    
+
     const timeSinceLastAction = now - lastActionTime
-    
+
     if (timeSinceLastAction < minInterval) {
       return true // Rate limited
     }
@@ -406,14 +406,14 @@ export class RateLimiter {
    */
   static cleanup(maxAge: number = 300000): void { // 5 minutes
     const now = Date.now()
-    
+
     for (const [userId, actionMap] of this.userActions.entries()) {
       for (const [actionType, timestamp] of actionMap.entries()) {
         if (now - timestamp > maxAge) {
           actionMap.delete(actionType)
         }
       }
-      
+
       if (actionMap.size === 0) {
         this.userActions.delete(userId)
       }

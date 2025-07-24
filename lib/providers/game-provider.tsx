@@ -72,9 +72,10 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   const combinedContext = {
     ...gameData,
     ...achievementData,
-    resetGame: async () => {
-      await gameData.resetGame();
+    resetGame: async (): Promise<boolean> => {
+      const result = await gameData.resetGame();
       achievementData.resetAchievements();
+      return result;
     },
   };
 

@@ -17,7 +17,7 @@ type SpecialItemCardProps = {
 }
 
 export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index = 0 }) => {
-  const { buySpecialItem, gameState } = useGame();
+  const { buySpecialItem, gameState, queueError } = useGame();
   
   // Find locked upgrades for this upgrade
   const purchasedSpecials = (gameState.purchasedSpecialItems || []).filter(s => s.specialItemId === item.id);
@@ -297,6 +297,9 @@ export const SpecialItemCard: Component<SpecialItemCardProps> = ({ item, index =
             </div>
           </div>
         </Card>
+      )}
+      {queueError && (
+        <div className="text-xs text-red-600 mt-1">{queueError}</div>
       )}
     </UnlockBlurWrapper>
   );

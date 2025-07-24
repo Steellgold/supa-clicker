@@ -5,7 +5,7 @@ import { Component } from "@/type/component"
 import { User } from "@supabase/supabase-js"
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 
-type Profile = {
+export type Profile = {
   username?: string
   display_name?: string
   bio?: string

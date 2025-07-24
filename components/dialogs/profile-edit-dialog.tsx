@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { updateUserProfile, uploadProfileIcon } from "@/lib/actions/profile-actions"
 import { useAuth } from "@/lib/auth/auth-context"
+import { createClient } from "@/lib/supabase/client"
 import type { Component } from "@/type/component"
 import { Loader2, Upload, User, X } from "lucide-react"
 import Image from "next/image"
@@ -134,6 +135,41 @@ export const ProfileEditModal: Component<PropsWithChildren> = ({ children }) => 
       } else {
         // Refresh the profile in the auth context
         await refreshProfile()
+        // If the profile is not found, try to create it
+        if (!userProfile) {
+          try {
+            const res = await fetch("/api/user/ensure-profile", { method: "POST" });
+            const data = await res.json();
+            if (data.created) {
+              setSuccess("Finalizing profile creation...");
+              setLoading(true);
+              let tries = 0;
+              let found = false;
+              const supabase = createClient();
+              while (tries < 5 && !found && user) {
+                // Fetch the profile directly from Supabase
+                const { data: profile, error } = await supabase
+                  .from("user_profiles")
+                  .select("username, display_name, avatar_url")
+                  .eq("id", user.id)
+                  .single();
+                if (!error && profile && profile.username) {
+                  found = true;
+                  await refreshProfile();
+                } else {
+                  await new Promise(r => setTimeout(r, 400));
+                }
+                tries++;
+              }
+              setLoading(false);
+
+              if (!found) window.location.reload(); // fallback if the profile is not found
+            }
+          } catch (e) {
+            setLoading(false);
+            console.error("Failed to ensure user profile:", e);
+          }
+        }
         setIsOpen(false)
         setSuccess("Profile updated successfully!")
       }

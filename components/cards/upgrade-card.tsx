@@ -16,7 +16,7 @@ interface UpgradeCardProps {
 }
 
 export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 }) => {
-  const { buyUpgrade, getUpgradeCost, getUpgradePPSGain, getUpgradeClickMultiplier, gameState, upgradesInfo } = useGame();
+  const { buyUpgrade, getUpgradeCost, getUpgradePPSGain, getUpgradeClickMultiplier, gameState, upgradesInfo, queueError } = useGame();
   const { bulkBuyOption } = useBulkBuy();
 
   const upgradeInfo = upgradesInfo?.find(u => u.id === upgrade.id);
@@ -177,6 +177,9 @@ export const UpgradeCard: Component<UpgradeCardProps> = ({ upgrade, index = 0 })
               </div>
             </div>
           </div>
+          {queueError && (
+            <div className="text-xs text-red-600 mt-1">{queueError}</div>
+          )}
         </Card>
       )}
     </UnlockBlurWrapper>

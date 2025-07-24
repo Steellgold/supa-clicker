@@ -1,7 +1,9 @@
 import { Database, TablesInsert } from "@/lib/supabase/supabase"
 import { createClient } from "@supabase/supabase-js"
+import { gameStateCache } from "./cache/game-state-cache"
 import { GAME_CONFIG } from "./config/game-config"
 import { SPECIAL_ITEM_EFFECTS, SPECIAL_ITEM_IDS } from "./constants/special-items"
+import { GameEncryption } from "./crypto/encryption"
 import {
   calculatePrestigeMultiplier, calculateSpecialItemCost,
   calculateSpecialItemMultiplier,
@@ -9,6 +11,7 @@ import {
   calculateUpgradeCost,
   calculateUpgradePPSGain, validateUpgradePurchase
 } from "./game-progression"
+import { SecurityMiddleware } from "./middleware/security-validation"
 import { getAllUpgrades } from "./upgrades"
 import { SPECIAL_ITEMS, canPurchaseSpecialItem } from "./upgrades-specials"
 
@@ -68,9 +71,20 @@ type UpgradeBreakdown = {
 export class GameEngine {
   
   /**
-   * Load user game state from new database structure
+   * Load user game state from database with encryption support and caching
   */
-  static async loadUserGameState(userId: string): Promise<GameState> {
+  static async loadUserGameState(userId: string, useCache: boolean = true): Promise<GameState> {
+    // Try to get from cache first
+    if (useCache) {
+      const cachedState = gameStateCache.get(userId)
+      if (cachedState) {
+        console.log('🚀 Using cached game state for user:', userId)
+        return cachedState
+      }
+    }
+
+    console.log('💾 Loading game state from database for user:', userId)
+    
     try {
       // Load main progression data
       const { data: progression, error: progError } = await supabaseAdmin
@@ -82,6 +96,41 @@ export class GameEngine {
       if (progError && progError.code !== "PGRST116") {
         throw new Error(`Failed to load progression: ${progError.message}`)
       }
+
+      // If encrypted data exists in active_boosts, use it
+      if (progression?.active_boosts && typeof progression.active_boosts === 'object') {
+        const boostData = progression.active_boosts as Record<string, unknown>
+        
+        if (boostData.encrypted_game_data && boostData.data_hash) {
+          try {
+            const validation = SecurityMiddleware.validateGameData(
+              userId,
+              boostData.encrypted_game_data as string,
+              boostData.data_hash as string
+            )
+
+            if (validation.isValid && validation.gameState) {
+              console.log('Loaded encrypted game data successfully')
+              
+              // Mettre en cache pour les prochaines requêtes
+              if (useCache) {
+                gameStateCache.set(userId, validation.gameState)
+              }
+              
+              return validation.gameState
+            } else {
+              console.warn('Encrypted data validation failed, falling back to legacy data:', validation.errors)
+              // Continue to legacy loading below
+            }
+          } catch (error) {
+            console.warn('Failed to decrypt game data, falling back to legacy data:', error)
+            // Continue to legacy loading below
+          }
+        }
+      }
+
+      // Legacy loading from separate tables (fallback)
+      console.log('Loading from legacy database structure')
 
       // Load upgrades
       const { data: upgrades, error: upgradesError } = await supabaseAdmin
@@ -114,7 +163,8 @@ export class GameEngine {
       }
 
       if (!progression) {
-        // Return default state for new user
+        // Return default state for new user (force valid timestamps and values)
+        const now = Date.now();
         return {
           totalClicks: 0,
           totalPower: 0,
@@ -124,13 +174,13 @@ export class GameEngine {
           upgrades: {},
           specialItems: {},
           unlockedAchievements: [],
-          lastSaveTime: Date.now(),
+          lastSaveTime: now,
           prestigeLevel: 0,
           resourcesPerSecond: 0,
           currentResources: 0,
           comboCount: 0,
           comboActive: false,
-          lastClickTime: 0,
+          lastClickTime: now,
           timeBoostActive: false,
           timeBoostEndTime: 0,
           timeBoostMultiplier: 1
@@ -178,9 +228,9 @@ export class GameEngine {
   }
 
   /**
-   * Ensure user profile exists
+   * Ensure user profile exists. Returns true if created, false if already existed.
    */
-  static async ensureUserProfile(userId: string): Promise<void> {
+  static async ensureUserProfile(userId: string): Promise<boolean> {
     try {
       // Check if profile exists
       const { data: existingProfile, error: checkError } = await supabaseAdmin
@@ -209,10 +259,17 @@ export class GameEngine {
             total_playtime_seconds: 0
           })
 
+        // If duplicate key, treat as already existed
         if (createError) {
+          if (createError.message && createError.message.includes('duplicate key value')) {
+            return false;
+          }
           throw new Error(`Failed to create profile: ${createError.message}`)
         }
+
+        return true; // Profile was created
       }
+      return false; // Already existed
     } catch (error) {
       console.error("Error ensuring user profile:", error)
       throw error
@@ -227,7 +284,11 @@ export class GameEngine {
       // Ensure user profile exists first
       await this.ensureUserProfile(userId)
 
-      // 1. Save main progression
+      // NEW: Encrypt the game data
+      const encryptedData = GameEncryption.encryptGameData(userId, gameState)
+      const dataHash = GameEncryption.generateDataHash(userId, gameState)
+
+      // 1. Save main progression with encrypted data
       const { error: progError } = await supabaseAdmin
         .from("game_progression")
         .upsert({
@@ -242,7 +303,11 @@ export class GameEngine {
           combo_active: gameState.comboActive,
           last_click_time: new Date(gameState.lastClickTime).toISOString(),
           last_save_time: new Date(gameState.lastSaveTime).toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          // NEW: Store encrypted data in dedicated columns
+          encrypted_game_data: encryptedData,
+          encryption_version: 1,
+          data_hash: dataHash
         }, {
           onConflict: "user_id"
         })
@@ -349,8 +414,14 @@ export class GameEngine {
         } catch (leaderboardError) {
           console.warn("Failed to update leaderboard:", leaderboardError)
         }
+
+        // Mettre à jour le cache avec le nouvel état
+        gameStateCache.update(userId, gameState)
+        
     } catch (error) {
       console.error("Error saving game state:", error)
+      // Invalider le cache en cas d'erreur pour forcer le rechargement
+      gameStateCache.invalidate(userId)
       throw error
     }
   }
@@ -451,7 +522,8 @@ export class GameEngine {
    * Process a click action with server-side validation
    */
   static async processClick(userId: string): Promise<ClickResult> {
-    const gameState = await this.loadUserGameState(userId)
+    // Utiliser le cache de manière agressive pour les clics rapides
+    const gameState = await this.loadUserGameState(userId, true)
     const currentTime = Date.now()
 
     // Recalculate stats to ensure consistency
@@ -511,6 +583,10 @@ export class GameEngine {
     // Save updated state
     await this.saveUserGameState(userId, gameState)
 
+    // Pour les clics, on peut garder le cache plus longtemps car ils ne sont plus utilisés côté serveur
+    // Mais on invalide quand même pour la cohérence
+    gameStateCache.update(userId, gameState)
+
     return {
       gained: Math.floor(gained),
       newState: gameState,
@@ -525,8 +601,19 @@ export class GameEngine {
   /**
   * Process upgrade purchase with strict validation
   */
-  static async purchaseUpgrade(userId: string, upgradeId: number, quantity: number = 1): Promise<PurchaseResult> {
-    const gameState = await this.loadUserGameState(userId)
+  static async purchaseUpgrade(userId: string, upgradeId: number, quantity: number = 1, clientState?: GameState): Promise<PurchaseResult> {
+    console.log(`🛒 Starting purchase: upgrade ${upgradeId}, quantity ${quantity} for user ${userId}`);
+    
+    // Use client state if provided, otherwise load from DB
+    let gameState: GameState;
+    if (clientState) {
+      console.log('📱 Using client state for purchase validation');
+      gameState = clientState;
+    } else {
+      console.log('💾 Loading fresh data from database for purchase validation');
+      gameState = await this.loadUserGameState(userId, false);
+    }
+    console.log(`💰 Current power: ${gameState.currentPower}, Current upgrades:`, gameState.upgrades);
     
     const upgrade = getAllUpgrades().find(u => u.id === upgradeId)
     if (!upgrade) {
@@ -554,6 +641,23 @@ export class GameEngine {
       }
     }
 
+    // If no upgrades can be purchased, return explicit error
+    if (actualQuantity === 0) {
+      const requiredCost = calculateUpgradeCost(
+        upgrade.baseCost, 
+        upgrade.costGrowth, 
+        currentLevel, 
+        gameState.prestigeLevel
+      )
+      console.log(`❌ Insufficient funds: need ${requiredCost}, have ${gameState.currentPower}`);
+      return {
+        success: false,
+        purchased: 0,
+        error: `Insufficient power. Need ${requiredCost}, have ${gameState.currentPower}`,
+        reason: "insufficient_funds"
+      }
+    }
+
      // Validate purchase using centralized validation
     const validationResult = validateUpgradePurchase(
       actualQuantity,
@@ -562,7 +666,17 @@ export class GameEngine {
       totalCost
     )
 
+    console.log(`🔍 Validation result:`, {
+      actualQuantity,
+      currentPower: gameState.currentPower,
+      currentLevel,
+      totalCost,
+      isValid: validationResult.isValid,
+      reason: validationResult.reason
+    });
+
     if (!validationResult.isValid) {
+      console.log(`❌ Purchase validation failed: ${validationResult.reason}`);
       return { 
         success: false, 
         purchased: 0, 
@@ -617,6 +731,9 @@ export class GameEngine {
     // Save updated state
     await this.saveUserGameState(userId, gameState)
 
+    // Invalidate cache to force reload on next purchase
+    gameStateCache.invalidate(userId)
+
     return {
       success: true,
       purchased: actualQuantity,
@@ -629,7 +746,8 @@ export class GameEngine {
    * Process special item purchase with strict validation
   */
   static async purchaseSpecialItem(userId: string, specialItemId: number): Promise<PurchaseResult> {
-    const gameState = await this.loadUserGameState(userId)
+    // Ne PAS utiliser le cache pour les achats pour éviter les problèmes de concurrence
+    const gameState = await this.loadUserGameState(userId, false)
      
     const specialItem = SPECIAL_ITEMS.find(item => item.id === specialItemId)
     if (!specialItem) {
@@ -701,6 +819,9 @@ export class GameEngine {
 
     // Save updated state
     await this.saveUserGameState(userId, gameState)
+
+    // Invalidate cache to force reload on next purchase
+    gameStateCache.invalidate(userId)
 
     return {
       success: true,
