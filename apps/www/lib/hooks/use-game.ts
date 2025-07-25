@@ -31,7 +31,10 @@ export const useGame = (userId?: string) => {
     
     console.log(`[CLIENT] Connecting with - userId: ${userId}, guestId: ${guestId}, actualUserId: ${actualUserId}`);
     
-    const wsUrl = "ws://" + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:8080";
+    let prefix = "ws://";
+    if (process.env.NODE_ENV === "development") prefix = "wss://";
+
+    const wsUrl = prefix + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:8080";
     
     const socket = io(`${wsUrl}`, {
       query: { 
