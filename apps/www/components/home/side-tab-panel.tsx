@@ -3,18 +3,62 @@
 import { UpgradeCard } from "@/components/cards/upgrade-card";
 import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
 import { useGameContext } from "@/lib/providers/game-provider";
 import { formatNumber } from "@/lib/utils";
-import { getAllUpgrades } from "@clicker/game/utils";
+import { BULK_BUY_OPTIONS, getAllUpgrades } from "@clicker/game/utils";
 import { BulkBuySettings } from "../bulk-buy-settings";
 
 export const SideTabPanel = () => {
   const { gameState } = useGameContext();
+  const { bulkBuyOption } = useBulkBuy();
   if (!gameState) return null;
 
   const getUnlockedUpgradesCount = (totalPower: number) => {
     return getAllUpgrades().filter(upgrade => totalPower >= upgrade.baseCost).length;
   };
+
+  const getAffordableUpgradesForOption = (option: typeof BULK_BUY_OPTIONS[number]) => {
+    return getAllUpgrades().filter(upgrade => {
+      if (gameState.total_power < upgrade.baseCost) return false;
+      const userUpgrade = gameState.upgrades.find(u => u.id === upgrade.id);
+      const currentLevel = userUpgrade?.level || 0;
+      let maxAffordable = 0;
+      let remainingPower = gameState.power;
+      let i = 0;
+      if (option === "MAX") {
+        while (maxAffordable < 1000) {
+          const nextCost = Math.floor(upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel + i));
+          if (remainingPower >= nextCost) {
+            remainingPower -= nextCost;
+            maxAffordable++;
+            i++;
+          } else {
+            break;
+          }
+        }
+        return maxAffordable > 0;
+      } else if (typeof option === "number") {
+        let totalCost = 0;
+        for (let j = 0; j < option; j++) {
+          totalCost += Math.floor(upgrade.baseCost * Math.pow(upgrade.costGrowth, currentLevel + j));
+        }
+        return gameState.power >= totalCost;
+      }
+      return false;
+    });
+  };
+
+  const affordableCounts: Record<typeof BULK_BUY_OPTIONS[number], number> = BULK_BUY_OPTIONS.reduce((acc, option) => {
+    acc[option] = 0;
+    return acc;
+  }, {} as Record<typeof BULK_BUY_OPTIONS[number], number>);
+  BULK_BUY_OPTIONS.forEach((option) => {
+    affordableCounts[option] = getAffordableUpgradesForOption(option).length;
+  });
+
+  const showAll = bulkBuyOption === 1;
+  const upgradesToShow = showAll ? getAllUpgrades() : getAffordableUpgradesForOption(bulkBuyOption);
 
   const nextUnlockIndex = getUnlockedUpgradesCount(gameState.total_power);
 
@@ -59,12 +103,12 @@ export const SideTabPanel = () => {
       </div> */}
 
       <div className="p-3 border-b-1 border-neutral-200 dark:border-neutral-700 flex justify-end">
-        <BulkBuySettings />
+        <BulkBuySettings affordableCounts={affordableCounts} />
       </div>
       
       <ScrollArea className="flex-1 p-3 overflow-y-auto">
         <div className="space-y-2">
-          {getAllUpgrades().map((upgrade, index) => (
+          {upgradesToShow.map((upgrade, index) => (
             <UpgradeCard key={upgrade.id} upgradeId={upgrade.id} index={index} />
           ))}
         </div>

@@ -4,12 +4,13 @@ import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
 import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { BULK_BUY_OPTIONS, BulkBuyOption } from "@clicker/game/utils";
+import { useEffect } from "react";
 
 interface BulkBuySettingsProps {
-  maxAffordable?: number;
+  affordableCounts: Record<BulkBuyOption, number>;
 }
 
-export const BulkBuySettings: Component<BulkBuySettingsProps> = ({ maxAffordable = 999 }) => {
+export const BulkBuySettings: Component<BulkBuySettingsProps> = ({ affordableCounts }) => {
   const { bulkBuyOption, setBulkBuyOption } = useBulkBuy();
   
   const getDisplayValue = (option: BulkBuyOption): string => {
@@ -18,9 +19,26 @@ export const BulkBuySettings: Component<BulkBuySettingsProps> = ({ maxAffordable
   };
 
   const isOptionDisabled = (option: BulkBuyOption): boolean => {
-    if (option === "MAX") return maxAffordable === 0;
-    return typeof option === "number" && option > maxAffordable;
+    if (option === 1) return false;
+    return affordableCounts[option] === 0;
   };
+
+  useEffect(() => {
+    if (isOptionDisabled(bulkBuyOption)) {
+      const currentIndex = BULK_BUY_OPTIONS.indexOf(bulkBuyOption);
+      let found = false;
+      for (let i = currentIndex - 1; i >= 0; i--) {
+        if (!isOptionDisabled(BULK_BUY_OPTIONS[i])) {
+          setBulkBuyOption(BULK_BUY_OPTIONS[i]);
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) setBulkBuyOption(1);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [affordableCounts, bulkBuyOption, setBulkBuyOption]);
 
   return (
     <div className="flex flex-wrap gap-1 text-xs">
