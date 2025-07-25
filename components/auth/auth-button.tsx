@@ -31,17 +31,17 @@ export const AuthButton: Component<AuthButtonProps> = ({ className = "", ...prop
           <Button 
             size="sm" 
             variant="retro" 
-            className={`flex items-center gap-2 ${needsProfileSetup ? "bg-yellow-400 text-neutral-900 border-yellow-600" : ""}`}
+            className={`flex flex-1 items-center gap-2 ${needsProfileSetup ? "bg-yellow-400 text-neutral-900 border-yellow-600" : ""}`}
           >
             {needsProfileSetup ? (
               <>
                 <Settings className="w-4 h-4" />
-                <span className="hidden sm:inline font-mono">SETUP PROFILE</span>
+                <span className="font-mono">SETUP PROFILE</span>
               </>
             ) : (
               <>
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">{displayName}</span>
+                <span>{displayName}</span>
               </>
             )}
           </Button>
@@ -49,7 +49,7 @@ export const AuthButton: Component<AuthButtonProps> = ({ className = "", ...prop
 
         <Button size="sm" variant="retro" onClick={handleSignOut}>
           <LogOut />
-          <span className="hidden sm:inline ml-2">Sign Out</span>
+          <span className="inline ml-2">Sign Out</span>
         </Button>
       </div>
     )

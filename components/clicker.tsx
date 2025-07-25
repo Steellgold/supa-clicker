@@ -1,6 +1,6 @@
 "use client"
 
-import { useGame } from "@/lib/providers/game-provider"
+import { useGameContext } from "@/lib/providers/game-provider"
 import { cn, formatNumber } from "@/lib/utils"
 import { motion } from "framer-motion"
 import Image from "next/image"
@@ -14,43 +14,41 @@ type ClickEffect = {
   gained: number
 }
 
-type ClickerProps = {
-  onClick: () => {
-    gained: number
-  }
-  disabled?: boolean
-}
-
-export function Clicker({ onClick, disabled }: ClickerProps) {
-  const { gameState } = useGame();
+export function Clicker() {
+  const { gameState, handleClick, isLoading } = useGameContext();
   const [isClicking, setIsClicking] = useState(false);
   const [clickEffects, setClickEffects] = useState<ClickEffect[]>([]);
   const [isActive, setIsActive] = useState(false);
 
-  const handleClick = useCallback(
+  const handleClickAction = useCallback(
     (event: React.MouseEvent) => {
-      if (disabled) return;
+      if (isLoading) return;
 
       setIsClicking(true);
       setIsActive(true);
 
-      const result = onClick();
+      // Appeler la fonction WebSocket
+      handleClick();
 
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left - rect.width / 2;
       const y = event.clientY - rect.top - rect.height / 2;
       const effectId = Date.now();
 
-      setClickEffects((prev) => [...prev, { id: effectId, x, y, gained: result.gained }]);
+      // Afficher l'effet avec le PPC actuel
+      const gained = gameState?.ppc || 1;
+      setClickEffects((prev) => [...prev, { id: effectId, x, y, gained }]);
 
       setTimeout(() => setClickEffects((prev) => prev.filter((effect) => effect.id !== effectId)), 1000);
       setTimeout(() => setIsClicking(false), 100);
       setTimeout(() => setIsActive(false), 300);
     },
-    [onClick, disabled]
+    [handleClick, isLoading, gameState?.ppc]
   );
 
-  const isPrestige = gameState.prestigeLevel > 0;
+  if (!gameState) return null;
+
+  const isPrestige = false; // Plus de prestige dans le système minimaliste
   const isRingActive = isActive || isClicking;
   const isRingInactive = !isActive && !isClicking;
 
@@ -66,13 +64,13 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
       : "focus:ring-2 focus:ring-green-600 dark:focus:ring-green-400"
     : "";
 
-  const disabledClass = disabled ? "opacity-60 cursor-not-allowed" : "";
+  const disabledClass = isLoading ? "opacity-60 cursor-not-allowed" : "";
 
   return (
     <div className="relative flex items-center justify-center">
       <motion.button
-        onClick={handleClick}
-        disabled={disabled || isClicking}
+        onClick={handleClickAction}
+        disabled={isLoading || isClicking}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         animate={isClicking ? { scale: [1, 1.05, 1] } : {}}
@@ -88,7 +86,7 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
         <div className="absolute inset-0 flex items-center justify-center">
           <Image
             src={
-              gameState.prestigeLevel === 0
+              !isPrestige
                 ? "https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcBNW5dZLiLn2WUYjB5ursFGVI4PJSbHf0K8p7"
                 : "https://s7yh4pytyr.ufs.sh/f/UAfcSNyPsVRcvf7PIUQPlpyARfVLYXwGBDtCO603v4EnQT2r"
             }
@@ -109,8 +107,8 @@ export function Clicker({ onClick, disabled }: ClickerProps) {
           animate={{ opacity: 0, scale: 1.5, y: effect.y - 40 }}
           transition={{ duration: 1, ease: "easeOut" }}
           className={cn("absolute pointer-events-none z-20 text-2xl font-mono font-bold", {
-            "text-green-600 dark:text-green-300": gameState.prestigeLevel === 0,
-            "text-purple-600 dark:text-purple-300": gameState.prestigeLevel > 0,
+            "text-green-600 dark:text-green-300": !isPrestige,
+            "text-purple-600 dark:text-purple-300": isPrestige,
           })}
           style={{ left: "50%", top: "50%" }}
         >

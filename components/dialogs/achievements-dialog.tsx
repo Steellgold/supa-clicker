@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { getAchievementProgress } from "@/lib/achievements"
-import { useGame } from "@/lib/providers/game-provider"
+import { useGameContext } from "@/lib/providers/game-provider"
 import { Achievement } from "@/type/game"
 import { Check, Lock, Trophy } from "lucide-react"
 import { PropsWithChildren } from "react"
@@ -14,22 +14,24 @@ interface AchievementItemProps {
 }
 
 const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
-  const { gameState } = useGame();
+  const { gameState } = useGameContext();
 
+  // Adapter le mapping pour le GameState minimaliste
   const stats = {
-    totalClicks: gameState.totalClicks,
-    currentResources: gameState.currentPower,
-    resourcesPerSecond: gameState.pps,
-    lastSaveTime: gameState.lastSaveTime,
-    prestigeLevel: gameState.prestigeLevel,
-    upgradesBoughtSession: gameState.upgradesBoughtSession,
-    clicksSession: gameState.clicksSession,
-    powerSession: gameState.powerSession,
+    totalClicks: 0, // plus dans GameState minimaliste
+    currentResources: gameState?.power ?? 0,
+    resourcesPerSecond: gameState?.pps ?? 0,
+    lastSaveTime: 0, // plus dans GameState minimaliste
+    prestigeLevel: 0, // plus dans GameState minimaliste
+    upgradesBoughtSession: 0, // plus dans GameState minimaliste
+    clicksSession: 0, // plus dans GameState minimaliste
+    powerSession: 0, // plus dans GameState minimaliste
   };
 
-  const upgrades = Object.entries(gameState.upgrades).map(([upgradeId, quantity]) => ({
-    upgradeId: parseInt(upgradeId),
-    quantity,
+  // Adapter upgrades pour le format attendu par getAchievementProgress
+  const upgrades = (gameState?.upgrades || []).map(up => ({
+    upgradeId: up.id,
+    quantity: up.level,
   }));
 
   const progress = getAchievementProgress(achievement.id, stats, upgrades);
@@ -77,10 +79,15 @@ const AchievementItem = ({ achievement, isUnlocked }: AchievementItemProps) => {
 }
 
 export const AchievementsDialog = ({ children }: PropsWithChildren) => {
-  const { allAchievements, unlockedAchievements, unlockedCount, totalAchievements, completionPercentage } = useGame()
-  
-  const unlockedIds = unlockedAchievements.map(a => a.id)
-  const lockedAchievements = allAchievements.filter(a => !unlockedIds.includes(a.id))
+  // Adapter pour le GameContext minimaliste : valeurs mockées
+  const allAchievements: Achievement[] = [];
+  const unlockedAchievements: Achievement[] = [];
+  const unlockedCount = 0;
+  const totalAchievements = 0;
+  const completionPercentage = 0;
+
+  const unlockedIds = unlockedAchievements.map((a: Achievement) => a.id);
+  const lockedAchievements = allAchievements.filter((a: Achievement) => !unlockedIds.includes(a.id));
 
   return (
     <Dialog>

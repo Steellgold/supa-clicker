@@ -34,35 +34,12 @@ export type PurchasedSpecialItem = {
 };
 
 export type GameState = {
-  totalClicks: number;
-  totalPower: number;
-  currentPower: number;
-  clickPower: number;
+  ppc: number;
   pps: number;
-  upgrades: Record<number, number>;
-  specialItems: Record<number, number>;
-  // Ajout : upgrades et special items figés
-  purchasedUpgrades?: PurchasedUpgrade[];
-  purchasedSpecialItems?: PurchasedSpecialItem[];
-  // Prix figés pour le prochain achat
-  nextUpgradeCosts?: Record<number, number>;
-  nextSpecialItemCosts?: Record<number, number>;
-  // Achievement-related fields
-  unlockedAchievements: number[];
-  lastSaveTime: number;
-  prestigeLevel: number;
-  resourcesPerSecond: number;
-  currentResources: number;
-  // Combo System
-  comboActive: boolean;
-  comboCount: number;
-  lastClickTime: number;
-  // Time Boost System
-  timeBoostActive: boolean;
-  timeBoostEndTime: number;
-  timeBoostMultiplier: number;
-  total_spent?: number;
-}
+  power: number;
+  total_power: number;
+  upgrades: { id: number; level: number }[];
+};
 
 export type UserUpgrade = {
   upgradeId: number;

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
 import { Menu } from "lucide-react";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
+type TabType = "UPGRADES" | "SPECIALS";
 
 interface TabsHeaderProps {
   tab: TabType;
@@ -39,31 +39,6 @@ export const TabsHeader: Component<TabsHeaderProps> = ({ tab, setTab }) => (
     >
       ⭐ SPECIALS
     </Button>
-    <Button
-      variant={"tabRetro"}
-      size="lg"
-      onClick={() => setTab("LEADERBOARD")}
-      className={cn(
-        "flex-1 p-3 md:p-3 font-mono font-bold text-xs md:text-sm transition-colors",
-        tab === "LEADERBOARD"
-          ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-          : "hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300"
-      )}
-    >
-      🏆 LEADERBOARD
-    </Button>
-    <Button
-      variant={"tabRetro"}
-      size="lg"
-      onClick={() => setTab("CHAT")}
-      className={cn(
-        "flex-1 p-3 md:p-3 font-mono font-bold text-xs md:text-sm transition-colors",
-        tab === "CHAT"
-          ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
-          : "hover:bg-neutral-200 dark:hover:bg-neutral-600 text-neutral-700 dark:text-neutral-300"
-      )}
-    >
-      💬 CHAT
-    </Button>
+
   </div>
 ); 

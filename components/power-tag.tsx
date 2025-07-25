@@ -1,18 +1,16 @@
-import { useGame } from "@/lib/providers/game-provider";
 import { cn } from "@/lib/utils";
-import { Component } from "@/type/component";
 import Image, { ImageProps } from "next/image";
 import { PropsWithChildren } from "react";
 
 type Props = PropsWithChildren & {
   power?: number | string;
-  imageProps?: Partial<Omit<ImageProps, "src" | "alt">>;
+  imageProps?: Partial<Omit<ImageProps, 'src' | 'alt'>>;
 };
 
-export const PowerTag: Component<Props> = ({ power, children, imageProps }) => {
+export const PowerTag = ({ power, children, imageProps }: Props) => {
   const { className: imageClassName, ...restImageProps } = imageProps || {};
 
-  const prestigeLevel = useGame().gameState.prestigeLevel || 0;
+  const prestigeLevel = 0; // Plus de prestige dans le système minimaliste
   
   return (
     <span className="gap-1">

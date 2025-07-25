@@ -1,48 +1,69 @@
-// SideTabPanel.tsx
+"use client";
 
-import { AuthModal } from "@/components/auth/auth-modal";
-import { LeaderboardTab } from "@/components/tab/leaderboard-tab";
-import { SpecialsTab } from "@/components/tab/specials-tab";
-import { UpgradesTab } from "@/components/tab/upgrades-tab";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Component } from "@/type/component";
-import type { User } from "@supabase/supabase-js";
-import { ChatPanel } from "../chat-panel";
-import { TabsHeader } from "./tabs-header";
+import { UpgradeCard } from "@/components/cards/upgrade-card";
+import { PowerTag } from "@/components/power-tag";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useGameContext } from "@/lib/providers/game-provider";
+import { getAllUpgrades } from "@/lib/upgrades";
+import { formatNumber } from "@/lib/utils";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
+export const SideTabPanel = () => {
+  const { gameState } = useGameContext();
+  if (!gameState) return null;
 
-interface SideTabPanelProps {
-  tab: TabType;
-  setTab: (tab: TabType) => void;
-  user: User | null;
-}
+  const getUnlockedUpgradesCount = (totalPower: number) => {
+    return getAllUpgrades().filter(upgrade => totalPower >= upgrade.baseCost).length;
+  };
 
-export const SideTabPanel: Component<SideTabPanelProps> = ({ tab, setTab, user }) => (
-  <div className={cn(
-    "w-full md:flex-[0.45] border-t-2 md:border-t-0 md:border-l-2 flex flex-col transition-colors z-0 md:z-20",
-    "border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800"
-  )}>
-    <TabsHeader tab={tab} setTab={setTab} />
-    <div className={cn("p-3 md:p-3 space-y-2",
-      tab === "CHAT" ? "flex-1 overflow-hidden flex flex-col" : ""
-    )}>
-      {!user && tab !== "SPECIALS" && (
-        <div className="p-3 bg-[#f0faff] dark:bg-[#1a2e40] border-4 border-[#507199] dark:border-[#6aa7d1] text-center font-mono text-sm text-[#1a2e40] dark:text-[#cde8ff] rounded-none shadow-[4px_4px_0_#507199]">
-          <div className="mb-2">💡 Sign in to save your progress in the cloud</div>
-          <AuthModal>
-            <Button size="sm" variant="retro">
-              Enable Cloud Save
-            </Button>
-          </AuthModal>
+  const nextUnlockIndex = getUnlockedUpgradesCount(gameState.total_power);
+
+  return (
+    <div className="w-full md:w-3/6 xl:w-1/4 border-l-2 border-neutral-800 dark:border-neutral-200 bg-white dark:bg-neutral-800 flex flex-col transition-colors">
+      {/* Header avec stats */}
+      <div className="flex flex-row justify-between items-center p-3 bg-neutral-100 dark:bg-neutral-900 border-b-2 border-neutral-200 dark:border-neutral-700">
+        <span className="text-sm text-neutral-600 dark:text-neutral-400">
+          Total Power:{" "}
+          <PowerTag imageProps={{ width: 14, height: 14 }}>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200">
+              {formatNumber(gameState.total_power)}
+            </span>
+          </PowerTag>
+        </span>
+
+        {nextUnlockIndex > 0 && (
+          <span className="text-sm text-neutral-600 dark:text-neutral-400">
+            Next unlock:{" "}
+            <PowerTag imageProps={{ width: 14, height: 14 }}>
+              <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                {formatNumber(getAllUpgrades()[nextUnlockIndex].baseCost)}
+              </span>
+            </PowerTag>
+          </span>
+        )}
+      </div>
+
+      {/* <div className="flex border-b-2 border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-850">
+        <button className="flex-1 px-2 py-2 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-b-2 border-green-500">
+          UPGRADES
+        </button>
+        <button className="flex-1 px-2 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          SPECIALS
+        </button>
+        <button className="flex-1 px-2 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          LEADERBOARD
+        </button>
+        <button className="flex-1 px-2 py-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          CHAT
+        </button>
+      </div> */}
+      
+      <ScrollArea className="flex-1 p-3 overflow-y-auto">
+        <div className="space-y-2">
+          {getAllUpgrades().map((upgrade, index) => (
+            <UpgradeCard key={upgrade.id} upgradeId={upgrade.id} index={index} />
+          ))}
         </div>
-      )}
-
-      {tab === "UPGRADES" && <UpgradesTab />}
-      {tab === "SPECIALS" && <SpecialsTab />}
-      {tab === "LEADERBOARD" && <LeaderboardTab />}
-      {tab === "CHAT" && <ChatPanel />}
+      </ScrollArea>
     </div>
-  </div>
-);
+  );
+};

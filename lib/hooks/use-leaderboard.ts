@@ -96,6 +96,7 @@ export const useUserLeaderboardPosition = (userId: string | null, type: Leaderbo
         userId,
       });
 
+      // TODO: Adapter le leaderboard pour WebSocket. Les appels REST sont désactivés.
       const response = await fetch(`/api/leaderboard?${params}`);
       
       if (!response.ok) {

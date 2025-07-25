@@ -1,6 +1,6 @@
 "use client";
 
-import { useGame } from "@/lib/providers/game-provider";
+import { useGameContext } from "@/lib/providers/game-provider";
 import { Component } from "@/type/component";
 import { PropsWithChildren } from "react";
 
@@ -11,13 +11,13 @@ type UnlockBlurWrapperProps = PropsWithChildren & {
   maxDistance?: number;
 }
 
-export const UnlockBlurWrapper: Component<UnlockBlurWrapperProps> = ({ children, isUnlocked, index, getUnlockedCount, maxDistance = 4 }) => {
-  const { gameState } = useGame();
+export const UnlockBlurWrapper: Component<UnlockBlurWrapperProps> = ({ children, isUnlocked, index, getUnlockedCount, maxDistance = 7 }) => {
+  const { gameState } = useGameContext();
 
   const getVisualEffect = () => {
     if (isUnlocked) return { opacity: 1, blur: 0 };
     
-    const unlockedCount = getUnlockedCount(gameState.totalPower);
+    const unlockedCount = getUnlockedCount(gameState?.total_power ?? 0);
     const distanceFromUnlocked = index - unlockedCount;
     
     if (distanceFromUnlocked > maxDistance) return { opacity: 0, blur: 10 };
@@ -39,7 +39,6 @@ export const UnlockBlurWrapper: Component<UnlockBlurWrapperProps> = ({ children,
       style={{ 
         opacity,
         filter: `blur(${blur}px)`,
-        transform: blur > 5 ? "scale(0.95)" : "scale(1)",
         transition: "all 0.3s ease"
       }}
     >

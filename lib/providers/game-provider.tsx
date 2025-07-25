@@ -1,97 +1,42 @@
 "use client";
 
-import { useAuth } from "@/lib/auth/auth-context";
-import { useAchievements } from "@/lib/hooks/use-achievements";
-import { useClickerGame } from "@/lib/hooks/use-game-data";
-import { getAllUpgrades } from "@/lib/upgrades";
+import { useGame } from "@/lib/hooks/use-game";
 import { Component } from "@/type/component";
-import { GameStats, UserUpgrade } from "@/type/game";
-import { createContext, PropsWithChildren, useContext, useEffect } from "react";
-import { GAME_CONFIG } from "../config/game-config";
+import type { GameState } from "@/type/game";
+import { createContext, PropsWithChildren, useContext } from "react";
 
-type GameContextType = ReturnType<typeof useClickerGame> & ReturnType<typeof useAchievements>;
+interface GameContextType {
+  gameState: GameState | null;
+  isLoading: boolean;
+  error: string | null;
+  handleClick: () => void;
+  buyUpgrade: (upgradeId: number, quantity?: number) => void;
+  resetGame: () => void;
+}
 
 const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
-  const { user } = useAuth();
-  
-  const gameData = useClickerGame({
-    upgrades: getAllUpgrades(),
-    saveToSupabase: !!user,
-    userId: user?.id || null,
-    autoSaveInterval: GAME_CONFIG.INTERVALS.AUTO_SAVE,
-    storageKey: GAME_CONFIG.STORAGE.GAME_SAVE_KEY
-  });
+  const { gameState, isLoading, error, handleClick, buyUpgrade, resetGame } = useGame();
 
-  const achievementData = useAchievements(gameData.gameState.unlockedAchievements);
-
-  useEffect(() => {
-    const unlockedIds = achievementData.unlockedAchievements.map(a => a.id);
-    if (unlockedIds.length !== gameData.gameState.unlockedAchievements.length || 
-        !unlockedIds.every(id => gameData.gameState.unlockedAchievements.includes(id))) {
-      gameData.updateAchievements(unlockedIds);
-    }
-  }, [achievementData.unlockedAchievements, gameData]);
-
-  useEffect(() => {
-    if (!gameData.isLoading && gameData.gameState.lastSaveTime > 0) {
-      const timeSinceLastSave = Date.now() - gameData.gameState.lastSaveTime;
-      const isActiveGameplay = timeSinceLastSave < 10000; // Less than 10 seconds
-      
-      if (isActiveGameplay) {
-        const stats: GameStats = {
-          totalClicks: gameData.gameState.totalClicks,
-          currentResources: gameData.gameState.currentPower,
-          resourcesPerSecond: gameData.gameState.pps,
-          lastSaveTime: gameData.gameState.lastSaveTime,
-          prestigeLevel: gameData.gameState.prestigeLevel,
-          upgradesBoughtSession: gameData.gameState.upgradesBoughtSession ?? 0,
-          clicksSession: gameData.gameState.clicksSession ?? 0,
-          powerSession: gameData.gameState.powerSession ?? 0,
-        };
-
-        const upgrades: UserUpgrade[] = Object.entries(gameData.gameState.upgrades).map(([id, quantity]) => ({
-          upgradeId: parseInt(id),
-          quantity,
-        }));
-
-        achievementData.checkForNewAchievements(stats, upgrades);
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    gameData.gameState.totalClicks,
-    gameData.gameState.currentPower,
-    gameData.gameState.pps,
-    gameData.gameState.upgrades,
-    gameData.gameState.prestigeLevel,
-    gameData.isLoading,
-  ]);
-
-  const combinedContext = {
-    ...gameData,
-    ...achievementData,
-    resetGame: async (): Promise<boolean> => {
-      const result = await gameData.resetGame();
-      achievementData.resetAchievements();
-      return result;
-    },
+  const contextValue: GameContextType = {
+    gameState,
+    isLoading,
+    error,
+    handleClick,
+    buyUpgrade,
+    resetGame,
   };
 
   return (
-    <GameContext.Provider value={combinedContext}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );
 };
 
-export const useGame = (): GameContextType => {
+export const useGameContext = (): GameContextType => {
   const context = useContext(GameContext);
-  
-  if (!context) {
-    throw new Error("useGame must be used within a GameProvider");
-  }
-  
+  if (!context) throw new Error("useGameContext must be used within a GameProvider");
   return context;
 };

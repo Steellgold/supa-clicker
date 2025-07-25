@@ -43,10 +43,11 @@ const RootLayout: Component<PropsWithChildren> = ({ children }) => {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistMono.className} antialiased bg-background text-foreground`}>
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[url('/noise.svg')] opacity-10 mix-blend-screen h-screen" />
-          <Providers>
-            <main className="relative z-10">{children}</main>
-          </Providers>            
+        <Providers>
+          <main className="flex flex-col min-h-screen">
+            {children}
+          </main>
+        </Providers>            
       </body>
     </html>
   )
