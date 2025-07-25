@@ -42,12 +42,24 @@ function createInitialGameState(): GameState {
 
 io.on("connection", async (socket) => {
   const userId = (socket as typeof socket & { userId: string }).userId;
+  const guestId = socket.handshake.query.guestId as string | undefined;
   console.log(`[WS] User connected: ${userId}`);
+  console.log(`[WS] Guest ID received: ${guestId}`);
+  console.log(`[WS] Migration check: guestId=${guestId}, userId=${userId}, different=${guestId !== userId}`);
 
   socket.emit("loading", true);
 
+  let migratedGameState: GameState | null = null;
+  if (guestId && guestId !== userId) {
+    console.log(`[WS] Starting migration from guest ${guestId} to user ${userId}`);
+    migratedGameState = await GameService.smartMigrateGameState(guestId, userId);
+    console.log(`[WS] Migration result:`, migratedGameState ? 'Success' : 'Failed/No data');
+  } else {
+    console.log(`[WS] No migration needed - guestId: ${guestId}, userId: ${userId}`);
+  }
+
   try {
-    let gameState = await GameService.loadGameState(userId);
+    let gameState = migratedGameState || await GameService.loadGameState(userId);
     
     if (!gameState) {
       gameState = createInitialGameState();
@@ -180,7 +192,7 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-httpServer.listen(8080, () => {
-  console.log("Socket.io server running on ws://localhost:8080");
+httpServer.listen(process.env.WS_SERVER_PORT, () => {
+  console.log("Socket.io server running on ws://" + process.env.WS_SERVER_URL + ":" + process.env.WS_SERVER_PORT);
   console.log("Supabase integration enabled");
 });

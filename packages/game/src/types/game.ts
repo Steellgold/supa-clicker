@@ -1,3 +1,5 @@
+export const GUEST_ID_KEY = "supa-clicker-guest-id";
+
 // Upgrade type
 export type Upgrade = {
   id: number;
@@ -10,6 +12,11 @@ export type Upgrade = {
   category: string;
   maxPurchases?: number;
 };
+
+export type DatabaseUpgrade = {
+  id: number;
+  level: number
+}
 
 // Game options
 export type GameOptions = {
@@ -41,7 +48,7 @@ export type GameState = {
   pps: number;
   power: number;
   total_power: number;
-  upgrades: { id: number; level: number }[];
+  upgrades: DatabaseUpgrade[]
 };
 
 // User upgrade
@@ -94,7 +101,7 @@ export type GameStateDB = {
   pps: number;
   power: number;
   total_power: number;
-  upgrades: Upgrade[];
+  upgrades: DatabaseUpgrade[];
   created_at?: string;
   updated_at?: string;
 }

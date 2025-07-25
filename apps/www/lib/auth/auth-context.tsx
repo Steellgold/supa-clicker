@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client"
 import { Component } from "@/type/component"
+import { GUEST_ID_KEY } from "@clicker/game/types"
 import { User } from "@supabase/supabase-js"
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 
@@ -26,6 +27,7 @@ export type AuthContextType = {
     avatar_url?: string
   }) => Promise<{ error?: string }>
   refreshProfile: () => Promise<void>
+  finalizeMigration: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -106,6 +108,10 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     await fetchProfile()
   }
 
+  const finalizeMigration = () => {
+    if (user?.id) localStorage.setItem(GUEST_ID_KEY, user.id);
+  }
+
   useEffect(() => {
     const init = async () => {
       await fetchUser()
@@ -127,6 +133,9 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     else setUserProfile(null)
   }, [user])
 
+  // Don't auto-sync localStorage guest ID with auth state
+  // Let the WebSocket handle migration first, then update manually
+
   const value: AuthContextType = {
     user,
     userProfile,
@@ -136,6 +145,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     updateUsername,
     updateProfile,
     refreshProfile,
+    finalizeMigration,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

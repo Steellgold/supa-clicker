@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/lib/auth/auth-context";
 import { useGame } from "@/lib/hooks/use-game";
 import { Component } from "@/type/component";
 import type { GameState } from "@clicker/game/types";
@@ -17,7 +18,8 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
-  const { gameState, isLoading, error, handleClick, buyUpgrade, resetGame } = useGame();
+  const { user } = useAuth();
+  const { gameState, isLoading, error, handleClick, buyUpgrade, resetGame } = useGame(user?.id);
 
   const contextValue: GameContextType = {
     gameState,

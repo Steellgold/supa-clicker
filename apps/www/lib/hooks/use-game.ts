@@ -1,3 +1,4 @@
+import { useAuth } from "@/lib/auth/auth-context";
 import type { ClientSocket } from "@/type/socket";
 import type { GameState } from "@clicker/game/types";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +14,7 @@ function getOrCreateGuestId() {
 }
 
 export const useGame = (userId?: string) => {
+  const { finalizeMigration } = useAuth();
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,10 +26,19 @@ export const useGame = (userId?: string) => {
     setError(null);
     setIsConnected(false);
 
-    const id = userId || getOrCreateGuestId();
+    const guestId = getOrCreateGuestId();
+    const actualUserId = userId || guestId; // Use userId if logged in, otherwise guestId
     
-    const socket = io("ws://localhost:8080", {
-      query: { token: id },
+    console.log(`[CLIENT] Connecting with - userId: ${userId}, guestId: ${guestId}, actualUserId: ${actualUserId}`);
+    
+    const wsUrl = "ws://" + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost";
+    const wsPort = process.env.NEXT_PUBLIC_WS_SERVER_PORT || "8080";
+    
+    const socket = io(`${wsUrl}:${wsPort}`, {
+      query: { 
+        token: actualUserId,       // This is the final user ID (authenticated or guest)
+        guestId: guestId           // This is always the original guest ID from localStorage
+      },
       transports: ["websocket"],
     }) as ClientSocket;
     
@@ -48,6 +59,12 @@ export const useGame = (userId?: string) => {
     socket.on("welcome", (payload) => {
       console.log("Welcome received:", payload);
       setIsLoading(false);
+      
+      // If we have a userId and it's different from the guest ID, finalize migration
+      if (userId && userId !== guestId) {
+        console.log("[CLIENT] Finalizing migration - updating localStorage");
+        finalizeMigration();
+      }
     });
 
     socket.on("update", (state) => {
