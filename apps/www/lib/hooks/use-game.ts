@@ -31,10 +31,9 @@ export const useGame = (userId?: string) => {
     
     console.log(`[CLIENT] Connecting with - userId: ${userId}, guestId: ${guestId}, actualUserId: ${actualUserId}`);
     
-    const wsUrl = "ws://" + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost";
-    const wsPort = process.env.NEXT_PUBLIC_WS_SERVER_PORT || "8080";
+    const wsUrl = "ws://" + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:8080";
     
-    const socket = io(`${wsUrl}:${wsPort}`, {
+    const socket = io(`${wsUrl}`, {
       query: { 
         token: actualUserId,       // This is the final user ID (authenticated or guest)
         guestId: guestId           // This is always the original guest ID from localStorage

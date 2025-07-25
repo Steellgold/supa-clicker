@@ -1,6 +1,6 @@
+import { Database } from "@clicker/game/types"
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
-import { Database } from "./lib/supabase"
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({

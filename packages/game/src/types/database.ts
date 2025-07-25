@@ -139,7 +139,16 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      update_user_profile: {
+        Args: {
+          p_user_id: string
+          p_username: string
+          p_display_name: string
+          p_bio: string
+          p_avatar_url: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
