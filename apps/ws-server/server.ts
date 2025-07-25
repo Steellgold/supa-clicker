@@ -40,6 +40,8 @@ function createInitialGameState(): GameState {
     power: 0,
     total_power: 0,
     upgrades: [],
+    prestige_level: 0,
+    lifetime_power: 0,
   };
 }
 
@@ -189,6 +191,7 @@ setInterval(async () => {
       
       session.gameState.power += ppsReward;
       session.gameState.total_power += ppsReward;
+      session.gameState.lifetime_power += ppsReward;
     }
     
     socket.emit("update", session.gameState);

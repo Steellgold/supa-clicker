@@ -1,4 +1,5 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
+import { getPrestigeMultiplier } from "@clicker/game/utils";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { clickEventSchema, sanitizeGameState, validateInput } from "../schemas/validation";
 import { rateLimiter } from "../utils/rate-limiter";
@@ -28,8 +29,12 @@ export class ClickHandler implements EventHandler {
 
       recalculateStats(session.gameState);
 
-      session.gameState.power += session.gameState.ppc;
-      session.gameState.total_power += session.gameState.ppc;
+      const prestigeMultiplier = getPrestigeMultiplier(session.gameState.prestige_level);
+      const powerGained = Math.floor(session.gameState.ppc * prestigeMultiplier);
+
+      session.gameState.power += powerGained;
+      session.gameState.total_power += powerGained;
+      session.gameState.lifetime_power += powerGained;
 
       if (!sanitizeGameState(session.gameState)) {
         console.error(`[SECURITY] Game state validation failed for user ${userId}`);

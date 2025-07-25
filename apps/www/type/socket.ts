@@ -2,8 +2,9 @@ import type { GameState } from "@clicker/game/types";
 
 export interface ClientToServerEvents {
   click: () => void;
-  buyUpgrade: (upgradeId: number, quantity: number) => void;
+  buyUpgrade: (upgradeId: number, quantity: number, isBulk: boolean) => void;
   reset: () => void;
+  prestige: (confirmed: boolean) => void;
 }
 
 export interface ServerToClientEvents {

@@ -48,7 +48,9 @@ export type GameState = {
   pps: number;
   power: number;
   total_power: number;
-  upgrades: DatabaseUpgrade[]
+  upgrades: DatabaseUpgrade[];
+  prestige_level: number;
+  lifetime_power: number;
 };
 
 // User upgrade
@@ -102,6 +104,8 @@ export type GameStateDB = {
   power: number;
   total_power: number;
   upgrades: DatabaseUpgrade[];
+  prestige_level: number;
+  lifetime_power: number;
   created_at?: string;
   updated_at?: string;
 }

@@ -1,5 +1,6 @@
 import type { GameState } from "@clicker/game/types";
 import { UPGRADES } from "@clicker/game/utils";
+import { getPrestigeMultiplier } from "@clicker/game/utils";
 
 export const getUpgradeById = (id: number) => {
   return UPGRADES.find(u => u.id === id);
@@ -42,6 +43,7 @@ export function recalculateStats(gameState: GameState) {
     }
   }
   
-  gameState.pps = totalPps;
-  gameState.ppc = totalPpc;
+  const prestigeMultiplier = getPrestigeMultiplier(gameState.prestige_level);
+  gameState.pps = Math.floor(totalPps * prestigeMultiplier);
+  gameState.ppc = Math.floor(totalPpc * prestigeMultiplier);
 }

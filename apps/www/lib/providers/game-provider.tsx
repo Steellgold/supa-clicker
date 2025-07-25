@@ -13,13 +13,14 @@ interface GameContextType {
   handleClick: () => void;
   buyUpgrade: (upgradeId: number, quantity: number, isBulk?: boolean) => void;
   resetGame: () => void;
+  performPrestige: () => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
 
 export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
   const { user } = useAuth();
-  const { gameState, isLoading, error, handleClick, buyUpgrade, resetGame } = useGame(user?.id);
+  const { gameState, isLoading, error, handleClick, buyUpgrade, resetGame, performPrestige } = useGame(user?.id);
 
   const contextValue: GameContextType = {
     gameState,
@@ -28,6 +29,7 @@ export const GameProvider: Component<PropsWithChildren> = ({ children }) => {
     handleClick,
     buyUpgrade,
     resetGame,
+    performPrestige,
   };
 
   return (

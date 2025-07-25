@@ -13,6 +13,8 @@ export class GameService {
           power: gameState.power,
           total_power: gameState.total_power,
           upgrades: gameState.upgrades,
+          prestige_level: gameState.prestige_level,
+          lifetime_power: gameState.lifetime_power,
           updated_at: new Date().toISOString()
         });
 
@@ -48,7 +50,9 @@ export class GameService {
         pps: data.pps,
         power: data.power,
         total_power: data.total_power,
-        upgrades: data.upgrades as DatabaseUpgrade[] || []
+        upgrades: data.upgrades as DatabaseUpgrade[] || [],
+        prestige_level: data.prestige_level || 0,
+        lifetime_power: data.lifetime_power || data.total_power || 0
       };
     } catch (error) {
       console.error("Failed to load game state:", error);
@@ -94,6 +98,8 @@ export class GameService {
           power: guestData.power,
           total_power: guestData.total_power,
           upgrades: guestData.upgrades,
+          prestige_level: guestData.prestige_level,
+          lifetime_power: guestData.lifetime_power,
           updated_at: new Date().toISOString()
         });
 
@@ -129,16 +135,18 @@ export class GameService {
         return await this.loadGameState(userId); // Reload to get the migrated state
       }
 
-      const shouldMigrateGuest = guestState.total_power > userState.total_power;
+      const guestProgress = guestState.lifetime_power || guestState.total_power;
+      const userProgress = userState.lifetime_power || userState.total_power;
+      const shouldMigrateGuest = guestProgress > userProgress;
       
       if (shouldMigrateGuest) {
-        console.log(`[MIGRATION] Guest has more progress (${guestState.total_power} vs ${userState.total_power}), migrating guest data`);
+        console.log(`[MIGRATION] Guest has more progress (${guestProgress} vs ${userProgress}), migrating guest data`);
 
         await this.deleteGameState(userId);
         await this.migrateGameState(guestId, userId);
         return await this.loadGameState(userId); // Reload to get the migrated state
       } else {
-        console.log(`[MIGRATION] User has more progress (${userState.total_power} vs ${guestState.total_power}), keeping user data`);
+        console.log(`[MIGRATION] User has more progress (${userProgress} vs ${guestProgress}), keeping user data`);
 
         await this.deleteGameState(guestId);
         return userState;

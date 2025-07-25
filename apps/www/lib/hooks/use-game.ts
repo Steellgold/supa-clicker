@@ -99,6 +99,7 @@ export const useGame = (userId?: string) => {
       console.log("Cleaning up socket connection");
       socket.disconnect();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const handleClick = () => {
@@ -129,6 +130,15 @@ export const useGame = (userId?: string) => {
     }
   };
 
+  const performPrestige = () => {
+    if (!socketRef.current?.connected) {
+      setError("Not connected to server");
+      return;
+    }
+
+    socketRef.current.emit("prestige", true);
+  };
+
   const canPerformAction = () => {
     return socketRef.current?.connected && !isLoading;
   };
@@ -142,6 +152,7 @@ export const useGame = (userId?: string) => {
     handleClick,
     buyUpgrade,
     resetGame,
+    performPrestige,
 
     canPerformAction,
 

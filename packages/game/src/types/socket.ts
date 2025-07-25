@@ -9,6 +9,7 @@ export type ClientToServerEvents = {
   click: () => void;
   buyUpgrade: (upgradeId: number, quantity: number) => void;
   reset: () => void;
+  prestige: (data?: { confirmed?: boolean }) => void;
 };
 
 export type ServerToClientEvents = {

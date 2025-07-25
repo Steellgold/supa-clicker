@@ -31,7 +31,7 @@ export const AuthButton: Component<AuthButtonProps> = ({ className = "", ...prop
           <Button 
             size="sm" 
             variant="retro" 
-            className={`flex flex-1 items-center gap-2 ${needsProfileSetup ? "bg-yellow-400 text-neutral-900 border-yellow-600" : ""}`}
+            className={`flex flex-1 items-center gap-2 ${needsProfileSetup ? "bg-yellow-400 text-neutral-900 border-yellow-600 shadow-yellow-800 dark:shadow-neutral-400" : ""}`}
           >
             {needsProfileSetup ? (
               <>

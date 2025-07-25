@@ -42,9 +42,11 @@ export type Database = {
       game_states: {
         Row: {
           created_at: string | null
+          lifetime_power: number | null
           power: number
           ppc: number
           pps: number
+          prestige_level: number | null
           total_power: number
           updated_at: string | null
           upgrades: Json
@@ -52,9 +54,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          lifetime_power?: number | null
           power: number
           ppc: number
           pps: number
+          prestige_level?: number | null
           total_power: number
           updated_at?: string | null
           upgrades?: Json
@@ -62,9 +66,11 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          lifetime_power?: number | null
           power?: number
           ppc?: number
           pps?: number
+          prestige_level?: number | null
           total_power?: number
           updated_at?: string | null
           upgrades?: Json

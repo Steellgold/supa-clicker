@@ -12,6 +12,8 @@ export class ResetHandler implements EventHandler {
       power: 0,
       total_power: 0,
       upgrades: [],
+      prestige_level: 0,
+      lifetime_power: 0,
     };
 
     try {

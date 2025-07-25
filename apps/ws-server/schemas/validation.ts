@@ -26,6 +26,10 @@ export const resetEventSchema = z.object({
   confirmed: z.boolean().optional()
 });
 
+export const prestigeEventSchema = z.object({
+  confirmed: z.boolean().optional()
+});
+
 export const gameStateSchema = z.object({
   ppc: z.number().min(1).max(1000000),
   pps: z.number().min(0).max(10000000),
@@ -34,7 +38,9 @@ export const gameStateSchema = z.object({
   upgrades: z.array(z.object({
     id: z.number().int().positive(),
     level: z.number().int().min(0).max(10000)
-  }))
+  })),
+  prestige_level: z.number().int().min(0).max(50),
+  lifetime_power: z.number().min(0).max(Number.MAX_SAFE_INTEGER)
 });
 
 export const sessionSchema = z.object({
@@ -66,6 +72,11 @@ export function sanitizeGameState(gameState: any): boolean {
     if (gameState.power > gameState.total_power) {
       console.warn('[VALIDATION] Power exceeds total_power, correcting');
       gameState.power = gameState.total_power;
+    }
+
+    if (gameState.total_power > gameState.lifetime_power) {
+      console.warn('[VALIDATION] total_power exceeds lifetime_power, correcting');
+      gameState.lifetime_power = gameState.total_power;
     }
     
     for (const upgrade of gameState.upgrades) {
