@@ -4,8 +4,8 @@ import { UpgradeCard } from "@/components/cards/upgrade-card";
 import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGameContext } from "@/lib/providers/game-provider";
-import { getAllUpgrades } from "@/lib/upgrades";
 import { formatNumber } from "@/lib/utils";
+import { getAllUpgrades } from "@clicker/game/utils";
 
 export const SideTabPanel = () => {
   const { gameState } = useGameContext();
