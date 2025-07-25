@@ -112,5 +112,12 @@ export const getAllUpgrades = () => {
       ...upgrade,
       index,
     }))
-    .sort((a, b) => a.baseCost - b.baseCost);
+    .sort((a, b) => {
+      const costDiff = a.baseCost - b.baseCost;
+      if (Math.abs(costDiff) > a.baseCost * 0.1) return costDiff;
+
+      const aEfficiency = (a.pps + a.ppc * 0.5) / a.baseCost;
+      const bEfficiency = (b.pps + b.ppc * 0.5) / b.baseCost;
+      return bEfficiency - aEfficiency;
+    });
 }
