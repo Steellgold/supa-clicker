@@ -32,7 +32,7 @@ export const useGame = (userId?: string) => {
     console.log(`[CLIENT] Connecting with - userId: ${userId}, guestId: ${guestId}, actualUserId: ${actualUserId}`);
     
     let prefix = "ws://";
-    if (process.env.NODE_ENV === "development") prefix = "wss://";
+    if (process.env.NODE_ENV === "production") prefix = "wss://";
 
     const wsUrl = prefix + process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:8080";
     
