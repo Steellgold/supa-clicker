@@ -1,6 +1,6 @@
+import { Database } from "@clicker/game/types"
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
-import { Database } from "."
 
 export const createClient = async () => {
   const cookieStore = await cookies()
