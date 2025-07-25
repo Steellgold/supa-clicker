@@ -9,6 +9,27 @@ export function calculateUpgradeCost(upgrade: { baseCost: number; costGrowth: nu
   return Math.floor(upgrade.baseCost * Math.pow(upgrade.costGrowth, level));
 }
 
+export function calculateBulkUpgradeCost(upgrade: { baseCost: number; costGrowth: number; max?: number }, currentLevel: number, quantity: number, maxPower: number) {
+  let totalCost = 0;
+  let actualQuantity = 0;
+  const maxAffordable = Math.min(quantity, upgrade.max ? upgrade.max - currentLevel : quantity);
+  
+  for (let i = 0; i < maxAffordable; i++) {
+    const cost = calculateUpgradeCost(upgrade, currentLevel + i);
+    
+    if (cost < 0 || !Number.isFinite(cost)) break;
+
+    if (maxPower >= totalCost + cost) {
+      totalCost += cost;
+      actualQuantity++;
+    } else {
+      break;
+    }
+  }
+  
+  return { totalCost, actualQuantity };
+}
+
 export function recalculateStats(gameState: GameState) {
   let totalPps = 0;
   let totalPpc = 1; // always at least 1

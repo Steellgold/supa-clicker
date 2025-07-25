@@ -10,7 +10,7 @@ export class EventLoader {
 
   registerEvents(socket: SocketWithSession, sessions: SessionsMap): void {
     socket.on("click", () => this.clickHandler.handle(socket, sessions));
-    socket.on("buyUpgrade", (upgradeId: number, quantity: number) => this.buyUpgradeHandler.handle(socket, sessions, upgradeId, quantity));
+    socket.on("buyUpgrade", (upgradeId: number, quantity: number, isBulk: boolean = false) => this.buyUpgradeHandler.handle(socket, sessions, upgradeId, quantity, isBulk));
     socket.on("reset", async () => await this.resetHandler.handle(socket, sessions));
   }
 }

@@ -3,6 +3,7 @@
 import { PowerTag } from "@/components/power-tag";
 import { Card } from "@/components/ui/card";
 import { UnlockBlurWrapper } from "@/components/unlock-blur-wrapper";
+import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
 import { useGameContext } from "@/lib/providers/game-provider";
 import { cn, formatDecimal, formatNumber, formatWithSpaces } from "@/lib/utils";
 import { getAllUpgrades, UPGRADES } from "@clicker/game/utils";
@@ -19,6 +20,7 @@ interface UpgradeCardProps {
 
 export const UpgradeCard = ({ upgradeId, index = 0 }: UpgradeCardProps) => {
   const { buyUpgrade, gameState } = useGameContext();
+  const { bulkBuyOption } = useBulkBuy();
   
   if (!gameState) return null;
 
@@ -28,9 +30,40 @@ export const UpgradeCard = ({ upgradeId, index = 0 }: UpgradeCardProps) => {
   const userUpgrade = gameState.upgrades.find(u => u.id === upgradeId);
   const currentLevel = userUpgrade?.level || 0;
 
-  const price = calculateUpgradeCost(upgrade, currentLevel);
-  const canAfford = gameState.power >= price;
+  let actualBuyAmount = 0;
+  let cost = 0;
+  const getBulkBuyAmount = () => {
+    if (bulkBuyOption === "MAX") {
+      let maxAffordable = 0;
+      let remainingPower = gameState.power;
+      let i = 0;
 
+      while (maxAffordable < 1000) {
+        const nextCost = calculateUpgradeCost(upgrade, currentLevel + i);
+        if (remainingPower >= nextCost) {
+          remainingPower -= nextCost;
+          maxAffordable++;
+          i++;
+        } else {
+          break;
+        }
+      }
+      return Math.max(1, maxAffordable);
+    }
+
+    return typeof bulkBuyOption === "number" ? bulkBuyOption : 1;
+  };
+
+  actualBuyAmount = getBulkBuyAmount();
+  let totalCost = 0;
+
+  for (let i = 0; i < actualBuyAmount; i++) {
+    totalCost += calculateUpgradeCost(upgrade, currentLevel + i);
+  }
+
+  cost = totalCost;
+
+  const canAfford = gameState.power >= cost && actualBuyAmount > 0;
   const isUnlocked = gameState.total_power >= upgrade.baseCost;
 
   const getUnlockedUpgradesCount = (totalPower: number) => {
@@ -39,14 +72,18 @@ export const UpgradeCard = ({ upgradeId, index = 0 }: UpgradeCardProps) => {
 
   const handleBuy = () => {
     if (canAfford && isUnlocked) {
-      buyUpgrade(upgradeId, 1);
+      buyUpgrade(upgradeId, actualBuyAmount, actualBuyAmount > 1);
     }
   };
 
   const totalPpsGain = (upgrade.pps || 0) * currentLevel;
   const totalClickMultiplier = (upgrade.ppc || 0) * currentLevel;
+  
+  const purchaseQuantity = actualBuyAmount;
   const unitPpsGain = upgrade.pps || 0;
   const unitClickMultiplier = upgrade.ppc || 0;
+  const purchasePpsGain = unitPpsGain * purchaseQuantity;
+  const purchaseClickMultiplier = unitClickMultiplier * purchaseQuantity;
 
   return (
     <UnlockBlurWrapper
@@ -86,19 +123,19 @@ export const UpgradeCard = ({ upgradeId, index = 0 }: UpgradeCardProps) => {
                         {totalClickMultiplier > 0 && (
                           <>
                             <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1" }}>
-                              +{formatDecimal(totalClickMultiplier)}/clicks
+                              +{formatDecimal(totalClickMultiplier)}/c
                             </PowerTag>
                           </>
                         )}
                       </div>
                     )}
 
-                    {(unitPpsGain > 0 || unitClickMultiplier > 0) && (
+                    {(purchasePpsGain > 0 || purchaseClickMultiplier > 0) && (
                       <div className="text-xs font-medium px-1.5 py-0.5 text-neutral-600 dark:text-neutral-400 bg-neutral-500/20 dark:bg-neutral-500/30 w-fit">
-                        {unitPpsGain > 0 && (<>+{formatDecimal(unitPpsGain)}/s</>)}
+                        {purchasePpsGain > 0 && (<>+{formatDecimal(purchasePpsGain)}/s</>)}
 
-                        {unitClickMultiplier > 0 && (
-                          <>+{formatDecimal(unitClickMultiplier)}/clicks</>
+                        {purchaseClickMultiplier > 0 && (
+                          <>+{formatDecimal(purchaseClickMultiplier)}/c</>
                         )}
                       </div>
                     )}
@@ -112,9 +149,13 @@ export const UpgradeCard = ({ upgradeId, index = 0 }: UpgradeCardProps) => {
                       "bg-neutral-200 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-red-200 dark:hover:bg-red-900/30 hover:text-red-500 dark:hover:text-red-400 cursor-not-allowed": !canAfford
                     })}
                   >
-                    {canAfford ? `Buy (${formatNumber(price)})` : (
+                    {canAfford ? (
+                      actualBuyAmount > 1 ?
+                        `Buy x${actualBuyAmount} (${formatNumber(cost)})` :
+                        `Buy (${formatNumber(cost)})`
+                    ) : (
                       <PowerTag imageProps={{ width: 12, height: 12, className: "mb-0.5 ml-1 neutralscale" }}>
-                        Need {formatNumber(price)}
+                        Need {formatNumber(cost)}
                       </PowerTag>
                     )}
                   </button>

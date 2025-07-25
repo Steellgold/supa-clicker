@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGameContext } from "@/lib/providers/game-provider";
 import { formatNumber } from "@/lib/utils";
 import { getAllUpgrades } from "@clicker/game/utils";
+import { BulkBuySettings } from "../bulk-buy-settings";
 
 export const SideTabPanel = () => {
   const { gameState } = useGameContext();
@@ -56,6 +57,10 @@ export const SideTabPanel = () => {
           CHAT
         </button>
       </div> */}
+
+      <div className="p-3 border-b-1 border-neutral-200 dark:border-neutral-700 flex justify-end">
+        <BulkBuySettings />
+      </div>
       
       <ScrollArea className="flex-1 p-3 overflow-y-auto">
         <div className="space-y-2">

@@ -1,9 +1,8 @@
 "use client";
 
 import { Component } from "@/type/component";
+import { BulkBuyOption } from "@clicker/game/utils";
 import { createContext, PropsWithChildren, useContext, useState } from "react";
-
-export type BulkBuyOption = 1 | 3 | 5 | 10 | 20 | "MAX";
 
 type BulkBuyContextType = {
   bulkBuyOption: BulkBuyOption;

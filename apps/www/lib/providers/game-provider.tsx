@@ -11,7 +11,7 @@ interface GameContextType {
   isLoading: boolean;
   error: string | null;
   handleClick: () => void;
-  buyUpgrade: (upgradeId: number, quantity?: number) => void;
+  buyUpgrade: (upgradeId: number, quantity: number, isBulk?: boolean) => void;
   resetGame: () => void;
 }
 

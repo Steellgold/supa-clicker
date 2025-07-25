@@ -3,8 +3,7 @@
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
 import { cn } from "@/lib/utils";
 import { Component } from "@/type/component";
-
-export type BulkBuyOption = 1 | 3 | 5 | 10 | 20 | "MAX";
+import { BULK_BUY_OPTIONS, BulkBuyOption } from "@clicker/game/utils";
 
 interface BulkBuySettingsProps {
   maxAffordable?: number;
@@ -13,12 +12,8 @@ interface BulkBuySettingsProps {
 export const BulkBuySettings: Component<BulkBuySettingsProps> = ({ maxAffordable = 999 }) => {
   const { bulkBuyOption, setBulkBuyOption } = useBulkBuy();
   
-  const options: BulkBuyOption[] = [1, 3, 5, 10, 20, "MAX"];
-
   const getDisplayValue = (option: BulkBuyOption): string => {
-    if (option === "MAX") {
-      return "MAX";
-    }
+    if (option === "MAX") return "MAX";
     return `x${option}`;
   };
 
@@ -29,7 +24,7 @@ export const BulkBuySettings: Component<BulkBuySettingsProps> = ({ maxAffordable
 
   return (
     <div className="flex flex-wrap gap-1 text-xs">
-      {options.map((option) => (
+      {BULK_BUY_OPTIONS.map((option) => (
         <button
           key={option}
           onClick={() => setBulkBuyOption(option)}
