@@ -30,7 +30,7 @@ export class ClickHandler implements EventHandler {
       recalculateStats(session.gameState);
 
       const prestigeMultiplier = getPrestigeMultiplier(session.gameState.prestige_level);
-      const powerGained = Math.floor(session.gameState.ppc * prestigeMultiplier);
+      const powerGained = session.gameState.ppc * prestigeMultiplier;
 
       session.gameState.power += powerGained;
       session.gameState.total_power += powerGained;
