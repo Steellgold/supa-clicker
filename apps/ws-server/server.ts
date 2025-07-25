@@ -2,12 +2,20 @@ import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@cli
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import { EventLoader } from "./loaders/event-loader";
+import { authenticateSocket, type AuthenticatedSocket } from "./middleware/auth";
+import { sanitizeGameState } from "./schemas/validation";
 import { GameService } from "./services/game";
+import { auditLogger } from "./utils/audit-logger";
+import { rateLimiter } from "./utils/rate-limiter";
 import { recalculateStats } from "./utils/utils";
 
 const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-  cors: { origin: "*" },
+  cors: { 
+    origin: process.env.NODE_ENV === "production" 
+      ? [process.env.FRONTEND_URL || "https://supaclicker.vercel.app"] 
+      : "*" 
+  },
 });
 
 export interface Session {
@@ -16,19 +24,14 @@ export interface Session {
   power: number;
   gameState: GameState;
   clickTimestamps: number[];
+  lastValidation: number;
 }
 
 const sessions = new Map<Socket<ClientToServerEvents, ServerToClientEvents>, Session>();
 const eventLoader = new EventLoader();
 
-io.use((socket, next) => {
-  const token = socket.handshake.query.token as string | undefined;
-  if (!token) {
-    return next(new Error("No token provided"));
-  }
-  (socket as Socket<ClientToServerEvents, ServerToClientEvents> & { userId: string }).userId = token;
-  next();
-});
+// Use proper authentication middleware
+io.use(authenticateSocket);
 
 function createInitialGameState(): GameState {
   return {
@@ -41,8 +44,21 @@ function createInitialGameState(): GameState {
 }
 
 io.on("connection", async (socket) => {
-  const userId = (socket as typeof socket & { userId: string }).userId;
+  const authSocket = socket as AuthenticatedSocket;
+  const userId = authSocket.userId;
+  const userIp = socket.handshake.address;
   const guestId = socket.handshake.query.guestId as string | undefined;
+  
+  // Check IP connection limits
+  const ipCheck = rateLimiter.checkIPConnections(userIp);
+  if (!ipCheck.allowed) {
+    auditLogger.logSecurityViolation(userId, 'IP_CONNECTION_LIMIT', { ip: userIp }, userIp);
+    socket.emit("error", ipCheck.reason || "Unknown reason");
+    socket.disconnect();
+    return;
+  }
+
+  auditLogger.logAuth(userId, 'login', { ip: userIp, guestId });
   console.log(`[WS] User connected: ${userId}`);
   console.log(`[WS] Guest ID received: ${guestId}`);
   console.log(`[WS] Migration check: guestId=${guestId}, userId=${userId}, different=${guestId !== userId}`);
@@ -69,12 +85,20 @@ io.on("connection", async (socket) => {
       console.log(`[WS] Loaded existing state for: ${userId}`);
     }
 
+    // Validate game state integrity on load
+    if (!sanitizeGameState(gameState)) {
+      auditLogger.logDataIntegrity(userId, 'INVALID_LOAD_STATE', { gameState });
+      gameState = createInitialGameState();
+      console.warn(`[SECURITY] Invalid game state detected for user ${userId}, reset to initial state`);
+    }
+
     const session: Session = {
       userId,
       lastClickTimestamps: [],
       power: gameState.power,
       gameState,
-      clickTimestamps: []
+      clickTimestamps: [],
+      lastValidation: Date.now()
     };
 
     sessions.set(socket, session);
@@ -96,7 +120,8 @@ io.on("connection", async (socket) => {
       lastClickTimestamps: [],
       power: 0,
       gameState,
-      clickTimestamps: []
+      clickTimestamps: [],
+      lastValidation: Date.now()
     };
     
     sessions.set(socket, session);
@@ -112,34 +137,69 @@ io.on("connection", async (socket) => {
       console.log(`[WS] User disconnecting: ${userId}, saving data...`);
       
       try {
-        await GameService.saveGameState(session.userId, session.gameState);
-        console.log(`[WS] Successfully saved data for: ${userId}`);
+        // Final validation before save
+        if (sanitizeGameState(session.gameState)) {
+          await GameService.saveGameState(session.userId, session.gameState);
+          console.log(`[WS] Successfully saved data for: ${userId}`);
+        } else {
+          auditLogger.logDataIntegrity(userId, 'INVALID_DISCONNECT_STATE', { gameState: session.gameState });
+          console.error(`[SECURITY] Invalid game state at disconnect for user ${userId}, not saving`);
+        }
       } catch (error) {
         console.error(`[WS] Error saving data for ${userId}:`, error);
+        auditLogger.logDataIntegrity(userId, 'SAVE_ERROR', { error: error?.toString() });
       }
       
       sessions.delete(socket);
+      rateLimiter.releaseIPConnection(userIp);
     }
+    
+    auditLogger.logAuth(userId, 'logout', { ip: userIp });
     console.log(`[WS] User disconnected: ${userId}`);
   });
 });
 
 setInterval(async () => {
   const savePromises: Promise<void>[] = [];
+  const now = Date.now();
   
   for (const [socket, session] of sessions.entries()) {
+    // Periodic session validation (every 5 minutes)
+    if (now - session.lastValidation > 300000) {
+      if (!sanitizeGameState(session.gameState)) {
+        auditLogger.logDataIntegrity(session.userId, 'PERIODIC_VALIDATION_FAILED', { gameState: session.gameState });
+        console.warn(`[SECURITY] Periodic validation failed for user ${session.userId}`);
+        // Reset to last known good state or disconnect
+        socket.emit("error", "Game state validation failed");
+        socket.disconnect();
+        continue;
+      }
+      session.lastValidation = now;
+    }
+
+    // Apply PPS rewards
     if (session.gameState.pps > 0) {
-      session.gameState.power += session.gameState.pps;
-      session.gameState.total_power += session.gameState.pps;
+      const ppsReward = session.gameState.pps;
+      
+      // Sanity check on PPS values
+      if (ppsReward > 100000) {
+        auditLogger.logSecurityViolation(session.userId, 'SUSPICIOUS_PPS', { pps: ppsReward });
+        console.warn(`[SECURITY] Suspicious PPS value for user ${session.userId}: ${ppsReward}`);
+      }
+      
+      session.gameState.power += ppsReward;
+      session.gameState.total_power += ppsReward;
     }
     
     socket.emit("update", session.gameState);
     
+    // Auto-save every 10 seconds
     if (Date.now() % 10000 < 1000) {
       savePromises.push(
         GameService.saveGameState(session.userId, session.gameState)
           .catch(error => {
             console.error(`Failed to auto-save for user ${session.userId}:`, error);
+            auditLogger.logDataIntegrity(session.userId, 'AUTO_SAVE_ERROR', { error: error?.toString() });
           })
       );
     }

@@ -109,12 +109,13 @@ export const useGame = (userId?: string) => {
     socketRef.current.emit("click");
   };
 
-  const buyUpgrade = (upgradeId: number, quantity: number = 1) => {
+  const buyUpgrade = (upgradeId: number, quantity: number = 1, isBulk: boolean = false) => {
     if (!socketRef.current?.connected) {
       setError("Not connected to server");
       return;
     }
-    socketRef.current.emit("buyUpgrade", upgradeId, quantity);
+    console.log(`[CLIENT] Buying upgrade ${upgradeId}: quantity=${quantity}, isBulk=${isBulk}`);
+    socketRef.current.emit("buyUpgrade", upgradeId, quantity, isBulk);
   };
 
   const resetGame = () => {
