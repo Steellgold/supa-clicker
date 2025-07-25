@@ -1,10 +1,10 @@
 "use client";
 
-import { Menu, Moon, Sun, Trophy } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ReactElement, useState } from "react";
 import { AuthButton } from "./auth/auth-button";
-import { AchievementsDialog } from "./dialogs/achievements-dialog";
+// import { AchievementsDialog } from "./dialogs/achievements-dialog";
 import { StarButton } from "./star-button";
 import { Button } from "./ui/button";
 
@@ -30,11 +30,12 @@ export const Header = (): ReactElement => {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-          <AchievementsDialog>
+
+          {/* <AchievementsDialog>
             <Button variant="retro" size="sm">
               <Trophy />
             </Button>
-          </AchievementsDialog>
+          </AchievementsDialog> */}
 
           <AuthButton />
           <StarButton />
@@ -64,11 +65,11 @@ export const Header = (): ReactElement => {
             <span className="ml-2">Toggle theme</span>
           </Button>
 
-          <AchievementsDialog>
+          {/* <AchievementsDialog>
             <Button variant="retro" size="sm" className="w-full justify-start">
               <Trophy className="mr-2" />{" "}Achievements
             </Button>
-          </AchievementsDialog>
+          </AchievementsDialog> */}
           
           <StarButton />
 
