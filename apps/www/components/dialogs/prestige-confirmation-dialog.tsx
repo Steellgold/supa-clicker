@@ -10,8 +10,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { formatNumber } from "@/lib/utils";
-import { getPrestigeEstimates } from "@/lib/utils/prestige-client";
+import { formatDecimal, formatNumber } from "@/lib/utils";
+import { formatPrestigeNumber, getPrestigeEstimates } from "@/lib/utils/prestige-client";
 import { Component } from "@/type/component";
 import { GameState } from "@clicker/game/types";
 import { PropsWithChildren } from "react";
@@ -22,9 +22,7 @@ type PrestigeConfirmationDialogProps = {
 };
 
 export const PrestigeConfirmationDialog: Component<PropsWithChildren<PrestigeConfirmationDialogProps>> = ({
-  children,
-  gameState,
-  onConfirm,
+  children, gameState, onConfirm
 }) => {
   const estimates = getPrestigeEstimates(gameState);
   const isFirstPrestige = gameState.prestige_level === 0;
@@ -84,18 +82,18 @@ export const PrestigeConfirmationDialog: Component<PropsWithChildren<PrestigeCon
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Current multiplier:</span>
-                  <span className="font-bold">{formatNumber(estimates.currentMultiplier)}x</span>
+                  <span className="font-bold">{formatDecimal(estimates.currentMultiplier)}x</span>
                 </div>
                 <div className="flex items-center justify-between border-t pt-2">
                   <span className="text-sm">New multiplier:</span>
                   <span className="font-bold text-green-600 dark:text-green-400">
-                    {formatNumber(estimates.newMultiplier)}x
+                    {formatDecimal(estimates.newMultiplier)}x
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Improvement:</span>
                   <span className="font-bold text-green-600 dark:text-green-400">
-                    +{formatNumber(estimates.newMultiplier - estimates.currentMultiplier)}x
+                    +{formatPrestigeNumber(estimates.newMultiplier - estimates.currentMultiplier)}x
                   </span>
                 </div>
               </div>

@@ -4,7 +4,7 @@ export const PRESTIGE_CONFIG = {
   FIRST_PRESTIGE_REQUIREMENT: 10_000_000,
   MAX_PRESTIGE_LEVEL: 50,
   BASE_EXPONENT: 2.5,
-  POWER_MULTIPLIER_PER_PRESTIGE: 0.3,
+  POWER_MULTIPLIER_PER_PRESTIGE: 0.5,
 } as const;
 
 export const calculatePrestigeCost = (prestigeLevel: number): number => {

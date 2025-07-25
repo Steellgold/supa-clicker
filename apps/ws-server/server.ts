@@ -184,7 +184,7 @@ setInterval(async () => {
       const ppsReward = session.gameState.pps;
       
       // Sanity check on PPS values
-      if (ppsReward > 100000) {
+      if (ppsReward > 1000000) {
         auditLogger.logSecurityViolation(session.userId, 'SUSPICIOUS_PPS', { pps: ppsReward });
         console.warn(`[SECURITY] Suspicious PPS value for user ${session.userId}: ${ppsReward}`);
       }

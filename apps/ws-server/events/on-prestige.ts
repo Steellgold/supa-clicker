@@ -22,7 +22,6 @@ export class PrestigeHandler implements EventHandler {
       }
 
       const newGameState = performPrestige(session.gameState);
-      
       session.gameState = newGameState;
       
       try {

@@ -26,9 +26,7 @@ export const resetEventSchema = z.object({
   confirmed: z.boolean().optional()
 });
 
-export const prestigeEventSchema = z.object({
-  confirmed: z.boolean().optional()
-});
+export const prestigeEventSchema = z.boolean().optional();
 
 export const gameStateSchema = z.object({
   ppc: z.number().min(1).max(1000000),
