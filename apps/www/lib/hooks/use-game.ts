@@ -142,7 +142,7 @@ export const useGame = (userId?: string) => {
   };
 
   const canPerformAction = () => {
-    return socketRef.current?.connected && !isLoading;
+    return Boolean(socketRef.current?.connected && !isLoading);
   };
 
   return {
@@ -150,6 +150,7 @@ export const useGame = (userId?: string) => {
     isLoading,
     error,
     isConnected,
+    socketRef,
 
     handleClick,
     buyUpgrade,

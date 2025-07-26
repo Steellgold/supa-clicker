@@ -2,6 +2,48 @@ import type { DatabaseUpgrade, GameState } from "@clicker/game/types";
 import { supabase } from "../lib/supabase";
 
 export class GameService {
+  static async ensureUserProfile(userId: string): Promise<void> {
+    try {
+      // Check if user profile already exists
+      const { data: existingProfile, error: fetchError } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("id", userId)
+        .single();
+
+      if (fetchError && fetchError.code !== "PGRST116") {
+        console.error("Error checking existing profile:", fetchError);
+        return;
+      }
+
+      if (existingProfile) {
+        console.log(`User profile already exists for: ${userId}`);
+        return;
+      }
+
+      const safeUsername = `user${userId.replace(/[^a-zA-Z0-9]/g, '').slice(0, 12)}`;
+
+      const { error: insertError } = await supabase
+        .from("user_profiles")
+        .insert({
+          id: userId,
+          username: safeUsername,
+          display_name: `User ${userId.slice(0, 8)}`,
+          bio: "",
+          avatar_url: null
+        });
+
+      if (insertError) {
+        console.error("Error creating user profile:", insertError);
+        return;
+      }
+
+      console.log(`Created user profile for: ${userId}`);
+    } catch (error) {
+      console.error("Error ensuring user profile:", error);
+    }
+  }
+
   static async saveGameState(userId: string, gameState: GameState): Promise<void> {
     try {
       const { error } = await supabase
@@ -15,6 +57,13 @@ export class GameService {
           upgrades: gameState.upgrades,
           prestige_level: gameState.prestige_level,
           lifetime_power: gameState.lifetime_power,
+          lifetime_clicks: gameState.lifetime_clicks || 0,
+          unlocked_achievements: gameState.unlocked_achievements?.map(String) || [],
+          prestige_stats: gameState.prestige_stats || [],
+          current_prestige_start_time: gameState.current_prestige_start_time ? new Date(gameState.current_prestige_start_time).toISOString() : new Date().toISOString(),
+          current_prestige_clicks: gameState.current_prestige_clicks || 0,
+          current_prestige_upgrades_purchased: gameState.current_prestige_upgrades_purchased || 0,
+          current_prestige_power_spent: gameState.current_prestige_power_spent || 0,
           updated_at: new Date().toISOString()
         });
 
@@ -52,7 +101,14 @@ export class GameService {
         total_power: data.total_power,
         upgrades: data.upgrades as DatabaseUpgrade[] || [],
         prestige_level: data.prestige_level || 0,
-        lifetime_power: data.lifetime_power || data.total_power || 0
+        lifetime_power: data.lifetime_power || data.total_power || 0,
+        lifetime_clicks: data.lifetime_clicks || 0,
+        unlocked_achievements: data.unlocked_achievements?.map(Number) || [],
+        prestige_stats: data.prestige_stats as any[] || [],
+        current_prestige_start_time: data.current_prestige_start_time ? new Date(data.current_prestige_start_time).getTime() : Date.now(),
+        current_prestige_clicks: data.current_prestige_clicks || 0,
+        current_prestige_upgrades_purchased: data.current_prestige_upgrades_purchased || 0,
+        current_prestige_power_spent: data.current_prestige_power_spent || 0,
       };
     } catch (error) {
       console.error("Failed to load game state:", error);
@@ -100,60 +156,55 @@ export class GameService {
           upgrades: guestData.upgrades,
           prestige_level: guestData.prestige_level,
           lifetime_power: guestData.lifetime_power,
+          unlocked_achievements: guestData.unlocked_achievements?.map(String) || [],
+          prestige_stats: guestData.prestige_stats || [],
+          current_prestige_start_time: guestData.current_prestige_start_time ? new Date(guestData.current_prestige_start_time).toISOString() : new Date().toISOString(),
+          current_prestige_clicks: guestData.current_prestige_clicks || 0,
+          current_prestige_upgrades_purchased: guestData.current_prestige_upgrades_purchased || 0,
+          current_prestige_power_spent: guestData.current_prestige_power_spent || 0,
           updated_at: new Date().toISOString()
         });
 
       if (insertError) {
-        console.error(`Error creating new game state for ${userId}:`, insertError);
+        console.error("Error migrating game state:", insertError);
         throw insertError;
       }
 
-      // Delete the old guest data
-      console.log(`[MIGRATION] Deleting old guest data for ${guestId}`);
+      // Delete the guest data after successful migration
       await this.deleteGameState(guestId);
       console.log(`Successfully migrated game state from ${guestId} to ${userId}`);
-      
     } catch (error) {
-      console.error(`Failed to migrate game state from ${guestId} to ${userId}:`, error);
+      console.error("Failed to migrate game state:", error);
       throw error;
     }
   }
 
   static async smartMigrateGameState(guestId: string, userId: string): Promise<GameState | null> {
     try {
-      const userState = await this.loadGameState(userId);
-      const guestState = await this.loadGameState(guestId);
-
-      if (!guestState) {
-        console.log(`[MIGRATION] No guest data found for ${guestId}`);
-        return userState;
-      }
-
-      if (!userState) {
-        console.log(`[MIGRATION] No user data found, migrating guest data from ${guestId} to ${userId}`);
-        await this.migrateGameState(guestId, userId);
-        return await this.loadGameState(userId); // Reload to get the migrated state
-      }
-
-      const guestProgress = guestState.lifetime_power || guestState.total_power;
-      const userProgress = userState.lifetime_power || userState.total_power;
-      const shouldMigrateGuest = guestProgress > userProgress;
+      // Check if authenticated user already has data
+      const existingUserData = await this.loadGameState(userId);
       
-      if (shouldMigrateGuest) {
-        console.log(`[MIGRATION] Guest has more progress (${guestProgress} vs ${userProgress}), migrating guest data`);
-
-        await this.deleteGameState(userId);
-        await this.migrateGameState(guestId, userId);
-        return await this.loadGameState(userId); // Reload to get the migrated state
-      } else {
-        console.log(`[MIGRATION] User has more progress (${userProgress} vs ${guestProgress}), keeping user data`);
-
-        await this.deleteGameState(guestId);
-        return userState;
+      if (existingUserData) {
+        console.log(`User ${userId} already has game data, skipping migration`);
+        return existingUserData;
       }
+
+      // Check if guest has data to migrate
+      const guestData = await this.loadGameState(guestId);
+      
+      if (!guestData) {
+        console.log(`No guest data found for ${guestId}, nothing to migrate`);
+        return null;
+      }
+
+      // Perform migration
+      await this.migrateGameState(guestId, userId);
+      
+      // Return the migrated data
+      return await this.loadGameState(userId);
     } catch (error) {
-      console.error(`Failed to smart migrate game state from ${guestId} to ${userId}:`, error);
-      return null; // Return null to force creation of new state if migration fails
+      console.error("Failed to smart migrate game state:", error);
+      return null;
     }
   }
 }

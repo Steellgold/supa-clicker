@@ -34,6 +34,7 @@ const eventLoader = new EventLoader();
 io.use(authenticateSocket);
 
 function createInitialGameState(): GameState {
+  const now = Date.now();
   return {
     ppc: 1,
     pps: 0,
@@ -42,6 +43,26 @@ function createInitialGameState(): GameState {
     upgrades: [],
     prestige_level: 0,
     lifetime_power: 0,
+    lifetime_clicks: 0,
+    unlocked_achievements: [],
+    prestige_stats: [{
+      prestige_level: 0,
+      start_time: now,
+      end_time: 0,
+      duration_seconds: 0,
+      total_power_earned: 0,
+      total_clicks: 0,
+      upgrades_purchased: 0,
+      power_spent_on_upgrades: 0,
+      max_pps_reached: 0,
+      max_ppc_reached: 1,
+      final_upgrades: [],
+      achievements_unlocked: []
+    }],
+    current_prestige_start_time: now,
+    current_prestige_clicks: 0,
+    current_prestige_upgrades_purchased: 0,
+    current_prestige_power_spent: 0,
   };
 }
 
@@ -77,6 +98,8 @@ io.on("connection", async (socket) => {
   }
 
   try {
+    await GameService.ensureUserProfile(userId);
+    
     let gameState = migratedGameState || await GameService.loadGameState(userId);
     
     if (!gameState) {

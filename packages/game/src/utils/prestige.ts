@@ -60,6 +60,13 @@ export const performPrestige = (gameState: GameState): GameState => {
     ppc: 1,
     pps: 0,
     upgrades: [],
+    //
+    unlocked_achievements: gameState.unlocked_achievements || [],
+    prestige_stats: gameState.prestige_stats || [],
+    current_prestige_start_time: Date.now(),
+    current_prestige_clicks: 0,
+    current_prestige_upgrades_purchased: 0,
+    current_prestige_power_spent: 0,
   };
 }
 

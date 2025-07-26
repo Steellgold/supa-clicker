@@ -1,4 +1,6 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
+import { checkAchievements } from "../lib/achievements";
+import { updateCurrentPrestigeStats } from "../lib/prestige-stats";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { buyUpgradeEventSchema, sanitizeGameState, validateInput } from "../schemas/validation";
 import { rateLimiter } from "../utils/rate-limiter";
@@ -89,6 +91,10 @@ export class BuyUpgradeHandler implements EventHandler {
       session.gameState.power -= totalCost;
       up.level += canBuy;
 
+      updateCurrentPrestigeStats(
+        session.gameState, 0, 0, true, totalCost
+      );
+
       // Validate post-transaction state
       if (session.gameState.power < 0) {
         console.error(`[SECURITY] Transaction resulted in negative power for user ${userId}`);
@@ -101,6 +107,21 @@ export class BuyUpgradeHandler implements EventHandler {
 
       // Recalculate stats and validate game state
       recalculateStats(session.gameState);
+
+      // Check for achievements
+      const newlyUnlocked = checkAchievements(session.gameState);
+      console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId} (buy upgrade)`);
+      
+      for (const achievement of newlyUnlocked) {
+        if (!session.gameState.unlocked_achievements.includes(achievement.id)) {
+          session.gameState.unlocked_achievements.push(achievement.id);
+          console.log(`[ACHIEVEMENT] Emitting achievementUnlocked event for user ${userId}: ${achievement.name} (buy upgrade)`);
+          socket.emit("achievementUnlocked", achievement);
+          console.log(`[ACHIEVEMENT] User ${userId} unlocked: ${achievement.name}`);
+        } else {
+          console.log(`[ACHIEVEMENT] Achievement ${achievement.name} already unlocked for user ${userId} (buy upgrade)`);
+        }
+      }
       
       if (!sanitizeGameState(session.gameState)) {
         console.error(`[SECURITY] Game state validation failed after purchase for user ${userId}`);

@@ -17,9 +17,13 @@ export type AuthContextType = {
   user: User | null
   userProfile: Profile | null
   loading: boolean
-  signInWithMagicLink: (email: string) => Promise<{ error?: string }>
+  signInWithMagicLink: (email: string) => Promise<{
+    error?: string
+  }>
   signOut: () => Promise<void>
-  updateUsername: (username: string) => Promise<{ error?: string }>
+  updateUsername: (username: string) => Promise<{
+    error?: string
+  }>
   updateProfile: (profile: {
     username: string
     display_name?: string | null
@@ -27,6 +31,11 @@ export type AuthContextType = {
     avatar_url?: string
   }) => Promise<{ error?: string }>
   refreshProfile: () => Promise<void>
+  ensureSession: () => Promise<{
+    error?: string;
+    success?: boolean;
+    created?: boolean;
+  }>;
   finalizeMigration: () => void
 }
 
@@ -108,6 +117,25 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     await fetchProfile()
   }
 
+  const ensureSession = async () => {
+    if (!user) return { error: "No user" }
+    
+    try {
+      const res = await fetch("/api/user/ensure-profile", { method: "POST" })
+      const data = await res.json()
+      
+      if (data.created) {
+        await fetchProfile()
+        return { success: true, created: true }
+      }
+      
+      return { success: true, created: false }
+    } catch (error) {
+      console.error("Error ensuring session:", error)
+      return { error: "Failed to ensure session" }
+    }
+  }
+
   const finalizeMigration = () => {
     if (user?.id) localStorage.setItem(GUEST_ID_KEY, user.id);
   }
@@ -129,8 +157,12 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    if (user) fetchProfile()
-    else setUserProfile(null)
+    if (user) {
+      fetchProfile()
+      ensureSession()
+    } else {
+      setUserProfile(null)
+    }
   }, [user])
 
   // Don't auto-sync localStorage guest ID with auth state
@@ -145,6 +177,7 @@ export const AuthProvider: Component<PropsWithChildren> = ({ children }) => {
     updateUsername,
     updateProfile,
     refreshProfile,
+    ensureSession,
     finalizeMigration,
   }
 

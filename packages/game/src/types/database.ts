@@ -42,36 +42,57 @@ export type Database = {
       game_states: {
         Row: {
           created_at: string | null
+          current_prestige_clicks: number | null
+          current_prestige_power_spent: number | null
+          current_prestige_start_time: string | null
+          current_prestige_upgrades_purchased: number | null
+          lifetime_clicks: number | null
           lifetime_power: number | null
           power: number
           ppc: number
           pps: number
           prestige_level: number | null
+          prestige_stats: Json[] | null
           total_power: number
+          unlocked_achievements: string[] | null
           updated_at: string | null
           upgrades: Json
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          current_prestige_clicks?: number | null
+          current_prestige_power_spent?: number | null
+          current_prestige_start_time?: string | null
+          current_prestige_upgrades_purchased?: number | null
+          lifetime_clicks?: number | null
           lifetime_power?: number | null
           power: number
           ppc: number
           pps: number
           prestige_level?: number | null
+          prestige_stats?: Json[] | null
           total_power: number
+          unlocked_achievements?: string[] | null
           updated_at?: string | null
           upgrades?: Json
           user_id: string
         }
         Update: {
           created_at?: string | null
+          current_prestige_clicks?: number | null
+          current_prestige_power_spent?: number | null
+          current_prestige_start_time?: string | null
+          current_prestige_upgrades_purchased?: number | null
+          lifetime_clicks?: number | null
           lifetime_power?: number | null
           power?: number
           ppc?: number
           pps?: number
           prestige_level?: number | null
+          prestige_stats?: Json[] | null
           total_power?: number
+          unlocked_achievements?: string[] | null
           updated_at?: string | null
           upgrades?: Json
           user_id?: string

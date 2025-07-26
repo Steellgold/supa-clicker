@@ -1,5 +1,7 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
 import { getPrestigeMultiplier } from "@clicker/game/utils";
+import { checkAchievements } from "../lib/achievements";
+import { updateCurrentPrestigeStats } from "../lib/prestige-stats";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { clickEventSchema, sanitizeGameState, validateInput } from "../schemas/validation";
 import { rateLimiter } from "../utils/rate-limiter";
@@ -35,6 +37,27 @@ export class ClickHandler implements EventHandler {
       session.gameState.power += powerGained;
       session.gameState.total_power += powerGained;
       session.gameState.lifetime_power += powerGained;
+      session.gameState.lifetime_clicks += 1;
+
+      // Update prestige statistics
+      updateCurrentPrestigeStats(
+        session.gameState, powerGained, 1
+      );
+
+      // Check for achievements
+      const newlyUnlocked = checkAchievements(session.gameState);
+      console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId}`);
+      
+      for (const achievement of newlyUnlocked) {
+        if (!session.gameState.unlocked_achievements.includes(achievement.id)) {
+          session.gameState.unlocked_achievements.push(achievement.id);
+          console.log(`[ACHIEVEMENT] Emitting achievementUnlocked event for user ${userId}: ${achievement.name}`);
+          socket.emit("achievementUnlocked", achievement);
+          console.log(`[ACHIEVEMENT] User ${userId} unlocked: ${achievement.name}`);
+        } else {
+          console.log(`[ACHIEVEMENT] Achievement ${achievement.name} already unlocked for user ${userId}`);
+        }
+      }
 
       if (!sanitizeGameState(session.gameState)) {
         console.error(`[SECURITY] Game state validation failed for user ${userId}`);

@@ -42,7 +42,48 @@ export type PurchasedSpecialItem = {
   effectMultiplier: number;
 };
 
-// Game state (used by both www and ws-server)
+// Achievement type
+export type Achievement = {
+  id: number;
+  name: string;
+  description: string;
+  requirement: (stats: GameStats, upgrades?: UserUpgrade[]) => boolean;
+  unlocked: boolean;
+  icon: string;
+  category:
+    | "clicking"
+    | "upgrades"
+    | "prestige"
+    | "power"
+    | "special"
+    | "challenge"
+    | "speed"
+    | "time"
+    | "efficiency"
+    | "tech"
+    | "milestone"
+    | "combo";
+
+  rarity: "common" | "rare" | "epic" | "legendary";
+};
+
+// Prestige Statistics - tracks stats for each prestige level
+export type PrestigeStats = {
+  prestige_level: number;
+  start_time: number;
+  end_time: number;
+  duration_seconds: number;
+  total_power_earned: number;
+  total_clicks: number;
+  upgrades_purchased: number;
+  power_spent_on_upgrades: number;
+  max_pps_reached: number;
+  max_ppc_reached: number;
+  final_upgrades: DatabaseUpgrade[];
+  achievements_unlocked: number[];
+};
+
+// Extended Game State with achievements and prestige stats
 export type GameState = {
   ppc: number;
   pps: number;
@@ -51,6 +92,13 @@ export type GameState = {
   upgrades: DatabaseUpgrade[];
   prestige_level: number;
   lifetime_power: number;
+  lifetime_clicks: number;
+  unlocked_achievements: number[];
+  prestige_stats: PrestigeStats[];
+  current_prestige_start_time: number;
+  current_prestige_clicks: number;
+  current_prestige_upgrades_purchased: number;
+  current_prestige_power_spent: number;
 };
 
 // User upgrade
@@ -69,16 +117,8 @@ export type GameStats = {
   upgradesBoughtSession: number;
   clicksSession: number;
   powerSession: number;
-};
-
-// Achievement type
-export type Achievement = {
-  id: number;
-  name: string;
-  description: string;
-  requirement: (stats: GameStats, upgrades?: UserUpgrade[]) => boolean;
-  unlocked: boolean;
-  icon: string;
+  lifetimePower: number;
+  lifetimeClicks: number;
 };
 
 // Special item type

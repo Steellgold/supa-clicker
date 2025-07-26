@@ -22,9 +22,7 @@ export const buyUpgradeEventSchema = z.object({
   message: "Quantity exceeds allowed limits"
 });
 
-export const resetEventSchema = z.object({
-  confirmed: z.boolean().optional()
-});
+export const resetEventSchema = z.boolean().optional();
 
 export const prestigeEventSchema = z.boolean().optional();
 

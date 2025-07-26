@@ -1,5 +1,7 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
 import { canPrestige, performPrestige } from "@clicker/game/utils";
+import { checkAchievements } from "../lib/achievements";
+import { finalizePrestigeStats, initializeNewPrestigeStats } from "../lib/prestige-stats";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { prestigeEventSchema, validateInput } from "../schemas/validation";
 import { GameService } from "../services/game";
@@ -21,8 +23,27 @@ export class PrestigeHandler implements EventHandler {
         return;
       }
 
+      const finalizedStats = finalizePrestigeStats(session.gameState);
+      console.log(`[PRESTIGE] Finalized stats for user ${userId} at prestige ${finalizedStats.prestige_level}:`, {
+        duration: finalizedStats.duration_seconds,
+        powerEarned: finalizedStats.total_power_earned,
+        clicks: finalizedStats.total_clicks,
+        upgrades: finalizedStats.upgrades_purchased
+      });
+
       const newGameState = performPrestige(session.gameState);
       session.gameState = newGameState;
+      
+      initializeNewPrestigeStats(session.gameState);
+      
+      const newlyUnlocked = checkAchievements(session.gameState);
+      for (const achievement of newlyUnlocked) {
+        if (!session.gameState.unlocked_achievements.includes(achievement.id)) {
+          session.gameState.unlocked_achievements.push(achievement.id);
+          socket.emit("achievementUnlocked", achievement);
+          console.log(`[ACHIEVEMENT] User ${userId} unlocked: ${achievement.name}`);
+        }
+      }
       
       try {
         await GameService.saveGameState(userId, newGameState);

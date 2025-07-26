@@ -1,3 +1,4 @@
+import { AchievementNotification } from "@/components/achievement-notification";
 import { Clicker } from "@/components/clicker";
 import { Header } from "@/components/header";
 import { MainStatsPanel } from "@/components/home/main-stats-panel";
@@ -14,6 +15,8 @@ export default function GamePage() {
         </div>
         <SideTabPanel />
       </div>
+
+      <AchievementNotification />
     </div>
   );
 }
