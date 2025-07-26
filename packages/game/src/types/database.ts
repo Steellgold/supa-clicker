@@ -39,6 +39,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       game_states: {
         Row: {
           created_at: string | null
@@ -131,6 +152,16 @@ export type Database = {
       }
     }
     Views: {
+      chat_messages_public: {
+        Row: {
+          avatar_url: string | null
+          content: string | null
+          created_at: string | null
+          display_name: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar_url: string | null
