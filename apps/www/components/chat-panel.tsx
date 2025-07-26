@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 import React, { useEffect, useRef, useState, ReactElement } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -275,7 +276,7 @@ export const ChatPanel = () => {
 
   return (
     <div className="flex flex-col h-full border bg-white dark:bg-neutral-900">
-      <ScrollArea className="flex-1 px-4 py-2 bg-neutral-50 dark:bg-neutral-800" style={{ maxHeight: "calc(100vh - 200px)" }}>
+      <ScrollArea className="flex-1 px-4 py-2 bg-neutral-50 dark:bg-neutral-800" style={{ maxHeight: "calc(100vh - 210px)" }}>
         <div className="space-y-2">
 					{loading ? (
 						<div>Loading...</div>
