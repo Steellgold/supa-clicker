@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Send } from "lucide-react";
+import { Tables } from "@clicker/game/types";
 
 type Message = {
   content: string | null;
@@ -196,7 +197,7 @@ export const ChatPanel = () => {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "chat_messages" },
-        async (payload: { new: any }) => {
+        async (payload: { new: Tables<"chat_messages"> }) => {
           const { data: messageData } = await supabase
             .from("chat_messages_public")
             .select("*")
