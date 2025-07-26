@@ -98,7 +98,9 @@ io.on("connection", async (socket) => {
   }
 
   try {
-    await GameService.ensureUserProfile(userId);
+    if (authSocket.user.email) {
+      await GameService.ensureUserProfile(userId);
+    }
     
     let gameState = migratedGameState || await GameService.loadGameState(userId);
     
