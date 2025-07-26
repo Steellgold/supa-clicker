@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import React, { useEffect, useRef, useState, ReactElement } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -22,73 +21,111 @@ type Message = {
 const parseMarkdown = (text: string) => {
   if (!text) return null;
   
+  let result = text;
+  
+  // Process bold first: **text**
+  result = result.replace(/\*\*(.*?)\*\*/g, (match, content) => {
+    return `<strong>${content}</strong>`;
+  });
+  
+  // Process italic: *text*
+  result = result.replace(/\*(.*?)\*/g, (match, content) => {
+    return `<em>${content}</em>`;
+  });
+  
+  // Process underline: __text__
+  result = result.replace(/__(.*?)__/g, (match, content) => {
+    return `<u>${content}</u>`;
+  });
+  
+  // Convert HTML-like tags to React elements
   const parts: (string | ReactElement)[] = [];
-  let currentText = text;
+  let currentIndex = 0;
   
-  const boldRegex = /\*\*(.*?)\*\*/g;
-  let boldMatch;
-  while ((boldMatch = boldRegex.exec(currentText)) !== null) {
-    const beforeBold = currentText.substring(0, boldMatch.index);
-    if (beforeBold) parts.push(beforeBold);
-    parts.push(<strong key={`bold-${parts.length}`}>{boldMatch[1]}</strong>);
-    currentText = currentText.substring(boldMatch.index + boldMatch[0].length);
-    boldRegex.lastIndex = 0;
+  const tagRegex = /<(strong|em|u)>(.*?)<\/\1>/g;
+  let tagMatch;
+  
+  while ((tagMatch = tagRegex.exec(result)) !== null) {
+    if (tagMatch.index > currentIndex) {
+      parts.push(result.substring(currentIndex, tagMatch.index));
+    }
+    
+    const tagType = tagMatch[1];
+    const content = tagMatch[2];
+    
+    let element: ReactElement;
+    switch (tagType) {
+      case "strong":
+        element = <strong key={`markdown-${currentIndex}`}>{content}</strong>;
+        break;
+      case "em":
+        element = <em key={`markdown-${currentIndex}`}>{content}</em>;
+        break;
+      case "u":
+        element = <u key={`markdown-${currentIndex}`}>{content}</u>;
+        break;
+      default:
+        element = <span key={`markdown-${currentIndex}`}>{content}</span>;
+    }
+    
+    parts.push(element);
+    currentIndex = tagMatch.index + tagMatch[0].length;
   }
-  if (currentText) parts.push(currentText);
   
-  const italicParts: (string | ReactElement)[] = [];
-  parts.forEach((part, index) => {
-    if (typeof part === "string") {
-      const italicRegex = /\*(.*?)\*/g;
-      let italicMatch;
-      let currentPart = part;
-      while ((italicMatch = italicRegex.exec(currentPart)) !== null) {
-        const beforeItalic = currentPart.substring(0, italicMatch.index);
-        if (beforeItalic) italicParts.push(beforeItalic);
-        italicParts.push(<em key={`italic-${index}-${italicParts.length}`}>{italicMatch[1]}</em>);
-        currentPart = currentPart.substring(italicMatch.index + italicMatch[0].length);
-        italicRegex.lastIndex = 0;
-      }
-      if (currentPart) italicParts.push(currentPart);
-    } else {
-      italicParts.push(part);
-    }
-  });
+  if (currentIndex < result.length) {
+    parts.push(result.substring(currentIndex));
+  }
   
-  const finalParts: (string | ReactElement)[] = [];
-  italicParts.forEach((part, index) => {
-    if (typeof part === "string") {
-      const underlineRegex = /__(.*?)__/g;
-      let underlineMatch;
-      let currentPart = part;
-      while ((underlineMatch = underlineRegex.exec(currentPart)) !== null) {
-        const beforeUnderline = currentPart.substring(0, underlineMatch.index);
-        if (beforeUnderline) finalParts.push(beforeUnderline);
-        finalParts.push(<u key={`underline-${index}-${finalParts.length}`}>{underlineMatch[1]}</u>);
-        currentPart = currentPart.substring(underlineMatch.index + underlineMatch[0].length);
-        underlineRegex.lastIndex = 0;
-      }
-      if (currentPart) finalParts.push(currentPart);
-    } else {
-      finalParts.push(part);
-    }
-  });
-  
-  return finalParts.length > 0 ? finalParts : text;
+  return parts.length > 0 ? parts : text;
 };
 
 const parseMentions = (text: string | (string | ReactElement)[] | null, currentUsername?: string, onlineUsers: string[] = []) => {
   if (!text) return null;
   
-  const textString = Array.isArray(text) ? text.map(part => typeof part === 'string' ? part : '').join('') : text;
+  if (Array.isArray(text)) {
+    const processedParts: (string | ReactElement)[] = [];
+    
+    text.forEach((part) => {
+      if (typeof part === "string") {
+        const parts = processMentionsInString(part, currentUsername, onlineUsers);
+        processedParts.push(...parts);
+      } else {
+        processedParts.push(part);
+      }
+    });
+    
+    return processedParts;
+  }
   
+  const markdownParts = parseMarkdown(text || "");
+  
+  if (Array.isArray(markdownParts)) {
+    const processedParts: (string | ReactElement)[] = [];
+    
+    markdownParts.forEach((part, partIndex) => {
+      if (typeof part === "string") {
+        const parts = processMentionsInString(part, currentUsername, onlineUsers);
+        processedParts.push(...parts);
+      } else {
+        processedParts.push(part);
+      }
+    });
+    
+    return processedParts;
+  }
+  
+  const textToProcess = markdownParts || text || "";
+  return processMentionsInString(textToProcess, currentUsername, onlineUsers);
+};
+
+const processMentionsInString = (text: string, currentUsername?: string, onlineUsers: string[] = []): (string | ReactElement)[] => {
   const parts: (string | ReactElement)[] = [];
   const mentionRegex = /@([a-zA-Z0-9_]+)/g;
   let lastIndex = 0;
   let match;
   
-  while ((match = mentionRegex.exec(textString)) !== null) {
-    const beforeMention = textString.substring(lastIndex, match.index);
+  while ((match = mentionRegex.exec(text)) !== null) {
+    const beforeMention = text.substring(lastIndex, match.index);
     if (beforeMention) parts.push(beforeMention);
     
     const mentionedUsername = match[1];
@@ -118,10 +155,10 @@ const parseMentions = (text: string | (string | ReactElement)[] | null, currentU
     lastIndex = match.index + match[0].length;
   }
   
-  const afterMention = textString.substring(lastIndex);
+  const afterMention = text.substring(lastIndex);
   if (afterMention) parts.push(afterMention);
   
-  return parts.length > 0 ? parts : textString;
+  return parts.length > 0 ? parts : [text];
 };
 
 export const ChatPanel = () => {
@@ -325,7 +362,7 @@ export const ChatPanel = () => {
 								return (
 									<div key={`${msg.created_at}-${index}`} className="flex flex-col text-sm ml-11">
 										<span className="text-neutral-800 dark:text-neutral-100 break-words">
-											{parseMentions(parseMarkdown(msg.content || ""), userProfile?.username, onlineUsers)}
+											{parseMentions(msg.content || "", userProfile?.username, onlineUsers)}
 										</span>
 									</div>
 								);
@@ -354,7 +391,7 @@ export const ChatPanel = () => {
 										</span>
 
 										<span className="text-neutral-800 dark:text-neutral-100 break-words">
-											{parseMentions(parseMarkdown(msg.content || ""), userProfile?.username, onlineUsers)}
+											{parseMentions(msg.content || "", userProfile?.username, onlineUsers)}
 										</span>
 									</div>
 								</div>
@@ -385,7 +422,7 @@ export const ChatPanel = () => {
                   username !== user?.user_metadata?.username
                 )
                 .slice(0, 5)
-                .map((username, index) => (
+                .map((username) => (
                   <button
                     key={username}
                     type="button"
