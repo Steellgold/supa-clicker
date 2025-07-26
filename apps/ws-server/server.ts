@@ -8,13 +8,14 @@ import { GameService } from "./services/game";
 import { auditLogger } from "./utils/audit-logger";
 import { rateLimiter } from "./utils/rate-limiter";
 import { recalculateStats } from "./utils/utils";
+import { fixPrestigeStats } from "./lib/prestige-stats";
 
 const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
   cors: { 
     origin: process.env.NODE_ENV === "production" 
       ? [process.env.FRONTEND_URL || "https://supaclicker.vercel.app"] 
-      : "*" 
+      : "*"
   },
 });
 
@@ -110,6 +111,7 @@ io.on("connection", async (socket) => {
       console.log(`[WS] New user, creating initial state for: ${userId}`);
     } else {
       recalculateStats(gameState);
+      fixPrestigeStats(gameState); // Fix any incomplete prestige stats
       console.log(`[WS] Loaded existing state for: ${userId}`);
     }
 

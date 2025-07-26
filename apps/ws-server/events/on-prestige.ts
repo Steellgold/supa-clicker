@@ -36,6 +36,12 @@ export class PrestigeHandler implements EventHandler {
       
       initializeNewPrestigeStats(session.gameState);
       
+      const currentStats = session.gameState.prestige_stats[session.gameState.prestige_stats.length - 1];
+      if (currentStats) {
+        currentStats.max_ppc_reached = session.gameState.ppc;
+        currentStats.max_pps_reached = session.gameState.pps;
+      }
+      
       const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
       for (const achievement of newlyUnlocked) {
         if (!session.gameState.unlocked_achievements.includes(achievement.id)) {
