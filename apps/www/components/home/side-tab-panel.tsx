@@ -3,6 +3,7 @@
 import { PrestigeCard } from "@/components/cards/prestige-card";
 import { UpgradeCard } from "@/components/cards/upgrade-card";
 import { ChatPanel } from "@/components/chat-panel";
+import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
@@ -97,12 +98,8 @@ export const SideTabPanel = () => {
       //       <PrestigeCard />
       //     </div>
       //   );
-      // case "LEADERBOARD":
-      //   return (
-      //     <div className="p-3 text-center text-neutral-500">
-      //       Leaderboard coming soon...
-      //     </div>
-      //   );
+      case "LEADERBOARD":
+        return <LeaderboardPanel />;
       case "CHAT":
         return (
           <div className="flex-1 p-3">
@@ -136,7 +133,7 @@ export const SideTabPanel = () => {
           onClick={() => setActiveTab("SPECIALS")}
         >
           SPECIALS
-        </button>
+        </button> */}
         <button 
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             activeTab === "LEADERBOARD" 
@@ -146,7 +143,7 @@ export const SideTabPanel = () => {
           onClick={() => setActiveTab("LEADERBOARD")}
         >
           LEADERBOARD
-        </button> */}
+        </button>
         <button 
           className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
             activeTab === "CHAT" 

@@ -2,6 +2,7 @@ import type { SessionsMap, SocketWithSession } from "@clicker/game/types";
 import { AchievementsHandler } from "../events/on-achievements";
 import { BuyUpgradeHandler } from "../events/on-buy-upgrade";
 import { ClickHandler } from "../events/on-click";
+import { LeaderboardHandler, UpdateLeaderboardHandler, UserLeaderboardPositionHandler } from "../events/on-leaderboard";
 import { PrestigeHandler } from "../events/on-prestige";
 import { PrestigeStatsHandler } from "../events/on-prestige-stats";
 import { ResetHandler } from "../events/on-reset";
@@ -13,6 +14,9 @@ export class EventLoader {
   private prestigeHandler = new PrestigeHandler();
   private achievementsHandler = new AchievementsHandler();
   private prestigeStatsHandler = new PrestigeStatsHandler();
+  private leaderboardHandler = new LeaderboardHandler();
+  private userLeaderboardPositionHandler = new UserLeaderboardPositionHandler();
+  private updateLeaderboardHandler = new UpdateLeaderboardHandler();
 
   registerEvents(socket: SocketWithSession, sessions: SessionsMap): void {
     console.log("🔌 [EVENT_LOADER] Registering events for socket");
@@ -32,6 +36,19 @@ export class EventLoader {
     
     socket.on("getPrestigeStatsSummary", () => {
       this.prestigeStatsHandler.handle(socket, sessions);
+    });
+
+    // Leaderboard events
+    socket.on("getLeaderboard", (data) => {
+      this.leaderboardHandler.handle(socket, sessions, data);
+    });
+
+    socket.on("getUserLeaderboardPosition", (data) => {
+      this.userLeaderboardPositionHandler.handle(socket, sessions, data);
+    });
+
+    socket.on("updateLeaderboard", (data) => {
+      this.updateLeaderboardHandler.handle(socket, sessions, data);
     });
   }
 }

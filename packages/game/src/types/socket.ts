@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { Achievement, GameState, PrestigeStats } from "./game";
+import type { Achievement, GameState, PrestigeStats, LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from "./game";
 
 export interface EventHandler {
   handle(socket: SocketWithSession, sessions: SessionsMap, ...args: any[]): void | Promise<void>;
@@ -13,6 +13,9 @@ export type ClientToServerEvents = {
   getAchievements: () => void;
   getPrestigeStats: (prestigeLevel?: number) => void;
   getPrestigeStatsSummary: () => void;
+  getLeaderboard: (data: { type: LeaderboardType; limit: number; userId?: string }) => void;
+  getUserLeaderboardPosition: (data: { type: LeaderboardType; userId: string }) => void;
+  updateLeaderboard: (stats: UserLeaderboardStats) => void;
 };
 
 export type ServerToClientEvents = {
@@ -35,6 +38,10 @@ export type ServerToClientEvents = {
     slowest_prestige: number;
     most_productive_prestige: number;
   }) => void;
+  leaderboardUpdate: (data: LeaderboardResponse) => void;
+  leaderboardError: (message: string) => void;
+  userPositionUpdate: (data: { position: number; userData: LeaderboardEntry | null }) => void;
+  userPositionError: (message: string) => void;
 };
 
 export type Session = {

@@ -1,4 +1,4 @@
-import type { Achievement, GameState, PrestigeStats } from "@clicker/game/types";
+import type { Achievement, GameState, PrestigeStats, LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from "@clicker/game/types";
 
 export interface ClientToServerEvents {
   click: () => void;
@@ -8,6 +8,14 @@ export interface ClientToServerEvents {
   getAchievements: () => void;
   getPrestigeStats: (prestigeLevel?: number) => void;
   getPrestigeStatsSummary: () => void;
+  getLeaderboard: (data: {
+    type: LeaderboardType;
+    limit: number;
+    userId?: string;
+    page?: number;
+  }) => void;
+  getUserLeaderboardPosition: (data: { type: LeaderboardType; userId: string }) => void;
+  updateLeaderboard: (stats: UserLeaderboardStats) => void;
 }
 
 export interface ServerToClientEvents {
@@ -30,6 +38,14 @@ export interface ServerToClientEvents {
     slowest_prestige: number;
     most_productive_prestige: number;
   }) => void;
+  leaderboardUpdate: (data: LeaderboardResponse) => void;
+  leaderboardError: (message: string) => void;
+  userPositionUpdate: (data: {
+    position: number;
+    userData: LeaderboardEntry | null;
+    page: number;
+  }) => void;
+  userPositionError: (message: string) => void;
 }
 
 export type ServerSocket = import("socket.io").Socket<ClientToServerEvents, ServerToClientEvents>;
