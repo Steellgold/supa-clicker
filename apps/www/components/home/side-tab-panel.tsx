@@ -74,9 +74,14 @@ export const SideTabPanel = () => {
       case "UPGRADES":
         return (
           <>
+            <div className="p-3 border-b-2 border-neutral-200 dark:border-neutral-700">
+              <PrestigeCard />
+            </div>
+
             <div className="p-3 border-b-2 border-neutral-200 dark:border-neutral-700 flex justify-end">
               <BulkBuySettings affordableCounts={affordableCounts} />
             </div>
+
             <ScrollArea className="flex-1 p-3 overflow-y-auto">
               <div className="space-y-1.5">
                 {upgradesToShow.map((upgrade, index) => (

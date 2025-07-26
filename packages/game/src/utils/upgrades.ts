@@ -1,5 +1,5 @@
-export type BulkBuyOption = 1 | 3 | 5 | 10 | 20 | 50 | 100 | "MAX";
-export const BULK_BUY_OPTIONS: BulkBuyOption[] = [1, 3, 5, 10, 20, 50, 100, "MAX"];
+export type BulkBuyOption = 1 | 3 | 5 | 10 | 20 | "MAX";
+export const BULK_BUY_OPTIONS: BulkBuyOption[] = [1, 3, 5, 10, 20, "MAX"];
 
 export const UPGRADES = [
   { id: 1, name: "AI Intern", description: "An intern who clicks for you", baseCost: 10, costGrowth: 1.12, pps: 0.1, ppc: 0, max: 1000 },
