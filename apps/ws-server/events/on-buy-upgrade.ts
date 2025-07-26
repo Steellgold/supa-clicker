@@ -3,11 +3,12 @@ import { checkAchievements } from "../lib/achievements";
 import { updateCurrentPrestigeStats } from "../lib/prestige-stats";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { buyUpgradeEventSchema, sanitizeGameState, validateInput } from "../schemas/validation";
+import { GameService } from "../services/game";
 import { rateLimiter } from "../utils/rate-limiter";
 import { calculateBulkUpgradeCost, calculateUpgradeCost, getUpgradeById, recalculateStats } from "../utils/utils";
 
 export class BuyUpgradeHandler implements EventHandler {
-  handle(socket: SocketWithSession, sessions: SessionsMap, upgradeId: number, quantity: number, isBulk: boolean = false): void {
+  async handle(socket: SocketWithSession, sessions: SessionsMap, upgradeId: number, quantity: number, isBulk: boolean = false): Promise<void> {
     const session = sessions.get(socket);
     if (!session) return;
 
@@ -109,7 +110,7 @@ export class BuyUpgradeHandler implements EventHandler {
       recalculateStats(session.gameState);
 
       // Check for achievements
-      const newlyUnlocked = checkAchievements(session.gameState);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
       console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId} (buy upgrade)`);
       
       for (const achievement of newlyUnlocked) {
@@ -127,6 +128,13 @@ export class BuyUpgradeHandler implements EventHandler {
         console.error(`[SECURITY] Game state validation failed after purchase for user ${userId}`);
         socket.emit("refused", "Invalid game state after purchase");
         return;
+      }
+
+      try {
+        await GameService.saveGameState(userId, session.gameState);
+        console.log(`[PURCHASE] Saved game state for user ${userId} after upgrade purchase`);
+      } catch (error) {
+        console.error(`[PURCHASE] Failed to save game state for user ${userId}:`, error);
       }
 
       // Log all purchases for debugging

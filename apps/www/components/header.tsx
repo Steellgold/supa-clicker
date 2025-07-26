@@ -5,7 +5,6 @@ import { useTheme } from "next-themes";
 import { ReactElement, useState } from "react";
 import { AchievementsDialog } from "./achievements-dialog";
 import { AuthButton } from "./auth/auth-button";
-import { PrestigeStatsDialog } from "./prestige-stats-dialog";
 import { StarButton } from "./star-button";
 import { Button } from "./ui/button";
 
@@ -13,7 +12,6 @@ export const Header = (): ReactElement => {
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
-  const [prestigeStatsOpen, setPrestigeStatsOpen] = useState(false);
 
   return (
     <header className="border-b-2 border-neutral-800 dark:border-neutral-200 bg-neutral-200/60 dark:bg-neutral-700 p-3 transition-colors">
@@ -41,14 +39,6 @@ export const Header = (): ReactElement => {
           >
             <Trophy className="h-4 w-4" />
           </Button>
-
-          {/* <Button 
-            variant="retro" 
-            size="sm"
-            onClick={() => setPrestigeStatsOpen(true)}
-          >
-            <BarChart3 className="h-4 w-4" />
-          </Button> */}
 
           <AuthButton />
           <StarButton />
@@ -88,16 +78,6 @@ export const Header = (): ReactElement => {
             Achievements
           </Button>
 
-          <Button 
-            variant="retro" 
-            size="sm" 
-            className="w-full justify-start"
-            onClick={() => { setPrestigeStatsOpen(true); setMobileMenuOpen(false); }}
-          >
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Prestige Stats
-          </Button>
-          
           <StarButton />
 
           <AuthButton className="w-full justify-start" />
@@ -106,7 +86,6 @@ export const Header = (): ReactElement => {
 
       {/* Dialogs */}
       <AchievementsDialog open={achievementsOpen} onOpenChange={setAchievementsOpen} />
-      <PrestigeStatsDialog open={prestigeStatsOpen} onOpenChange={setPrestigeStatsOpen} />
     </header>
   )
 }

@@ -4,11 +4,12 @@ import { checkAchievements } from "../lib/achievements";
 import { updateCurrentPrestigeStats } from "../lib/prestige-stats";
 import type { AuthenticatedSocket } from "../middleware/auth";
 import { clickEventSchema, sanitizeGameState, validateInput } from "../schemas/validation";
+import { GameService } from "../services/game";
 import { rateLimiter } from "../utils/rate-limiter";
 import { recalculateStats } from "../utils/utils";
 
 export class ClickHandler implements EventHandler {
-  handle(socket: SocketWithSession, sessions: SessionsMap, data?: unknown): void {
+  async handle(socket: SocketWithSession, sessions: SessionsMap, data?: unknown): Promise<void> {
     const session = sessions.get(socket);
     if (!session) return;
 
@@ -45,7 +46,7 @@ export class ClickHandler implements EventHandler {
       );
 
       // Check for achievements
-      const newlyUnlocked = checkAchievements(session.gameState);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
       console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId}`);
       
       for (const achievement of newlyUnlocked) {
@@ -63,6 +64,13 @@ export class ClickHandler implements EventHandler {
         console.error(`[SECURITY] Game state validation failed for user ${userId}`);
         socket.emit("refused", "Invalid game state detected");
         return;
+      }
+
+      try {
+        await GameService.saveGameState(userId, session.gameState);
+        console.log(`[CLICK] Saved game state for user ${userId} after click`);
+      } catch (error) {
+        console.error(`[CLICK] Failed to save game state for user ${userId}:`, error);
       }
 
       socket.emit("update", session.gameState);

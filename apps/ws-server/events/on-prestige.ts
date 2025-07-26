@@ -36,7 +36,7 @@ export class PrestigeHandler implements EventHandler {
       
       initializeNewPrestigeStats(session.gameState);
       
-      const newlyUnlocked = checkAchievements(session.gameState);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
       for (const achievement of newlyUnlocked) {
         if (!session.gameState.unlocked_achievements.includes(achievement.id)) {
           session.gameState.unlocked_achievements.push(achievement.id);
@@ -47,6 +47,7 @@ export class PrestigeHandler implements EventHandler {
       
       try {
         await GameService.saveGameState(userId, newGameState);
+        console.log(`[PRESTIGE] Successfully saved game state after prestige for user ${userId}`);
       } catch (error) {
         console.error(`[PRESTIGE] Failed to save game state after prestige for user ${userId}:`, error);
         socket.emit("error", "Failed to save prestige state");

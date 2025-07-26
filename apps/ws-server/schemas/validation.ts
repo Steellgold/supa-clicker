@@ -26,6 +26,24 @@ export const resetEventSchema = z.boolean().optional();
 
 export const prestigeEventSchema = z.boolean().optional();
 
+export const prestigeStatsSchema = z.object({
+  prestige_level: z.number().int().min(0),
+  start_time: z.number(),
+  end_time: z.number(),
+  duration_seconds: z.number(),
+  total_power_earned: z.number(),
+  total_clicks: z.number(),
+  upgrades_purchased: z.number(),
+  power_spent_on_upgrades: z.number(),
+  max_pps_reached: z.number(),
+  max_ppc_reached: z.number(),
+  final_upgrades: z.array(z.object({
+    id: z.number().int().positive(),
+    level: z.number().int().min(0)
+  })),
+  achievements_unlocked: z.array(z.number())
+});
+
 export const gameStateSchema = z.object({
   ppc: z.number().min(1).max(1000000),
   pps: z.number().min(0).max(10000000),
@@ -36,7 +54,14 @@ export const gameStateSchema = z.object({
     level: z.number().int().min(0).max(10000)
   })),
   prestige_level: z.number().int().min(0).max(50),
-  lifetime_power: z.number().min(0).max(Number.MAX_SAFE_INTEGER)
+  lifetime_power: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
+  lifetime_clicks: z.number().min(0).max(Number.MAX_SAFE_INTEGER),
+  unlocked_achievements: z.array(z.number()),
+  prestige_stats: z.array(prestigeStatsSchema),
+  current_prestige_start_time: z.number(),
+  current_prestige_clicks: z.number().min(0),
+  current_prestige_upgrades_purchased: z.number().min(0),
+  current_prestige_power_spent: z.number().min(0)
 });
 
 export const sessionSchema = z.object({
@@ -63,6 +88,14 @@ export function validateInput<T>(schema: z.ZodSchema<T>, data: unknown): T {
 
 export function sanitizeGameState(gameState: any): boolean {
   try {
+    if (!gameState.lifetime_clicks) gameState.lifetime_clicks = 0;
+    if (!gameState.unlocked_achievements) gameState.unlocked_achievements = [];
+    if (!gameState.prestige_stats) gameState.prestige_stats = [];
+    if (!gameState.current_prestige_start_time) gameState.current_prestige_start_time = Date.now();
+    if (!gameState.current_prestige_clicks) gameState.current_prestige_clicks = 0;
+    if (!gameState.current_prestige_upgrades_purchased) gameState.current_prestige_upgrades_purchased = 0;
+    if (!gameState.current_prestige_power_spent) gameState.current_prestige_power_spent = 0;
+    
     validateInput(gameStateSchema, gameState);
     
     if (gameState.power > gameState.total_power) {
@@ -85,6 +118,24 @@ export function sanitizeGameState(gameState: any): boolean {
     return true;
   } catch (error) {
     console.error('[VALIDATION] Game state validation failed:', error);
-    return false;
+    console.warn('[VALIDATION] Attempting to fix game state data...');
+    
+    try {
+      // Apply basic fixes
+      if (!gameState.lifetime_clicks) gameState.lifetime_clicks = 0;
+      if (!gameState.unlocked_achievements) gameState.unlocked_achievements = [];
+      if (!gameState.prestige_stats) gameState.prestige_stats = [];
+      if (!gameState.current_prestige_start_time) gameState.current_prestige_start_time = Date.now();
+      if (!gameState.current_prestige_clicks) gameState.current_prestige_clicks = 0;
+      if (!gameState.current_prestige_upgrades_purchased) gameState.current_prestige_upgrades_purchased = 0;
+      if (!gameState.current_prestige_power_spent) gameState.current_prestige_power_spent = 0;
+      
+      validateInput(gameStateSchema, gameState);
+      console.log('[VALIDATION] Game state fixed successfully');
+      return true;
+    } catch (fixError) {
+      console.error('[VALIDATION] Failed to fix game state:', fixError);
+      return false;
+    }
   }
 }

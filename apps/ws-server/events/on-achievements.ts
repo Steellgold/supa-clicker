@@ -15,7 +15,7 @@ export class AchievementsHandler implements EventHandler {
 
     try {
       // Check for newly unlocked achievements
-      const newlyUnlocked = checkAchievements(session.gameState);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
       
       // Add newly unlocked achievements to the game state
       for (const achievement of newlyUnlocked) {

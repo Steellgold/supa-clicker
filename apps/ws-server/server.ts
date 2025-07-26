@@ -25,6 +25,7 @@ export interface Session {
   gameState: GameState;
   clickTimestamps: number[];
   lastValidation: number;
+  session_start_time: number;
 }
 
 const sessions = new Map<Socket<ClientToServerEvents, ServerToClientEvents>, Session>();
@@ -125,7 +126,8 @@ io.on("connection", async (socket) => {
       power: gameState.power,
       gameState,
       clickTimestamps: [],
-      lastValidation: Date.now()
+      lastValidation: Date.now(),
+      session_start_time: Date.now()
     };
 
     sessions.set(socket, session);
@@ -148,7 +150,8 @@ io.on("connection", async (socket) => {
       power: 0,
       gameState,
       clickTimestamps: [],
-      lastValidation: Date.now()
+      lastValidation: Date.now(),
+      session_start_time: Date.now()
     };
     
     sessions.set(socket, session);
@@ -162,19 +165,42 @@ io.on("connection", async (socket) => {
     const session = sessions.get(socket);
     if (session) {
       console.log(`[WS] User disconnecting: ${userId}, saving data...`);
+      console.log(`[WS] Session data for ${userId}:`, {
+        power: session.gameState.power,
+        total_power: session.gameState.total_power,
+        lifetime_power: session.gameState.lifetime_power,
+        lifetime_clicks: session.gameState.lifetime_clicks,
+        upgrades_count: session.gameState.upgrades.length,
+        prestige_level: session.gameState.prestige_level
+      });
       
       try {
-        // Final validation before save
-        if (sanitizeGameState(session.gameState)) {
-          await GameService.saveGameState(session.userId, session.gameState);
-          console.log(`[WS] Successfully saved data for: ${userId}`);
-        } else {
+        const isValid = sanitizeGameState(session.gameState);
+        if (!isValid) {
+          console.warn(`[WS] Game state validation failed for ${userId}, but attempting to save anyway`);
           auditLogger.logDataIntegrity(userId, 'INVALID_DISCONNECT_STATE', { gameState: session.gameState });
-          console.error(`[SECURITY] Invalid game state at disconnect for user ${userId}, not saving`);
         }
+        
+        await GameService.saveGameState(session.userId, session.gameState);
+        console.log(`[WS] Successfully saved data for: ${userId}`);
       } catch (error) {
         console.error(`[WS] Error saving data for ${userId}:`, error);
         auditLogger.logDataIntegrity(userId, 'SAVE_ERROR', { error: error?.toString() });
+        
+        try {
+          console.log(`[WS] Attempting emergency save for ${userId}...`);
+          const emergencyState = {
+            ...session.gameState,
+            power: Math.max(0, session.gameState.power),
+            total_power: Math.max(session.gameState.power, session.gameState.total_power),
+            lifetime_power: Math.max(session.gameState.total_power, session.gameState.lifetime_power),
+            lifetime_clicks: Math.max(0, session.gameState.lifetime_clicks || 0)
+          };
+          await GameService.saveGameState(session.userId, emergencyState);
+          console.log(`[WS] Emergency save successful for: ${userId}`);
+        } catch (emergencyError) {
+          console.error(`[WS] Emergency save also failed for ${userId}:`, emergencyError);
+        }
       }
       
       sessions.delete(socket);
@@ -224,11 +250,19 @@ setInterval(async () => {
     // Auto-save every 10 seconds
     if (Date.now() % 10000 < 1000) {
       savePromises.push(
-        GameService.saveGameState(session.userId, session.gameState)
-          .catch(error => {
-            console.error(`Failed to auto-save for user ${session.userId}:`, error);
+        (async () => {
+          try {
+            const isValid = sanitizeGameState(session.gameState);
+            if (!isValid) {
+              console.warn(`[AUTO-SAVE] Game state validation failed for ${session.userId}, but attempting to save anyway`);
+            }
+            await GameService.saveGameState(session.userId, session.gameState);
+            console.log(`[AUTO-SAVE] Successfully saved for user ${session.userId}`);
+          } catch (error) {
+            console.error(`[AUTO-SAVE] Failed to auto-save for user ${session.userId}:`, error);
             auditLogger.logDataIntegrity(session.userId, 'AUTO_SAVE_ERROR', { error: error?.toString() });
-          })
+          }
+        })()
       );
     }
   }
@@ -246,10 +280,18 @@ setInterval(async () => {
   console.log(`[AUTO-SAVE] Saving ${sessions.size} active sessions...`);
   
   const savePromises = Array.from(sessions.values()).map(session =>
-    GameService.saveGameState(session.userId, session.gameState)
-      .catch(error => {
-        console.error(`Auto-save failed for user ${session.userId}:`, error);
-      })
+    (async () => {
+      try {
+        const isValid = sanitizeGameState(session.gameState);
+        if (!isValid) {
+          console.warn(`[AUTO-SAVE] Game state validation failed for ${session.userId}, but attempting to save anyway`);
+        }
+        await GameService.saveGameState(session.userId, session.gameState);
+        console.log(`[AUTO-SAVE] Successfully saved for user ${session.userId}`);
+      } catch (error) {
+        console.error(`[AUTO-SAVE] Failed to auto-save for user ${session.userId}:`, error);
+      }
+    })()
   );
   
   try {
