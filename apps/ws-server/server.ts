@@ -1,6 +1,7 @@
 import type { ClientToServerEvents, GameState, ServerToClientEvents } from "@clicker/game/types";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
+import { fixPrestigeStats } from "./lib/prestige-stats";
 import { EventLoader } from "./loaders/event-loader";
 import { authenticateSocket, type AuthenticatedSocket } from "./middleware/auth";
 import { sanitizeGameState } from "./schemas/validation";
@@ -8,7 +9,6 @@ import { GameService } from "./services/game";
 import { auditLogger } from "./utils/audit-logger";
 import { rateLimiter } from "./utils/rate-limiter";
 import { recalculateStats } from "./utils/utils";
-import { fixPrestigeStats } from "./lib/prestige-stats";
 
 const httpServer = createServer();
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
@@ -65,6 +65,7 @@ function createInitialGameState(): GameState {
     current_prestige_clicks: 0,
     current_prestige_upgrades_purchased: 0,
     current_prestige_power_spent: 0,
+    current_prestige_power_earned: 0,
   };
 }
 

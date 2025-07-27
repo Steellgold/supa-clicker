@@ -64,6 +64,7 @@ export class GameService {
           current_prestige_clicks: gameState.current_prestige_clicks || 0,
           current_prestige_upgrades_purchased: gameState.current_prestige_upgrades_purchased || 0,
           current_prestige_power_spent: gameState.current_prestige_power_spent || 0,
+          current_prestige_power_earned: gameState.current_prestige_power_earned || 0,
           updated_at: new Date().toISOString()
         });
 
@@ -109,6 +110,7 @@ export class GameService {
         current_prestige_clicks: data.current_prestige_clicks || 0,
         current_prestige_upgrades_purchased: data.current_prestige_upgrades_purchased || 0,
         current_prestige_power_spent: data.current_prestige_power_spent || 0,
+        current_prestige_power_earned: data.current_prestige_power_earned || 0,
       };
     } catch (error) {
       console.error("Failed to load game state:", error);

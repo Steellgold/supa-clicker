@@ -64,6 +64,7 @@ export type Database = {
         Row: {
           created_at: string | null
           current_prestige_clicks: number | null
+          current_prestige_power_earned: number | null
           current_prestige_power_spent: number | null
           current_prestige_start_time: string | null
           current_prestige_upgrades_purchased: number | null
@@ -83,6 +84,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           current_prestige_clicks?: number | null
+          current_prestige_power_earned?: number | null
           current_prestige_power_spent?: number | null
           current_prestige_start_time?: string | null
           current_prestige_upgrades_purchased?: number | null
@@ -102,6 +104,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           current_prestige_clicks?: number | null
+          current_prestige_power_earned?: number | null
           current_prestige_power_spent?: number | null
           current_prestige_start_time?: string | null
           current_prestige_upgrades_purchased?: number | null

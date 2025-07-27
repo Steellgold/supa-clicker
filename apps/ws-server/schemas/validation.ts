@@ -61,7 +61,8 @@ export const gameStateSchema = z.object({
   current_prestige_start_time: z.number(),
   current_prestige_clicks: z.number().min(0),
   current_prestige_upgrades_purchased: z.number().min(0),
-  current_prestige_power_spent: z.number().min(0)
+  current_prestige_power_spent: z.number().min(0),
+  current_prestige_power_earned: z.number().min(0)
 });
 
 export const sessionSchema = z.object({

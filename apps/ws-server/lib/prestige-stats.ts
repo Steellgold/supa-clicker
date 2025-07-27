@@ -29,6 +29,7 @@ export const updateCurrentPrestigeStats = (
   // Update current prestige tracking
   if (powerEarned > 0) {
     gameState.current_prestige_clicks += clicks;
+    gameState.current_prestige_power_earned += powerEarned;
   }
 
   if (upgradePurchased) {

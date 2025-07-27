@@ -131,6 +131,7 @@ export type GameState = {
   current_prestige_clicks: number;
   current_prestige_upgrades_purchased: number;
   current_prestige_power_spent: number;
+  current_prestige_power_earned: number;
 };
 
 // User upgrade

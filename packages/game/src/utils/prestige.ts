@@ -67,6 +67,7 @@ export const performPrestige = (gameState: GameState): GameState => {
     current_prestige_clicks: 0,
     current_prestige_upgrades_purchased: 0,
     current_prestige_power_spent: 0,
+    current_prestige_power_earned: 0,
   };
 }
 
