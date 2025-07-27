@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { Achievement, GameState, PrestigeStats, LeaderboardEntry, LeaderboardResponse, LeaderboardType, UserLeaderboardStats } from "./game";
+import type { Achievement, GameState, LeaderboardEntry, LeaderboardResponse, LeaderboardType, PrestigeStats, UserLeaderboardStats } from "./game";
 
 export interface EventHandler {
   handle(socket: SocketWithSession, sessions: SessionsMap, ...args: any[]): void | Promise<void>;
@@ -50,6 +50,10 @@ export type Session = {
   power: number;
   gameState: GameState;
   clickTimestamps: number[];
+  // Session-specific counters for achievements that reset on each page reload
+      session_current_power: number;
+    session_upgrades_purchased: number;
+    session_clicks: number;
 }
 
 export type SessionsMap = Map<SocketWithSession, Session>;

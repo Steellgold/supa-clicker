@@ -545,7 +545,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 
 // Convert GameState to GameStats for achievement checking
-export const gameStateToStats = (gameState: GameState, sessionStartTime?: number): any => {
+export const gameStateToStats = (gameState: GameState, sessionStartTime?: number, sessionData?: any): any => {
   const totalUpgrades = gameState.upgrades.reduce((sum, upgrade) => sum + upgrade.level, 0);
   const currentTime = Date.now();
   
@@ -555,15 +555,20 @@ export const gameStateToStats = (gameState: GameState, sessionStartTime?: number
   
   const consecutiveClicks = 0;
 
+  // Session-specific counters
+  const sessionPowerEarned = sessionData?.session_current_power ?? gameState.current_prestige_power_earned;
+  const sessionUpgradesBought = sessionData?.session_upgrades_purchased ?? gameState.current_prestige_upgrades_purchased;
+  const sessionClicks = sessionData?.session_clicks ?? gameState.current_prestige_clicks;
+
   return {
     totalClicks: gameState.lifetime_clicks,
     currentResources: gameState.power,
     resourcesPerSecond: gameState.pps,
     lastSaveTime: currentTime,
     prestigeLevel: gameState.prestige_level,
-    upgradesBoughtSession: gameState.current_prestige_upgrades_purchased,
-    clicksSession: gameState.current_prestige_clicks,
-    powerSession: gameState.current_prestige_power_earned,
+    upgradesBoughtSession: sessionUpgradesBought,
+    clicksSession: sessionClicks,
+    powerSession: sessionPowerEarned,
     powerSpentSession: gameState.current_prestige_power_spent,
     totalUpgrades,
     lifetimePower: gameState.lifetime_power,
@@ -574,8 +579,8 @@ export const gameStateToStats = (gameState: GameState, sessionStartTime?: number
 }
 
 // Check for newly unlocked achievements
-export const checkAchievements = (gameState: GameState, sessionStartTime?: number): Achievement[] => {
-  const stats = gameStateToStats(gameState, sessionStartTime);
+export const checkAchievements = (gameState: GameState, sessionStartTime?: number, sessionData?: any): Achievement[] => {
+  const stats = gameStateToStats(gameState, sessionStartTime, sessionData);
   const upgrades = gameState.upgrades.map(u => ({ upgradeId: u.id, quantity: u.level }));
   const newlyUnlocked: Achievement[] = [];
 
@@ -615,11 +620,11 @@ export const getLockedAchievements = (unlockedIds: number[]): Achievement[] => {
 }
 
 // Calculate achievement progress (0-100)
-export const getAchievementProgress = (achievementId: number, gameState: GameState, sessionStartTime?: number): number => {
+export const getAchievementProgress = (achievementId: number, gameState: GameState, sessionStartTime?: number, sessionData?: any): number => {
   const achievement = getAchievementById(achievementId);
   if (!achievement) return 0;
 
-  const stats = gameStateToStats(gameState, sessionStartTime);
+  const stats = gameStateToStats(gameState, sessionStartTime, sessionData);
   const upgrades = gameState.upgrades.map(u => ({ upgradeId: u.id, quantity: u.level }));
 
   // If already unlocked, return 100%

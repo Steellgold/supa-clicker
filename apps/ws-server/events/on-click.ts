@@ -45,8 +45,16 @@ export class ClickHandler implements EventHandler {
         session.gameState, powerGained, 1
       );
 
+      // Session-specific counters
+      session.session_current_power += powerGained;
+      session.session_clicks += 1;
+
       // Check for achievements
-      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time, {
+        session_current_power: session.session_current_power,
+        session_upgrades_purchased: session.session_upgrades_purchased,
+        session_clicks: session.session_clicks
+      });
       console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId}`);
       
       for (const achievement of newlyUnlocked) {

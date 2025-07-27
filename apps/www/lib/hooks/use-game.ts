@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/auth/auth-context";
+import { updateCurrentSessionData } from "@/lib/utils/achievement-progress";
 import type { ClientSocket } from "@/type/socket";
 import type { GameState } from "@clicker/game/types";
 import { useEffect, useRef, useState } from "react";
@@ -113,6 +114,13 @@ export const useGame = (userId?: string) => {
       return;
     }
     socketRef.current.emit("click");
+
+    updateCurrentSessionData({ clicks: 1 }, true);
+
+    if (gameState) {
+      const powerGained = gameState.ppc || 1;
+      updateCurrentSessionData({ currentPower: powerGained }, true);
+    }
   };
 
   const buyUpgrade = (upgradeId: number, quantity: number = 1, isBulk: boolean = false) => {
@@ -122,6 +130,8 @@ export const useGame = (userId?: string) => {
     }
     console.log(`[CLIENT] Buying upgrade ${upgradeId}: quantity=${quantity}, isBulk=${isBulk}`);
     socketRef.current.emit("buyUpgrade", upgradeId, quantity, isBulk);
+
+    updateCurrentSessionData({ upgradesPurchased: quantity }, true);
   };
 
   const resetGame = () => {

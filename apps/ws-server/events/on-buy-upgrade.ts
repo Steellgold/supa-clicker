@@ -96,6 +96,9 @@ export class BuyUpgradeHandler implements EventHandler {
         session.gameState, 0, 0, true, totalCost
       );
 
+      // Session-specific counters
+      session.session_upgrades_purchased += canBuy;
+
       // Validate post-transaction state
       if (session.gameState.power < 0) {
         console.error(`[SECURITY] Transaction resulted in negative power for user ${userId}`);
@@ -110,7 +113,11 @@ export class BuyUpgradeHandler implements EventHandler {
       recalculateStats(session.gameState);
 
       // Check for achievements
-      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time, {
+        session_current_power: session.session_current_power,
+        session_upgrades_purchased: session.session_upgrades_purchased,
+        session_clicks: session.session_clicks
+      });
       console.log(`[ACHIEVEMENT] Found ${newlyUnlocked.length} newly unlocked achievements for user ${userId} (buy upgrade)`);
       
       for (const achievement of newlyUnlocked) {

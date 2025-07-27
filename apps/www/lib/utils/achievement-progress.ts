@@ -1,5 +1,105 @@
 import type { Achievement, GameState } from "@clicker/game/types";
 
+const SESSION_KEY = "supa-clicker-session";
+const SESSION_DURATION = 5 * 60 * 1000; // 5 minutes
+
+interface SessionData {
+  startTime: number;
+  currentPower: number;
+  upgradesPurchased: number;
+  clicks: number;
+}
+
+const getSessionData = (): SessionData => {
+  if (typeof window === "undefined") {
+    return { startTime: Date.now(), currentPower: 0, upgradesPurchased: 0, clicks: 0 };
+  }
+
+  try {
+    const stored = localStorage.getItem(SESSION_KEY);
+    if (!stored) {
+      return { startTime: Date.now(), currentPower: 0, upgradesPurchased: 0, clicks: 0 };
+    }
+
+    const sessionData: SessionData = JSON.parse(stored);
+    const now = Date.now();
+    
+    if (now - sessionData.startTime < SESSION_DURATION) {
+      return sessionData;
+    } else {
+      const newSession = { startTime: now, currentPower: 0, upgradesPurchased: 0, clicks: 0 };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+      return newSession;
+    }
+  } catch (error) {
+    console.error("Error reading session data:", error);
+    return { startTime: Date.now(), currentPower: 0, upgradesPurchased: 0, clicks: 0 };
+  }
+};
+
+const updateSessionData = (updates: Partial<SessionData>, isRelative: boolean = false) => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const currentSession = getSessionData();
+    let updatedSession: SessionData;
+    
+    if (isRelative) {
+      // For relative updates, add to current values
+      updatedSession = {
+        ...currentSession,
+        currentPower: currentSession.currentPower + (updates.currentPower || 0),
+        upgradesPurchased: currentSession.upgradesPurchased + (updates.upgradesPurchased || 0),
+        clicks: currentSession.clicks + (updates.clicks || 0),
+      };
+    } else {
+      // For absolute updates, replace values
+      updatedSession = { ...currentSession, ...updates };
+    }
+    
+    localStorage.setItem(SESSION_KEY, JSON.stringify(updatedSession));
+  } catch (error) {
+    console.error("Error updating session data:", error);
+  }
+};
+
+// Export functions for external use
+export const getCurrentSessionData = getSessionData;
+export const updateCurrentSessionData = updateSessionData;
+
+// Reset session data (useful for testing or manual reset)
+export const resetSessionData = () => {
+  if (typeof window === "undefined") return;
+  
+  try {
+    const newSession = { startTime: Date.now(), currentPower: 0, upgradesPurchased: 0, clicks: 0 };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+    console.log("Session data reset");
+  } catch (error) {
+    console.error("Error resetting session data:", error);
+  }
+};
+
+if (typeof window !== "undefined") {
+  const handleBeforeUnload = () => {
+    localStorage.removeItem(SESSION_KEY);
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "hidden") {
+      setTimeout(() => {
+        if (document.visibilityState === "hidden") {
+          resetSessionData();
+        }
+      }, 5000); // 5 second delay
+    }
+  };
+  
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+}
+
 export const calculateAchievementProgress = (
   achievement: Achievement, 
   gameState: GameState | null
@@ -104,18 +204,19 @@ export const calculateAchievementProgress = (
 
   if (achievement.category === "session") {
     const sessionTargets = [100000, 10000000, 20, 1000];
-    let current = 0;
+    const sessionData = getSessionData();
     
     const targetIndex = achievement.id - 33;
     if (targetIndex >= 0 && targetIndex < sessionTargets.length) {
       const target = sessionTargets[targetIndex];
+      let current = 0;
       
       if (achievement.id === 33 || achievement.id === 34) {
-        current = gameState.current_prestige_power_earned || 0;
+        current = sessionData.currentPower;
       } else if (achievement.id === 35) {
-        current = gameState.current_prestige_upgrades_purchased || 0;
+        current = sessionData.upgradesPurchased;
       } else if (achievement.id === 36) {
-        current = gameState.current_prestige_clicks || 0;
+        current = sessionData.clicks;
       }
       
       return Math.min(100, Math.floor((current / target) * 100));
@@ -250,6 +351,7 @@ export const getAchievementProgressValues = (
   if (achievement.category === "session") {
     const sessionTargets = [100000, 10000000, 20, 1000];
     const sessionUnits = ["power", "power", "upgrades", "clicks"];
+    const sessionData = getSessionData();
     
     const targetIndex = achievement.id - 33;
     if (targetIndex >= 0 && targetIndex < sessionTargets.length) {
@@ -257,11 +359,11 @@ export const getAchievementProgressValues = (
       let current = 0;
       
       if (achievement.id === 33 || achievement.id === 34) {
-        current = gameState.current_prestige_power_earned || 0;
+        current = sessionData.currentPower;
       } else if (achievement.id === 35) {
-        current = gameState.current_prestige_upgrades_purchased || 0;
+        current = sessionData.upgradesPurchased;
       } else if (achievement.id === 36) {
-        current = gameState.current_prestige_clicks || 0;
+        current = sessionData.clicks;
       }
       
       return {
@@ -273,4 +375,10 @@ export const getAchievementProgressValues = (
   }
 
   return null;
+}; 
+
+export const debugSessionData = () => {
+  const sessionData = getSessionData();
+  console.log("Current session data:", sessionData);
+  return sessionData;
 }; 

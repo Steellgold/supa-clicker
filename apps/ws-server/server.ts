@@ -27,6 +27,10 @@ export interface Session {
   clickTimestamps: number[];
   lastValidation: number;
   session_start_time: number;
+  // Session-specific counters
+  session_current_power: number;
+  session_upgrades_purchased: number;
+  session_clicks: number;
 }
 
 const sessions = new Map<Socket<ClientToServerEvents, ServerToClientEvents>, Session>();
@@ -130,7 +134,11 @@ io.on("connection", async (socket) => {
       gameState,
       clickTimestamps: [],
       lastValidation: Date.now(),
-      session_start_time: Date.now()
+      // Session-specific counters
+      session_start_time: Date.now(),
+      session_current_power: 0,
+      session_upgrades_purchased: 0,
+      session_clicks: 0,
     };
 
     sessions.set(socket, session);
@@ -154,7 +162,11 @@ io.on("connection", async (socket) => {
       gameState,
       clickTimestamps: [],
       lastValidation: Date.now(),
-      session_start_time: Date.now()
+      // Session-specific counters
+      session_start_time: Date.now(),
+      session_current_power: 0,
+      session_upgrades_purchased: 0,
+      session_clicks: 0,
     };
     
     sessions.set(socket, session);

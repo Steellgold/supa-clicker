@@ -1,5 +1,5 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
-import { checkAchievements, getAllAchievements, getUnlockedAchievements } from "../lib/achievements";
+import { checkAchievements, getAllAchievements } from "../lib/achievements";
 import type { AuthenticatedSocket } from "../middleware/auth";
 
 export class AchievementsHandler implements EventHandler {
@@ -15,7 +15,11 @@ export class AchievementsHandler implements EventHandler {
 
     try {
       // Check for newly unlocked achievements
-      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time);
+      const newlyUnlocked = checkAchievements(session.gameState, (session as any).session_start_time, {
+        session_current_power: session.session_current_power,
+        session_upgrades_purchased: session.session_upgrades_purchased,
+        session_clicks: session.session_clicks
+      });
       
       // Add newly unlocked achievements to the game state
       for (const achievement of newlyUnlocked) {

@@ -1,10 +1,10 @@
 "use client";
 
-import { BarChart3, Menu, Moon, Sun, Trophy } from "lucide-react";
+import { Menu, Moon, Sun, Trophy } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ReactElement, useState } from "react";
-import { AchievementsDialog } from "./achievements-dialog";
 import { AuthButton } from "./auth/auth-button";
+import { AchievementsDialog } from "./dialogs/achievements-dialog";
 import { StarButton } from "./star-button";
 import { Button } from "./ui/button";
 
