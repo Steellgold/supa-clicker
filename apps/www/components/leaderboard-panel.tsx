@@ -2,7 +2,7 @@
 
 import { useLeaderboard, useUserLeaderboardPosition } from "@/lib/hooks/use-leaderboard";
 import { useAuth } from "@/lib/auth/auth-context";
-import { LeaderboardType } from "@clicker/game/types";
+import { LeaderboardEntry, LeaderboardType } from "@clicker/game/types";
 import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,7 @@ export const LeaderboardPanel = () => {
     activeType
   );
 
-  const formatValue = (entry: any, type: LeaderboardType) => {
+  const formatValue = (entry: LeaderboardEntry, type: LeaderboardType) => {
     switch (type) {
       case "total_power":
         return (
