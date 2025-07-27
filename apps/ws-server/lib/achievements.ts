@@ -335,12 +335,12 @@ export const ACHIEVEMENTS: Achievement[] = [
     unlocked: false
   },
 
-  // === SPECIAL SESSION ACHIEVEMENTS ===
+  // === SESSION ACHIEVEMENTS ===
   {
     id: 33,
     name: "Session Warrior",
     description: "Earn 100,000 power in a single session",
-    category: "special",
+    category: "session",
     rarity: "rare",
     icon: "🔥",
     requirement: (stats) => (stats as any).powerSession >= 100000,
@@ -350,7 +350,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 34,
     name: "Session Legend",
     description: "Earn 10,000,000 power in a single session",
-    category: "special",
+    category: "session",
     rarity: "epic",
     icon: "🌟",
     requirement: (stats) => (stats as any).powerSession >= 10000000,
@@ -360,7 +360,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 35,
     name: "Upgrade Spree",
     description: "Buy 20 upgrades in a single session",
-    category: "special",
+    category: "session",
     rarity: "epic",
     icon: "🛒",
     requirement: (stats) => stats.upgradesBoughtSession >= 20,
@@ -370,7 +370,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 36,
     name: "Click Frenzy",
     description: "Click 1,000 times in a single session",
-    category: "special",
+    category: "session",
     rarity: "rare",
     icon: "🌪️",
     requirement: (stats) => stats.clicksSession >= 1000,
@@ -563,7 +563,8 @@ export const gameStateToStats = (gameState: GameState, sessionStartTime?: number
     prestigeLevel: gameState.prestige_level,
     upgradesBoughtSession: gameState.current_prestige_upgrades_purchased,
     clicksSession: gameState.current_prestige_clicks,
-    powerSession: gameState.current_prestige_power_spent,
+    powerSession: gameState.current_prestige_power_earned,
+    powerSpentSession: gameState.current_prestige_power_spent,
     totalUpgrades,
     lifetimePower: gameState.lifetime_power,
     lifetimeClicks: gameState.lifetime_clicks,

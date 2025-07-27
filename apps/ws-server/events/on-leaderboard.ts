@@ -1,6 +1,9 @@
 import type { EventHandler, SessionsMap, SocketWithSession } from "@clicker/game/types";
-import type { AuthenticatedSocket } from "../middleware/auth";
 import { LeaderboardService } from "../lib/leaderboard";
+import type { AuthenticatedSocket } from "../middleware/auth";
+import { RateLimiter } from "../utils/rate-limiter";
+
+const rateLimiter = new RateLimiter();
 
 export class LeaderboardHandler implements EventHandler {
   async handle(socket: SocketWithSession, sessions: SessionsMap, data?: unknown): Promise<void> {
@@ -13,12 +16,21 @@ export class LeaderboardHandler implements EventHandler {
     const authSocket = socket as AuthenticatedSocket;
     const userId = authSocket.userId;
 
+    const rateCheck = rateLimiter.checkLeaderboardRate(userId);
+    if (!rateCheck.allowed) {
+      console.log(`[LEADERBOARD] Rate limit exceeded for user ${userId}: ${rateCheck.reason}`);
+      socket.emit("leaderboardError", rateCheck.reason || "Rate limit exceeded");
+      return;
+    }
+
     try {
       const requestData = data as { type?: string; limit?: number; userId?: string } || {};
       const type = (requestData.type as any) || "total_power";
       const limit = requestData.limit || 50;
 
-      console.log(`[LEADERBOARD] Fetching leaderboard for user ${userId}, type: ${type}, limit: ${limit}`);
+      console.log(`[LEADERBOARD] Processing request for user ${userId}, type: ${type}, limit: ${limit}, timestamp: ${new Date().toISOString()}`);
+
+      LeaderboardService.invalidateCacheForType(type);
 
       const leaderboard = await LeaderboardService.getLeaderboard(type, limit);
 
@@ -42,7 +54,8 @@ export class LeaderboardHandler implements EventHandler {
         type,
       };
 
-      console.log(`[LEADERBOARD] Sending leaderboard with ${leaderboard.length} entries for user ${userId}`);
+      console.log(`[LEADERBOARD] Successfully processed request for user ${userId}, sending ${leaderboard.length} entries for type ${type}`);
+      console.log(`[LEADERBOARD] First entry:`, leaderboard[0] ? `${leaderboard[0].username} (${leaderboard[0].user_id})` : 'None');
       socket.emit("leaderboardUpdate", response);
       
     } catch (error) {
@@ -62,6 +75,13 @@ export class UserLeaderboardPositionHandler implements EventHandler {
 
     const authSocket = socket as AuthenticatedSocket;
     const userId = authSocket.userId;
+
+    const rateCheck = rateLimiter.checkLeaderboardRate(userId);
+    if (!rateCheck.allowed) {
+      console.log(`[LEADERBOARD_POSITION] Rate limit exceeded for user ${userId}: ${rateCheck.reason}`);
+      socket.emit("userPositionError", rateCheck.reason || "Rate limit exceeded");
+      return;
+    }
 
     try {
       const requestData = data as { type?: string; userId?: string } || {};
@@ -113,6 +133,7 @@ export class UpdateLeaderboardHandler implements EventHandler {
       console.log(`[UPDATE_LEADERBOARD] Updating leaderboard for user ${userId}`);
       
       await LeaderboardService.updateUserStats(userId, session.gameState);
+      LeaderboardService.invalidateCache();
 
       console.log(`[UPDATE_LEADERBOARD] Successfully updated leaderboard for user ${userId}`);
     } catch (error) {

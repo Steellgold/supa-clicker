@@ -39,16 +39,35 @@ export class EventLoader {
     });
 
     // Leaderboard events
-    socket.on("getLeaderboard", (data) => {
-      this.leaderboardHandler.handle(socket, sessions, data);
+    socket.on("getLeaderboard", async (data) => {
+      console.log(`[EVENT_LOADER] Received getLeaderboard event with data:`, data, `Socket ID:`, socket.id);
+      console.log(`[EVENT_LOADER] Socket connected:`, socket.connected, `Socket ID:`, socket.id);
+      try {
+        await this.leaderboardHandler.handle(socket, sessions, data);
+      } catch (error) {
+        console.error(`[EVENT_LOADER] Error in getLeaderboard handler:`, error);
+        socket.emit("leaderboardError", "Internal server error");
+      }
     });
 
-    socket.on("getUserLeaderboardPosition", (data) => {
-      this.userLeaderboardPositionHandler.handle(socket, sessions, data);
+    socket.on("getUserLeaderboardPosition", async (data) => {
+      console.log(`[EVENT_LOADER] Received getUserLeaderboardPosition event with data:`, data, `Socket ID:`, socket.id);
+      try {
+        await this.userLeaderboardPositionHandler.handle(socket, sessions, data);
+      } catch (error) {
+        console.error(`[EVENT_LOADER] Error in getUserLeaderboardPosition handler:`, error);
+        socket.emit("userPositionError", "Internal server error");
+      }
     });
 
-    socket.on("updateLeaderboard", (data) => {
-      this.updateLeaderboardHandler.handle(socket, sessions, data);
+    socket.on("updateLeaderboard", async (data) => {
+      console.log(`[EVENT_LOADER] Received updateLeaderboard event with data:`, data, `Socket ID:`, socket.id);
+      try {
+        await this.updateLeaderboardHandler.handle(socket, sessions, data);
+      } catch (error) {
+        console.error(`[EVENT_LOADER] Error in updateLeaderboard handler:`, error);
+        socket.emit("error", "Internal server error");
+      }
     });
   }
 }

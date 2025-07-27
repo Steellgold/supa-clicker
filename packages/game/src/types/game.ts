@@ -94,7 +94,8 @@ export type Achievement = {
     | "efficiency"
     | "tech"
     | "milestone"
-    | "combo";
+    | "combo"
+    | "session";
 
   rarity: "common" | "rare" | "epic" | "legendary";
 };

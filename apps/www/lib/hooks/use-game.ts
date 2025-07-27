@@ -19,6 +19,7 @@ export const useGame = (userId?: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const socketRef = useRef<ClientSocket | null>(null);
 
   useEffect(() => {
@@ -55,12 +56,14 @@ export const useGame = (userId?: string) => {
     socket.on("disconnect", () => {
       console.log("Disconnected from game server");
       setIsConnected(false);
+      setIsReady(false);
       setIsLoading(true);
     });
 
     socket.on("welcome", (payload) => {
       console.log("Welcome received:", payload);
       setIsLoading(false);
+      setIsReady(true);
       
       // If we have a userId and it's different from the guest ID, finalize migration
       if (userId && userId !== guestId) {
@@ -150,6 +153,7 @@ export const useGame = (userId?: string) => {
     isLoading,
     error,
     isConnected,
+    isReady,
     socketRef,
 
     handleClick,

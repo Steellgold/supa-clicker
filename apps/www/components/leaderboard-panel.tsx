@@ -1,16 +1,15 @@
 "use client";
 
-import { useLeaderboard, useUserLeaderboardPosition } from "@/lib/hooks/use-leaderboard";
-import { useAuth } from "@/lib/auth/auth-context";
-import { LeaderboardEntry, LeaderboardType } from "@clicker/game/types";
 import { PowerTag } from "@/components/power-tag";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatNumber, formatDecimal } from "@/lib/utils";
-import { Trophy, Medal, Crown, Star } from "lucide-react";
-import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/lib/auth/auth-context";
+import { useLeaderboard, useUserLeaderboardPosition } from "@/lib/hooks/use-leaderboard";
+import { cn, formatNumber } from "@/lib/utils";
+import { LeaderboardEntry, LeaderboardType } from "@clicker/game/types";
+import { Medal, Trophy } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const LEADERBOARD_TYPES: {
   value: LeaderboardType;
@@ -63,31 +62,41 @@ export const LeaderboardPanel = () => {
     activeType
   );
 
+  // Memoize the handleTypeChange function to prevent unnecessary re-renders
+  const handleTypeChange = useCallback((newType: LeaderboardType) => {
+    setActiveType(newType);
+  }, []);
+
+  // Memoize the refresh function to prevent unnecessary re-renders
+  const handleRefresh = useCallback(() => {
+    refresh();
+  }, [refresh]);
+
+  // Consolidate all initialization and type change logic into a single useEffect
   useEffect(() => {
     if (!hasInitialized) {
       setHasInitialized(true);
       const timer = setTimeout(() => {
+        console.log("[LEADERBOARD_PANEL] Initial load for type:", activeType);
         refresh();
       }, 100);
       return () => clearTimeout(timer);
-    }
-  }, [hasInitialized, refresh]);
-
-  useEffect(() => {
-    if (hasInitialized) {
+    } else {
+      // Only refresh when type changes after initialization
+      console.log("[LEADERBOARD_PANEL] Type changed to:", activeType);
       refresh();
     }
-  }, [activeType, hasInitialized, refresh]);
+  }, [hasInitialized, activeType, refresh]);
 
+  // Track when data has loaded at least once
   useEffect(() => {
     if (!isLoading && leaderboard.length > 0) {
       setHasLoadedOnce(true);
     }
   }, [isLoading, leaderboard.length]);
 
-  const handleTypeChange = (newType: LeaderboardType) => setActiveType(newType);
-
-  const formatValue = (entry: LeaderboardEntry, type: LeaderboardType) => {
+  // Memoize the formatValue function to prevent unnecessary re-renders
+  const formatValue = useCallback((entry: LeaderboardEntry, type: LeaderboardType) => {
     switch (type) {
       case "total_power":
         return (
@@ -102,14 +111,17 @@ export const LeaderboardPanel = () => {
       default:
         return formatNumber(entry[type]);
     }
-  };
+  }, []);
+
+  // Memoize the leaderboard types to prevent unnecessary re-renders
+  const leaderboardTypes = useMemo(() => LEADERBOARD_TYPES, []);
 
   if (error) {
     return (
       <div className="flex-1 p-3">
         <div className="text-center text-red-600 dark:text-red-400">
           <p>Failed to load leaderboard</p>
-          <Button onClick={refresh} variant="outline" size="sm" className="mt-2">
+          <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-2">
             Retry
           </Button>
         </div>
@@ -122,7 +134,7 @@ export const LeaderboardPanel = () => {
       {/* Type selector */}
       <div className="p-3 border-b-2 border-neutral-200 dark:border-neutral-700">
         <div className="flex flex-wrap gap-2">
-          {LEADERBOARD_TYPES.map((type) => (
+          {leaderboardTypes.map((type) => (
             <button
               key={type.value}
               onClick={() => handleTypeChange(type.value)}
@@ -175,7 +187,7 @@ export const LeaderboardPanel = () => {
               Loading leaderboard...
             </div>
           ) : isLoading && hasLoadedOnce ? (
-            // Afficher les anciennes données avec un indicateur de chargement
+            // Show old data with loading indicator
             <>
               <div className="text-center text-neutral-500 dark:text-neutral-400 py-2 text-xs">
                 Updating...
@@ -219,7 +231,7 @@ export const LeaderboardPanel = () => {
             <div className="text-center text-neutral-500 dark:text-neutral-400 py-8">
               <p>No data available</p>
               <Button 
-                onClick={refresh} 
+                onClick={handleRefresh} 
                 variant="outline" 
                 size="sm" 
                 className="mt-2"

@@ -3,12 +3,14 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGameContext } from "@/lib/providers/game-provider";
 import { cn } from "@/lib/utils";
+import { calculateAchievementProgress, getAchievementProgressValues } from "@/lib/utils/achievement-progress";
 import { Component } from "@/type/component";
+import { Achievement, GameState } from "@clicker/game/types";
 import { Check, Lock, Trophy } from "lucide-react";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Badge } from "./ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
-import { Achievement } from "@clicker/game/types";
+import { Progress } from "./ui/progress";
 
 type AchievementsDialogProps = {
   open: boolean;
@@ -51,25 +53,23 @@ const categoryConfig = {
   tech: { name: "Tech", icon: "🔧", color: "bg-teal-100 text-teal-800 border-teal-300" },
   milestone: { name: "Milestone", icon: "🏆", color: "bg-lime-100 text-lime-800 border-lime-300" },
   combo: { name: "Combo", icon: "🔄", color: "bg-orange-100 text-orange-800 border-orange-300" },
+  session: { name: "Session", icon: "🎮", color: "bg-pink-100 text-pink-800 border-pink-300" }
 };
 
 interface AchievementCardProps {
   achievement: Achievement;
   isUnlocked: boolean;
+  gameState: GameState | null;
 }
 
-const AchievementCard: Component<AchievementCardProps> = ({ achievement, isUnlocked }) => {
+const AchievementCard: Component<AchievementCardProps> = ({ achievement, isUnlocked, gameState }) => {
   const rarity = rarityConfig[achievement.rarity] || rarityConfig.common;
   const category = categoryConfig[achievement.category];
   
+  const progress = isUnlocked ? 100 : calculateAchievementProgress(achievement, gameState);
+  const progressValues = getAchievementProgressValues(achievement, gameState);
+  
   return (
-    // <div className={`
-    //   p-4 border-2 transition-all duration-200 hover:shadow-md
-    //   ${isUnlocked 
-    //     ? 'border-green-400 bg-green-50 dark:bg-green-900/20' 
-    //     : 'border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800/50 opacity-70'
-    //   }
-    // `}>
     <div className={cn("p-3 border-2", {
       "border-green-400 bg-green-100 dark:bg-green-800 shadow-[3px_3px_0_#5aa761]": isUnlocked,
       "border-neutral-400 bg-neutral-100 dark:bg-neutral-700 opacity-70 shadow-[3px_3px_0_#c4c4c4]": !isUnlocked
@@ -77,28 +77,47 @@ const AchievementCard: Component<AchievementCardProps> = ({ achievement, isUnloc
       <div className="flex items-start gap-3">
         <div className={cn("w-10 h-10 flex items-center justify-center text-2xl border-2 flex-shrink-0", {
           "border-green-400 bg-green-100 dark:bg-green-800": isUnlocked,
-          "border-neutral-400 bg-neutral-100 dark:bg-neutral-700": !isUnlocked
+          "border-neutral-400 bg-neutral-100 dark:bg-neutral-700 dark:border-neutral-300": !isUnlocked
         })}>
-          {isUnlocked ? achievement.icon : <Lock className="w-6 h-6 text-neutral-500" />}
+          {isUnlocked ? achievement.icon : <Lock className="w-6 h-6 text-neutral-500 dark:text-neutral-200" />}
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className={cn("font-bold text-sm truncate", {
               "text-green-800 dark:text-green-200": isUnlocked,
-              "text-neutral-600 dark:text-neutral-400": !isUnlocked
+              "text-neutral-600 dark:text-neutral-200": !isUnlocked
             })}>
               {achievement.name}
             </h3>
           </div>
           
           <p className={cn("text-xs", {
-            "mb-3": category || rarity,
+            "mb-2": category || rarity || (!isUnlocked && progressValues),
             "text-green-700 dark:text-green-300": isUnlocked,
-            "text-neutral-500 dark:text-neutral-500": !isUnlocked
+            "text-neutral-500 dark:text-neutral-200": !isUnlocked
           })}>
             {achievement.description}
           </p>
+
+          {!isUnlocked && progressValues && (
+            <div className="mb-2 bg-neutral-700/10 dark:bg-neutral-200/10 p-2">
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className={cn("text-neutral-700 dark:text-neutral-50")}>
+                  {progressValues.current.toLocaleString()} / {progressValues.target.toLocaleString()} {progressValues.unit}
+                </span>
+                <span className={cn("text-neutral-500 dark:text-neutral-50")}>
+                  {progress}%
+                </span>
+              </div>
+
+              <Progress
+                value={progress}
+                className="h-1.5 bg-neutral-900/15"
+                classNameIndicator="bg-neutral-300 dark:bg-neutral-500"
+              />
+            </div>
+          )}
 
           {(category || rarity) && (
             <div className="flex items-center gap-1">
@@ -123,7 +142,7 @@ const AchievementCard: Component<AchievementCardProps> = ({ achievement, isUnloc
 };
 
 export const AchievementsDialog: Component<AchievementsDialogProps> = ({ open, onOpenChange }) => {
-  const { achievements, unlockedAchievements, lockedAchievements, isLoadingAchievements, refreshAchievements } = useGameContext();
+  const { achievements, unlockedAchievements, lockedAchievements, isLoadingAchievements, refreshAchievements, gameState } = useGameContext();
 
   useEffect(() => {
     if (open) {
@@ -144,74 +163,9 @@ export const AchievementsDialog: Component<AchievementsDialogProps> = ({ open, o
             Achievements
           </DialogTitle>
           <DialogDescription>
-            <span className="text-neutral-500">{unlockedCount}/{totalCount}</span>
-            <span className="ml-2 text-xs text-neutral-400">({completionPercentage}%)</span>
+            {unlockedCount}/{totalCount} achievements unlocked ({completionPercentage}%)
           </DialogDescription>
-            
-            {/* <div className="flex items-center gap-3"> */}
-              {/* <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-1"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-              </Button> */}
-            {/* </div> */}
         </DialogHeader>
-
-        {/* Filters */}
-        {/* {showFilters && (
-          <div className="space-y-3 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg border">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium">Category:</span>
-              <Button
-                variant={selectedCategory === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory("all")}
-              >
-                All
-              </Button>
-              {availableCategories.map(category => {
-                const config = categoryConfig[category];
-                return (
-                  <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category)}
-                    className="flex items-center gap-1"
-                  >
-                    {config?.icon} {config?.name || category}
-                  </Button>
-                );
-              })}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium">Rarity:</span>
-              <Button
-                variant={selectedRarity === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedRarity("all")}
-              >
-                All
-              </Button>
-              {availableRarities.map(rarity => (
-                <Button
-                  key={rarity}
-                  variant={selectedRarity === rarity ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedRarity(rarity)}
-                  className="capitalize"
-                >
-                  {rarity}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )} */}
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
@@ -236,6 +190,7 @@ export const AchievementsDialog: Component<AchievementsDialogProps> = ({ open, o
                           key={achievement.id}
                           achievement={achievement}
                           isUnlocked={true}
+                          gameState={gameState}
                         />
                       ))}
                     </div>
@@ -255,6 +210,7 @@ export const AchievementsDialog: Component<AchievementsDialogProps> = ({ open, o
                           key={achievement.id}
                           achievement={achievement}
                           isUnlocked={false}
+                          gameState={gameState}
                         />
                       ))}
                     </div>

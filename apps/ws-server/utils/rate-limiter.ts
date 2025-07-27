@@ -12,6 +12,7 @@ interface PurchaseRateLimitEntry {
 export class RateLimiter {
   private clickLimits = new Map<string, RateLimitEntry>();
   private purchaseLimits = new Map<string, PurchaseRateLimitEntry>();
+  private leaderboardLimits = new Map<string, RateLimitEntry>();
   private ipConnections = new Map<string, number>();
 
   // Click rate limiting with advanced detection
@@ -99,6 +100,53 @@ export class RateLimiter {
     entry.timestamps.push(now);
     entry.lastPurchase = now;
     this.purchaseLimits.set(userId, entry);
+    return { allowed: true };
+  }
+
+  // Leaderboard rate limiting
+  checkLeaderboardRate(userId: string): { allowed: boolean; reason?: string } {
+    const now = Date.now();
+    const entry = this.leaderboardLimits.get(userId) || { 
+      timestamps: [], 
+      suspiciousActivity: 0,
+      lastWarning: 0 
+    };
+
+    // Clean old timestamps (older than 10 seconds)
+    entry.timestamps = entry.timestamps.filter(timestamp => now - timestamp < 10000);
+
+    // Limit to 10 requests per 10 seconds
+    if (entry.timestamps.length >= 10) {
+      entry.suspiciousActivity++;
+      
+      // Progressive penalties for repeated violations
+      if (entry.suspiciousActivity > 3) {
+        const penaltyDuration = Math.min(entry.suspiciousActivity * 5000, 60000); // Max 60s
+        if (now - entry.lastWarning < penaltyDuration) {
+          this.leaderboardLimits.set(userId, entry);
+          return { 
+            allowed: false, 
+            reason: `Leaderboard rate limit exceeded. Penalty: ${Math.ceil(penaltyDuration / 1000)}s` 
+          };
+        }
+      }
+
+      entry.lastWarning = now;
+      this.leaderboardLimits.set(userId, entry);
+      return { allowed: false, reason: 'Leaderboard rate limit: 5 requests per 10 seconds' };
+    }
+
+    // Check for burst patterns (more than 3 requests in 1 second)
+    const recent = entry.timestamps.filter(timestamp => now - timestamp < 1000);
+    if (recent.length > 3) {
+      entry.suspiciousActivity++;
+      this.leaderboardLimits.set(userId, entry);
+      return { allowed: false, reason: 'Suspicious leaderboard burst pattern detected' };
+    }
+
+    // Allow the request
+    entry.timestamps.push(now);
+    this.leaderboardLimits.set(userId, entry);
     return { allowed: true };
   }
 

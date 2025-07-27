@@ -1,18 +1,20 @@
 "use client";
 
 import { useGameContext } from "@/lib/providers/game-provider";
-import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { calculateAchievementProgress, getAchievementProgressValues } from "@/lib/utils/achievement-progress";
+import { Trophy } from "lucide-react";
+import { Progress } from "./ui/progress";
 
 export const AchievementNotification = () => {
-  const { achievementNotifications } = useGameContext();
+  const { achievementNotifications, gameState } = useGameContext();
 
   if (achievementNotifications.length === 0) {
     return null;
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed bottom-4 left-4 z-50 space-y-2">
       {achievementNotifications.map((achievement) => (
         <div
           key={achievement.id}
@@ -35,6 +37,28 @@ export const AchievementNotification = () => {
               <p className="text-xs text-green-700 dark:text-green-300">
                 {achievement.description}
               </p>
+              
+              {(() => {
+                const progress = calculateAchievementProgress(achievement, gameState);
+                const progressValues = getAchievementProgressValues(achievement, gameState);
+                
+                if (progress >= 50 && progress < 100 && progressValues) {
+                  return (
+                    <div className="mt-2">
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-green-600 dark:text-green-400">
+                          {progressValues.current.toLocaleString()} / {progressValues.target.toLocaleString()} {progressValues.unit}
+                        </span>
+                        <span className="text-green-600 dark:text-green-400">
+                          {progress}%
+                        </span>
+                      </div>
+                      <Progress value={progress} className="h-1" />
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
           </div>
         </div>
