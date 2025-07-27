@@ -12,8 +12,8 @@ import { Trophy, Medal, Crown, Star } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const LEADERBOARD_TYPES: { value: LeaderboardType; label: string; icon: React.ReactNode }[] = [
-  { value: "total_power", label: "Total Power", icon: <PowerTag imageProps={{ className: "w-4 h-4" }} /> },
+const LEADERBOARD_TYPES: { value: LeaderboardType; label: string; icon?: React.ReactNode }[] = [
+  { value: "total_power", label: "Total Power" },
   { value: "total_clicks", label: "Total Clicks", icon: <Star className="w-4 h-4" /> },
   { value: "prestige_level", label: "Prestige Level", icon: <Crown className="w-4 h-4" /> },
 ];
@@ -101,8 +101,16 @@ export const LeaderboardPanel = () => {
               className="flex-1 text-xs"
             >
               <div className="flex items-center gap-1">
-                {type.icon}
-                <span className="hidden sm:inline">{type.label}</span>
+                {type.icon ? (
+                  <>
+                    {type.icon}
+                    <span className="hidden sm:inline">{type.label}</span>
+                  </>
+                ) : (
+                  <PowerTag imageProps={{ className: "w-4 h-4" }}>
+                    <span className="hidden sm:inline">{type.label}</span>
+                  </PowerTag>
+                )}
               </div>
             </Button>
           ))}
