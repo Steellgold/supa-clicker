@@ -43,12 +43,10 @@ export class LeaderboardService {
           pps,
           updated_at
         `)
-        .not('user_id', 'like', '%guest%')
-        .not('user_id', 'like', '%anonymous%')
         .order(type === 'total_power' ? 'total_power' : 
                type === 'total_clicks' ? 'lifetime_clicks' : 
                'prestige_level', { ascending: false })
-        .limit(limit * 2);
+        .limit(limit * 3);
 
       if (gameStatesError) {
         console.error('[LEADERBOARD] Error fetching game states:', gameStatesError);
@@ -66,9 +64,26 @@ export class LeaderboardService {
         return [];
       }
 
-      console.log(`[LEADERBOARD] Found ${gameStates.length} game states for ${type}`);
+      // Filter out guest and anonymous users
+      const filteredGameStates = gameStates.filter(gs => {
+        const userId = String(gs.user_id);
+        return !userId.includes('guest') && !userId.includes('anonymous');
+      });
 
-      const userIds = gameStates.map(gs => gs.user_id);
+      console.log(`[LEADERBOARD] Found ${gameStates.length} total game states, ${filteredGameStates.length} valid for ${type}`);
+
+      if (filteredGameStates.length === 0) {
+        console.log(`[LEADERBOARD] No valid game states found for ${type}`);
+        this.leaderboardCache.set(cacheKey, {
+          data: [],
+          timestamp: Date.now(),
+          type,
+          limit
+        });
+        return [];
+      }
+
+      const userIds = filteredGameStates.map(gs => gs.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('id, username, display_name')
@@ -88,7 +103,7 @@ export class LeaderboardService {
 
       console.log(`[LEADERBOARD] Found ${profiles?.length || 0} profiles for ${type}`);
 
-      const leaderboard: LeaderboardEntry[] = gameStates
+      const leaderboard: LeaderboardEntry[] = filteredGameStates
         .map((gameState) => {
           const profile = profilesMap.get(gameState.user_id);
           const username = profile?.username;
@@ -146,8 +161,6 @@ export class LeaderboardService {
           pps,
           updated_at
         `)
-        .not('user_id', 'like', '%guest%')
-        .not('user_id', 'like', '%anonymous%')
         .order(type === 'total_power' ? 'total_power' : 
                type === 'total_clicks' ? 'lifetime_clicks' : 
                'prestige_level', { ascending: false });
@@ -161,7 +174,17 @@ export class LeaderboardService {
         return { position: 0, userData: null };
       }
 
-      const userIds = gameStates.map(gs => gs.user_id);
+      // Filter out guest and anonymous users
+      const filteredGameStates = gameStates.filter(gs => {
+        const userId = String(gs.user_id);
+        return !userId.includes('guest') && !userId.includes('anonymous');
+      });
+
+      if (filteredGameStates.length === 0) {
+        return { position: 0, userData: null };
+      }
+
+      const userIds = filteredGameStates.map(gs => gs.user_id);
       const { data: profiles, error: profilesError } = await supabase
         .from('user_profiles')
         .select('id, username, display_name')
@@ -182,7 +205,7 @@ export class LeaderboardService {
       let validPosition = 0;
       let userData: LeaderboardEntry | null = null;
 
-      for (const gameState of gameStates) {
+      for (const gameState of filteredGameStates) {
         const profile = profilesMap.get(gameState.user_id);
         const username = profile?.username;
         
