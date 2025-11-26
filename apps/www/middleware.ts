@@ -46,7 +46,11 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - /rest/v1 (Supabase API)
+     * - /auth/v1 (Supabase Auth)
+     * - /realtime/v1 (Supabase Realtime)
+     * - /storage/v1 (Supabase Storage)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|rest/v1|auth/v1|realtime/v1|storage/v1|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 }
