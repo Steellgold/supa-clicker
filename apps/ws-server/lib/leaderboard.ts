@@ -1,0 +1,310 @@
+import type { LeaderboardEntry, LeaderboardType } from "@clicker/game/types";
+import { supabase } from "./supabase";
+
+interface LeaderboardCache {
+  data: LeaderboardEntry[];
+  timestamp: number;
+  type: LeaderboardType;
+  limit: number;
+}
+
+export class LeaderboardService {
+  private static leaderboardCache: Map<string, LeaderboardCache> = new Map();
+  private static readonly CACHE_TTL = 5000; // Reduced to 5 seconds to ensure fresh data
+
+  private static getCacheKey(type: LeaderboardType, limit: number): string {
+    return `${type}_${limit}`;
+  }
+
+  private static isCacheValid(cache: LeaderboardCache): boolean {
+    return Date.now() - cache.timestamp < this.CACHE_TTL;
+  }
+
+  static async getLeaderboard(type: LeaderboardType = "total_power", limit: number = 50): Promise<LeaderboardEntry[]> {
+    const cacheKey = this.getCacheKey(type, limit);
+    const cached = this.leaderboardCache.get(cacheKey);
+
+    if (cached && this.isCacheValid(cached)) {
+      console.log(`[LEADERBOARD] Returning cached data for ${type} (${limit} entries), cache age: ${Date.now() - cached.timestamp}ms`);
+      return cached.data;
+    }
+
+    try {
+      console.log(`[LEADERBOARD] Fetching fresh data for ${type} (${limit} entries)`);
+      
+      const { data: gameStates, error: gameStatesError } = await supabase
+        .from('game_states')
+        .select(`
+          user_id,
+          total_power,
+          lifetime_clicks,
+          prestige_level,
+          unlocked_achievements,
+          pps,
+          updated_at
+        `)
+        .order(type === 'total_power' ? 'total_power' : 
+               type === 'total_clicks' ? 'lifetime_clicks' : 
+               'prestige_level', { ascending: false })
+        .limit(limit * 3);
+
+      if (gameStatesError) {
+        console.error('[LEADERBOARD] Error fetching game states:', gameStatesError);
+        throw gameStatesError;
+      }
+
+      if (!gameStates || gameStates.length === 0) {
+        console.log(`[LEADERBOARD] No game states found for ${type}`);
+        this.leaderboardCache.set(cacheKey, {
+          data: [],
+          timestamp: Date.now(),
+          type,
+          limit
+        });
+        return [];
+      }
+
+      // Filter out guest and anonymous users
+      const filteredGameStates = gameStates.filter(gs => {
+        const userId = String(gs.user_id);
+        return !userId.includes('guest') && !userId.includes('anonymous');
+      });
+
+      console.log(`[LEADERBOARD] Found ${gameStates.length} total game states, ${filteredGameStates.length} valid for ${type}`);
+
+      if (filteredGameStates.length === 0) {
+        console.log(`[LEADERBOARD] No valid game states found for ${type}`);
+        this.leaderboardCache.set(cacheKey, {
+          data: [],
+          timestamp: Date.now(),
+          type,
+          limit
+        });
+        return [];
+      }
+
+      const userIds = filteredGameStates.map(gs => gs.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('id, username, display_name')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('[LEADERBOARD] Error fetching user profiles:', profilesError);
+        throw profilesError;
+      }
+
+      const profilesMap = new Map();
+      if (profiles) {
+        profiles.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+      }
+
+      console.log(`[LEADERBOARD] Found ${profiles?.length || 0} profiles for ${type}`);
+
+      const leaderboard: LeaderboardEntry[] = filteredGameStates
+        .map((gameState) => {
+          const profile = profilesMap.get(gameState.user_id);
+          const username = profile?.username;
+          const displayName = profile?.display_name;
+          
+          if (!username || username === 'Unknown' || username.trim() === '') {
+            return null;
+          }
+
+          return {
+            user_id: gameState.user_id,
+            username: username,
+            display_name: displayName || username,
+            total_clicks: gameState.lifetime_clicks || 0,
+            total_power: gameState.total_power || 0,
+            prestige_level: gameState.prestige_level || 0,
+            achievements_count: gameState.unlocked_achievements?.length || 0,
+            clicks_per_second: gameState.pps || 0,
+            updated_at: gameState.updated_at || new Date().toISOString(),
+          } as LeaderboardEntry;
+        })
+        .filter((entry): entry is LeaderboardEntry => entry !== null)
+        .slice(0, limit);
+
+      console.log(`[LEADERBOARD] Created ${leaderboard.length} valid entries for ${type}`);
+
+      this.leaderboardCache.set(cacheKey, {
+        data: leaderboard,
+        timestamp: Date.now(),
+        type,
+        limit
+      });
+
+      return leaderboard;
+    } catch (error) {
+      console.error('[LEADERBOARD] Error in getLeaderboard:', error);
+      throw error;
+    }
+  }
+
+  static async getUserPosition(userId: string, type: LeaderboardType = "total_power"): Promise<{ position: number; userData: LeaderboardEntry | null }> {
+    try {
+      if (userId.includes('guest') || userId.includes('anonymous')) {
+        return { position: 0, userData: null };
+      }
+
+      const { data: gameStates, error: gameStatesError } = await supabase
+        .from('game_states')
+        .select(`
+          user_id,
+          total_power,
+          lifetime_clicks,
+          prestige_level,
+          unlocked_achievements,
+          pps,
+          updated_at
+        `)
+        .order(type === 'total_power' ? 'total_power' : 
+               type === 'total_clicks' ? 'lifetime_clicks' : 
+               'prestige_level', { ascending: false });
+
+      if (gameStatesError) {
+        console.error('[LEADERBOARD] Error fetching game states for position:', gameStatesError);
+        throw gameStatesError;
+      }
+
+      if (!gameStates || gameStates.length === 0) {
+        return { position: 0, userData: null };
+      }
+
+      // Filter out guest and anonymous users
+      const filteredGameStates = gameStates.filter(gs => {
+        const userId = String(gs.user_id);
+        return !userId.includes('guest') && !userId.includes('anonymous');
+      });
+
+      if (filteredGameStates.length === 0) {
+        return { position: 0, userData: null };
+      }
+
+      const userIds = filteredGameStates.map(gs => gs.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('id, username, display_name')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('[LEADERBOARD] Error fetching user profiles for position:', profilesError);
+        throw profilesError;
+      }
+
+      const profilesMap = new Map();
+      if (profiles) {
+        profiles.forEach(profile => {
+          profilesMap.set(profile.id, profile);
+        });
+      }
+
+      let validPosition = 0;
+      let userData: LeaderboardEntry | null = null;
+
+      for (const gameState of filteredGameStates) {
+        const profile = profilesMap.get(gameState.user_id);
+        const username = profile?.username;
+        
+        if (!username || username === 'Unknown' || username.trim() === '') {
+          continue;
+        }
+
+        validPosition++;
+
+        if (gameState.user_id === userId) {
+          userData = {
+            user_id: gameState.user_id,
+            username: username,
+            display_name: profile?.display_name || username,
+            total_clicks: gameState.lifetime_clicks || 0,
+            total_power: gameState.total_power || 0,
+            prestige_level: gameState.prestige_level || 0,
+            achievements_count: gameState.unlocked_achievements?.length || 0,
+            clicks_per_second: gameState.pps || 0,
+            updated_at: gameState.updated_at || new Date().toISOString(),
+          };
+          break;
+        }
+      }
+
+      return {
+        position: userData ? validPosition : 0,
+        userData
+      };
+    } catch (error) {
+      console.error('[LEADERBOARD] Error in getUserPosition:', error);
+      throw error;
+    }
+  }
+
+  static async updateUserStats(userId: string, gameState: any): Promise<void> {
+    try {
+      if (userId.includes('guest') || userId.includes('anonymous')) {
+        console.log('[LEADERBOARD] Skipping leaderboard update for guest user:', userId);
+        return;
+      }
+
+      console.log('[LEADERBOARD] User stats updated for leaderboard:', userId);
+    } catch (error) {
+      console.error('[LEADERBOARD] Error updating user stats:', error);
+      throw error;
+    }
+  }
+
+  static isUserEligible(userId: string): boolean {
+    return !userId.includes('guest') && !userId.includes('anonymous');
+  }
+
+  static async hasValidProfile(userId: string): Promise<boolean> {
+    try {
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+      if (error || !profile) {
+        return false;
+      }
+
+      const username = profile.username;
+      return Boolean(username && username !== 'Unknown' && username.trim() !== '');
+    } catch (error) {
+      console.error('[LEADERBOARD] Error checking user profile validity:', error);
+      return false;
+    }
+  }
+
+  static invalidateCache(): void {
+    console.log('[LEADERBOARD] Invalidating all leaderboard cache');
+    this.leaderboardCache.clear();
+  }
+
+  static invalidateCacheForType(type: LeaderboardType): void {
+    console.log(`[LEADERBOARD] Invalidating cache for type: ${type}`);
+    const keysToDelete: string[] = [];
+    
+    for (const [key, cache] of this.leaderboardCache.entries()) {
+      if (cache.type === type) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => {
+      this.leaderboardCache.delete(key);
+      console.log(`[LEADERBOARD] Deleted cache key: ${key}`);
+    });
+  }
+
+  static getCacheStats(): { totalEntries: number; cacheKeys: string[] } {
+    const cacheKeys = Array.from(this.leaderboardCache.keys());
+    return {
+      totalEntries: this.leaderboardCache.size,
+      cacheKeys
+    };
+  }
+} 

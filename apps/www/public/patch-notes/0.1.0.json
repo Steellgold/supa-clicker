@@ -1,0 +1,85 @@
+{
+  "version": "0.1.0",
+  "date": "2025-07-24",
+  "title": "Anti-cheat & Security Overhaul",
+  "excerpt": "Complete overhaul of anti-cheat validation, enhanced security, new validation schemas, chat API, and backend cleanup.",
+  "github_url": "https://github.com/Steellgold/supa-clicker/releases/tag/v0.1.0",
+  "categories": [
+    {
+      "title": "Security & Anti-Cheat",
+      "items": [
+        {
+          "type": "REFACTORED",
+          "description": "Complete overhaul of the server-side anti-cheat system (advanced validation, anomaly detection, adjusted tolerances)."
+        },
+        {
+          "type": "ADDED",
+          "description": "Added Zod schemas for strict validation of game state and requests."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Stronger checks on ratios, timestamps, max values, and progression logic."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Data integrity verification and corruption detection."
+        }
+      ]
+    },
+    {
+      "title": "Backend & API",
+      "items": [
+        {
+          "type": "ADDED",
+          "description": "New chat API with OpenAI moderation and spam limitation."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Secured endpoints (allowed origins, rate limiting, request validation)."
+        },
+        {
+          "type": "REFACTORED",
+          "description": "Migration and cleanup of SQL scripts for consistent profiles and saves."
+        },
+        {
+          "type": "REMOVED",
+          "description": "Removed obsolete SQL files and endpoints."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Re-enabled and secured automatic game state autosave every 5-10 seconds, with logic to avoid conflicts during purchases."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Stability improvements for autosave and game state management."
+        }
+      ]
+    },
+    {
+      "title": "User Interface",
+      "items": [
+        {
+          "type": "ADDED",
+          "description": "Added real-time chat panel to the interface."
+        },
+        {
+          "type": "IMPROVED",
+          "description": "Improved error messages and user feedback for security actions."
+        }
+      ]
+    },
+    {
+      "title": "Misc & Maintenance",
+      "items": [
+        {
+          "type": "IMPROVED",
+          "description": "General refactoring for better maintainability and code readability."
+        },
+        {
+          "type": "REMOVED",
+          "description": "Cleanup of scripts and removal of dead code."
+        }
+      ]
+    }
+  ]
+}
