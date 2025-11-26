@@ -1,4 +1,8 @@
 {
+  "name": "supa-clicker",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
 	"scripts": {
   	"dev": "open-cli http://localhost:3000 && dotenv -- pnpm --filter=@clicker/* --recursive run dev",
     "build:all": "dotenv -- pnpm --filter=@clicker/* --recursive run build",
