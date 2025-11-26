@@ -1,0 +1,7 @@
+{
+  "buildCommand": "pnpm run build:www",
+  "devCommand": "pnpm run dev",
+  "installCommand": "pnpm install",
+  "framework": null,
+  "outputDirectory": "apps/www/.next"
+}
