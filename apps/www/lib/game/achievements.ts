@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Achievement, GameState } from "@clicker/game/types";
 
 export const ACHIEVEMENTS: Achievement[] = [

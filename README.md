@@ -2,6 +2,17 @@
 
 **An addictive incremental clicker game built for Supabase's 15th Launch Week Hackathon**
 
+> **This is the `stable` branch — singleplayer edition.**
+>
+> The WebSocket game server (`apps/ws-server`) has been removed here, along with the
+> leaderboard and the chat. The game engine now runs entirely in your browser and progress is
+> saved in `localStorage`.
+>
+> Looking for the original real-time multiplayer version (winner of the LW15 hackathon)? It's
+> still available on the [`hackathon`](https://github.com/Steellgold/supa-clicker/tree/hackathon)
+> branch — `git checkout hackathon` to get it back, and redeploy `apps/ws-server` wherever you
+> like.
+
 ## 🚀 About the Project
 
 **Supa Clicker** is a feature-rich incremental clicker game that showcases the power of Supabase's real-time capabilities. Built during the **15th Launch Week Hackathon**, this game combines addictive gameplay mechanics with modern web technologies to create an engaging **real-time multiplayer** experience.
@@ -10,8 +21,7 @@ Click the SUPA, earn power, buy upgrades, and compete with players worldwide in 
 
 ### 🏗️ Modern Architecture
 This project uses a **monorepo architecture** with:
-- **Frontend App** (`apps/www`) - Next.js 15 application with React 19
-- **WebSocket Server** (`apps/ws-server`) - Real-time game server handling all game logic
+- **Frontend App** (`apps/www`) - Next.js 15 application with React 19, running the game engine locally
 - **Shared Game Package** (`packages/game`) - Shared types and utilities
 
 ## ✨ Key Features

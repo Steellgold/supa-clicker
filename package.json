@@ -8,10 +8,8 @@
     "build:all": "dotenv -- pnpm --filter=@clicker/* --recursive run build",
 
     "start:www": "pnpm --filter=@clicker/www run start",
-    "start:socket": "pnpm --filter=@clicker/socket run start",
 
-    "build:www": "dotenv -- pnpm --filter=@clicker/www run build",
-    "build:socket": "pnpm --filter=@clicker/socket run build"
+    "build:www": "dotenv -- pnpm --filter=@clicker/www run build"
   },
   "dependencies": {
   	"dotenv": "^16.4.5",

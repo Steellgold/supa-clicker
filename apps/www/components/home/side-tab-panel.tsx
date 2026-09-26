@@ -2,8 +2,6 @@
 
 import { PrestigeCard } from "@/components/cards/prestige-card";
 import { UpgradeCard } from "@/components/cards/upgrade-card";
-import { ChatPanel } from "@/components/chat-panel";
-import { LeaderboardPanel } from "@/components/leaderboard-panel";
 import { PowerTag } from "@/components/power-tag";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBulkBuy } from "@/lib/contexts/bulk-buy-context";
@@ -13,7 +11,7 @@ import { BULK_BUY_OPTIONS, getAllUpgrades } from "@clicker/game/utils";
 import { useState } from "react";
 import { BulkBuySettings } from "../bulk-buy-settings";
 
-type TabType = "UPGRADES" | "SPECIALS" | "LEADERBOARD" | "CHAT";
+type TabType = "UPGRADES" | "SPECIALS";
 
 export const SideTabPanel = () => {
   const { gameState } = useGameContext();
@@ -98,14 +96,6 @@ export const SideTabPanel = () => {
       //       <PrestigeCard />
       //     </div>
       //   );
-      case "LEADERBOARD":
-        return <LeaderboardPanel />;
-      case "CHAT":
-        return (
-          <div className="flex-1 p-3">
-            <ChatPanel />
-          </div>
-        );
       default:
         return null;
     }
@@ -134,26 +124,6 @@ export const SideTabPanel = () => {
         >
           SPECIALS
         </button> */}
-        <button 
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            activeTab === "LEADERBOARD" 
-              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-b-2 border-green-500"
-              : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-          }`}
-          onClick={() => setActiveTab("LEADERBOARD")}
-        >
-          LEADERBOARD
-        </button>
-        <button 
-          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-            activeTab === "CHAT" 
-              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-b-2 border-green-500"
-              : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-          }`}
-          onClick={() => setActiveTab("CHAT")}
-        >
-          CHAT
-        </button>
       </div>
 
       {/* Header avec stats - seulement visible pour UPGRADES */}

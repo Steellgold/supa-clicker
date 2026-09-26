@@ -27,7 +27,6 @@ export function Clicker() {
       setIsClicking(true);
       setIsActive(true);
 
-      // Appeler la fonction WebSocket
       handleClick();
 
       const rect = event.currentTarget.getBoundingClientRect();
